@@ -1,19 +1,49 @@
-# https://www.robotstxt.org/robotstxt.html
+# robots.txt for EduLumix - Complete Career Platform
+# Optimized for maximum search engine visibility
+
 User-agent: *
 Allow: /
 
-# Sitemaps
-Sitemap: https://edulearnix.com/sitemap.xml
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
 
-# Crawl-delay
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: YandexBot
+Allow: /
 Crawl-delay: 1
 
-# Disallow admin pages
-Disallow: /admin/
-Disallow: /dashboard/
+# Disallow specific paths (admin/auth areas)
 Disallow: /api/
+Disallow: /admin/
+Disallow: /super-admin/
+Disallow: /contributor/
+Disallow: /dashboard/
+Disallow: /auth/login
+Disallow: /auth/signup
+Disallow: /*.json$
+Disallow: /*/edit$
+Disallow: /*/delete$
+Disallow: /*?*utm_*
+Disallow: /*?*ref=*
 
-# Allow important pages
+# Explicitly allow important pages for better indexing
 Allow: /jobs
 Allow: /jobs/*
 Allow: /resources
@@ -22,9 +52,24 @@ Allow: /courses
 Allow: /courses/*
 Allow: /blog
 Allow: /blog/*
-Allow: /mock-test
-Allow: /mock-test/*
-Allow: /digilearnix
-Allow: /digilearnix/*
+Allow: /mock-tests
+Allow: /mock-tests/*
+Allow: /digital-products
+Allow: /digital-products/*
 Allow: /about
 Allow: /contact
+Allow: /assets/
+Allow: /images/
+
+# Multiple sitemaps for better organization
+Sitemap: https://edulumix.in/sitemap.xml
+Sitemap: https://edulumix.in/sitemap-jobs.xml
+Sitemap: https://edulumix.in/sitemap-resources.xml
+Sitemap: https://edulumix.in/sitemap-blog.xml
+Sitemap: https://edulumix.in/sitemap-courses.xml
+Sitemap: https://edulumix.in/sitemap-products.xml
+Sitemap: https://edulumix.in/sitemap-mock-tests.xml
+
+# Host (preferred domain)
+Host: https://edulumix.in
+

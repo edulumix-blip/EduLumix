@@ -181,7 +181,7 @@ const TestimonialsCarousel = ({ testimonials }) => {
             What Our <span className="text-blue-600 dark:text-blue-400">Users Say</span>
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400">
-            Real stories from real people who transformed their careers with EduLearnix
+            Real stories from real people who transformed their careers with EduLumix
           </p>
         </div>
 
@@ -298,7 +298,7 @@ const Home = () => {
       title: 'Digital Products',
       description: 'Get premium digital products at unbeatable prices. Templates, tools, software, and more with instant WhatsApp delivery support.',
       icon: ShoppingBag,
-      path: '/digilearnix',
+      path: '/digital-products',
       gradient: 'from-blue-600 to-blue-400',
     },
     {
@@ -356,17 +356,17 @@ const Home = () => {
 
   // 50 Testimonials with Indian names
   const testimonials = [
-    { name: 'Aarav Sharma', comment: 'EduLearnix helped me land my first job as a fresher! The resources are incredible.', rating: 5 },
+    { name: 'Aarav Sharma', comment: 'EduLumix helped me land my first job as a fresher! The resources are incredible.', rating: 5 },
     { name: 'Priya Patel', comment: 'Best platform for free study materials. Saved me thousands of rupees!', rating: 5 },
     { name: 'Rohit Kumar', comment: 'The mock tests really prepared me for my TCS interview. Highly recommended!', rating: 5 },
     { name: 'Sneha Gupta', comment: 'Found amazing digital products at great prices. Quick delivery via WhatsApp.', rating: 4 },
     { name: 'Vikram Singh', comment: 'The tech blogs are very informative. Keep up the great work!', rating: 5 },
-    { name: 'Ananya Reddy', comment: 'Got my internship through EduLearnix. Forever grateful!', rating: 5 },
+    { name: 'Ananya Reddy', comment: 'Got my internship through EduLumix. Forever grateful!', rating: 5 },
     { name: 'Arjun Nair', comment: 'Courses are well-structured and easy to follow. Learned React in 2 weeks!', rating: 5 },
     { name: 'Divya Iyer', comment: 'The job alerts feature is super helpful. Never miss an opportunity now.', rating: 4 },
     { name: 'Karthik Menon', comment: 'Amazing platform for freshers. Everything you need in one place.', rating: 5 },
     { name: 'Meera Krishnan', comment: 'The DSA notes helped me crack my Infosys interview!', rating: 5 },
-    { name: 'Saurabh Verma', comment: 'Been using EduLearnix for 6 months. Best career platform!', rating: 5 },
+    { name: 'Saurabh Verma', comment: 'Been using EduLumix for 6 months. Best career platform!', rating: 5 },
     { name: 'Ritika Agarwal', comment: 'Free resources are actually premium quality. Unbelievable!', rating: 5 },
     { name: 'Aditya Joshi', comment: 'The contributor team is very responsive and helpful.', rating: 4 },
     { name: 'Pooja Saxena', comment: 'Mock tests with detailed solutions helped me improve a lot.', rating: 5 },
@@ -376,7 +376,7 @@ const Home = () => {
     { name: 'Kavitha Rao', comment: 'Digital products section has everything I needed for my projects.', rating: 5 },
     { name: 'Manish Chauhan', comment: 'The UI is clean and easy to navigate. Great user experience!', rating: 4 },
     { name: 'Deepika Pillai', comment: 'Tech blogs keep me updated with industry trends. Essential read!', rating: 5 },
-    { name: 'Suresh Pandey', comment: 'From zero to hero in web development. Thanks EduLearnix!', rating: 5 },
+    { name: 'Suresh Pandey', comment: 'From zero to hero in web development. Thanks EduLumix!', rating: 5 },
     { name: 'Anjali Dubey', comment: 'The community here is so supportive. Made many friends!', rating: 5 },
     { name: 'Vivek Malhotra', comment: 'Best investment for my career. Completely free and worth it!', rating: 5 },
     { name: 'Swati Kapoor', comment: 'Resume templates from digital products landed me interviews.', rating: 4 },
@@ -391,7 +391,7 @@ const Home = () => {
     { name: 'Deepak Chandra', comment: 'Got my first freelancing client through skills learned here.', rating: 5 },
     { name: 'Rekha Bansal', comment: 'Customer support is quick and helpful. 5 stars!', rating: 5 },
     { name: 'Santosh Kumar', comment: 'The aptitude test series is excellent for placement prep.', rating: 4 },
-    { name: 'Pallavi Hegde', comment: 'Been recommending EduLearnix to all my juniors!', rating: 5 },
+    { name: 'Pallavi Hegde', comment: 'Been recommending EduLumix to all my juniors!', rating: 5 },
     { name: 'Mohit Goyal', comment: 'Dark mode is a blessing for late night study sessions.', rating: 5 },
     { name: 'Ritu Sharma', comment: 'Walk-in drive updates helped me get my first interview call.', rating: 5 },
     { name: 'Ashish Rawat', comment: 'The platform keeps improving. New features every month!', rating: 4 },
@@ -404,7 +404,7 @@ const Home = () => {
     { name: 'Aparna Nair', comment: 'Mobile responsive design makes learning on-the-go easy.', rating: 5 },
     { name: 'Varun Sethi', comment: 'Best part is everything is free. No hidden charges!', rating: 5 },
     { name: 'Shikha Gupta', comment: 'The Python course is beginner-friendly and comprehensive.', rating: 4 },
-    { name: 'Ravi Shankar', comment: 'EduLearnix is my go-to platform for all career needs.', rating: 5 },
+    { name: 'Ravi Shankar', comment: 'EduLumix is my go-to platform for all career needs.', rating: 5 },
     { name: 'Neha Agrawal', comment: 'Cracked my Amazon interview with resources from here. Forever grateful!', rating: 5 },
   ];
 
@@ -415,12 +415,12 @@ const Home = () => {
       generateWebsiteSchema(),
       {
         '@type': 'WebPage',
-        '@id': 'https://edulearnix.com/',
-        url: 'https://edulearnix.com/',
-        name: 'EduLearnix - Complete Career Platform for Freshers | Jobs, Courses, Resources',
-        description: 'Find fresher jobs, free resources, online courses, mock tests, and career guidance. Join 50,000+ students building successful careers with EduLearnix.',
+        '@id': 'https://edulumix.com/',
+        url: 'https://edulumix.com/',
+        name: 'EduLumix - Complete Career Platform for Freshers | Jobs, Courses, Resources',
+        description: 'Find fresher jobs, free resources, online courses, mock tests, and career guidance. Join 50,000+ students building successful careers with EduLumix.',
         isPartOf: {
-          '@id': 'https://edulearnix.com/#website'
+          '@id': 'https://edulumix.com/#website'
         }
       }
     ]
@@ -429,8 +429,8 @@ const Home = () => {
   return (
     <div className="min-h-screen">
       <SEO
-        title="EduLearnix - Complete Career Platform for Freshers | Jobs, Courses, Resources & More"
-        description="Find latest fresher jobs, free resources, online courses, mock tests, tech blogs, and digital products. Join 50,000+ students building successful careers with EduLearnix. Your one-stop platform for career growth."
+        title="EduLumix - Complete Career Platform for Freshers | Jobs, Courses, Resources & More"
+        description="Find latest fresher jobs, free resources, online courses, mock tests, tech blogs, and digital products. Join 50,000+ students building successful careers with EduLumix. Your one-stop platform for career growth."
         keywords="fresher jobs, jobs for freshers, entry level jobs, graduate jobs, online courses, free resources, mock tests, interview preparation, tech blog, career guidance, digital products, job portal India, placement preparation, skill development, career platform"
         url="/"
         type="website"
@@ -452,7 +452,7 @@ const Home = () => {
             
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-display mb-6 text-gray-900 dark:text-white leading-tight">
               Unlock Your Potential with{' '}
-              <span className="text-blue-600 dark:text-blue-400">EduLearnix</span>
+              <span className="text-blue-600 dark:text-blue-400">EduLumix</span>
             </h1>
             
             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-10 leading-relaxed">
@@ -612,10 +612,10 @@ const Home = () => {
               </div>
               
               <h2 className="text-3xl md:text-4xl font-bold font-display mb-4 text-gray-900 dark:text-white">
-                Why <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">EduLearnix</span>?
+                Why <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">EduLumix</span>?
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
-                We're not just another job portal. EduLearnix is your complete career companion — 
+                We're not just another job portal. EduLumix is your complete career companion — 
                 built by freshers, for freshers. Everything you need to land your dream job, absolutely free.
               </p>
               
@@ -788,7 +788,7 @@ const Home = () => {
               Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Contributors</span>
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Meet the amazing people powering EduLearnix
+              Meet the amazing people powering EduLumix
             </p>
           </div>
           
@@ -818,7 +818,7 @@ const Home = () => {
                 Ready to Start Your Journey?
               </h2>
               <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
-                Join thousands of successful professionals who started their career with EduLearnix. 
+                Join thousands of successful professionals who started their career with EduLumix. 
                 It's completely free to get started.
               </p>
               <div className="flex flex-wrap justify-center gap-4">

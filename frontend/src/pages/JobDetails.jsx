@@ -172,12 +172,12 @@ const JobDetails = () => {
   };
 
   const jobUrl = `/jobs/${id}`;
-  const description = job.description?.slice(0, 160) || `${job.title} position at ${job.company}. ${job.location}. ${job.salary ? `Salary: ₹${job.salary}` : ''} Apply now on EduLearnix.`;
+  const description = job.description?.slice(0, 160) || `${job.title} position at ${job.company}. ${job.location}. ${job.salary ? `Salary: ₹${job.salary}` : ''} Apply now on EduLumix.`;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-300">
       <SEO
-        title={`${job.title} at ${job.company} - ${job.location} | Fresher Job Opening | EduLearnix`}
+        title={`${job.title} at ${job.company} - ${job.location} | Fresher Job Opening | EduLumix`}
         description={description}
         keywords={`${job.title}, ${job.company} jobs, ${job.location} jobs, fresher jobs, ${job.category} jobs, entry level jobs, ${job.title} vacancy, job opening`}
         url={jobUrl}

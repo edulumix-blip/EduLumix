@@ -503,14 +503,14 @@ const ContributorProfile = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <a
-                    href="mailto:admin@edulearnix.com"
+                    href="mailto:admin@edulumix.com"
                     className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
                   >
                     <Mail className="w-4 h-4" />
                     Email Admin
                   </a>
                   <a
-                    href="https://wa.me/918272946202?text=Hi,%20I%20want%20to%20change%20my%20password%20on%20EduLearnix"
+                    href="https://wa.me/918272946202?text=Hi,%20I%20want%20to%20change%20my%20password%20on%20EduLumix"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors"

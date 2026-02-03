@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Search, ShoppingBag, Tag, MessageCircle, 
   TrendingUp, Star, Filter 
@@ -8,7 +9,7 @@ import toast from 'react-hot-toast';
 import SEO from '../components/seo/SEO';
 import { generateBreadcrumbSchema } from '../utils/seoSchemas';
 
-const DigiLearnix = () => {
+const DigitalProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,20 +59,13 @@ const DigiLearnix = () => {
     fetchProducts();
   };
 
-  const openWhatsApp = (product) => {
-    const message = encodeURIComponent(
-      `Hi, I'm interested in "${product.name}" (₹${product.offerPrice}). Please share more details.`
-    );
-    window.open(`https://wa.me/${product.whatsappNumber}?text=${message}`, '_blank');
-  };
-
   const calculateDiscount = (actual, offer) => {
     return Math.round(((actual - offer) / actual) * 100);
   };
 
   const breadcrumbs = [
     { name: 'Home', path: '/' },
-    { name: 'Digital Products', path: '/digilearnix' }
+    { name: 'Digital Products', path: '/digital-products' }
   ];
 
   const structuredData = {
@@ -80,10 +74,10 @@ const DigiLearnix = () => {
       generateBreadcrumbSchema(breadcrumbs),
       {
         '@type': 'Store',
-        '@id': 'https://edulearnix.com/digilearnix',
-        name: 'DigiLearnix - Digital Products Store',
+        '@id': 'https://edulumix.com/digital-products',
+        name: 'Digital Products Store',
         description: 'Buy digital subscriptions, software, and tools at best prices',
-        url: 'https://edulearnix.com/digilearnix'
+        url: 'https://edulumix.com/digital-products'
       }
     ]
   };
@@ -91,10 +85,10 @@ const DigiLearnix = () => {
   return (
     <div className="min-h-screen py-8 lg:py-12">
       <SEO
-        title="Digital Products - OTT Subscriptions, Software & Tools | DigiLearnix"
+        title="Digital Products - OTT Subscriptions, Software & Tools | EduLumix"
         description="Buy premium digital products at best prices - Netflix, Prime Video, Spotify, educational subscriptions, hosting, VPN, AI tools, and more. Get instant delivery and great deals!"
         keywords="digital products, OTT subscriptions, Netflix subscription, Prime Video, Spotify premium, educational subscription, hosting, VPN, AI tools, software, digital subscriptions, buy online"
-        url="/digilearnix"
+        url="/digital-products"
         structuredData={structuredData}
       />
       
@@ -153,7 +147,7 @@ const DigiLearnix = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="bg-white dark:bg-dark-200 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-pulse">
-                <div className="aspect-square bg-gray-200 dark:bg-dark-100"></div>
+                <div className="h-40 bg-gray-200 dark:bg-dark-100"></div>
                 <div className="p-4">
                   <div className="h-3 bg-gray-200 dark:bg-dark-100 rounded w-1/3 mb-2"></div>
                   <div className="h-5 bg-gray-200 dark:bg-dark-100 rounded mb-2"></div>
@@ -173,13 +167,18 @@ const DigiLearnix = () => {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {products.map((product) => (
-              <div key={product._id} className="bg-white dark:bg-dark-200 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-black/20 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300 group">
-                {/* Thumbnail */}
-                <div className="relative aspect-square bg-gray-100 dark:bg-dark-200">
+              <Link
+                key={product._id}
+                to={`/digital-products/${product._id}`}
+                className="bg-white dark:bg-dark-200 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-black/20 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300 group block"
+              >
+                {/* Thumbnail - Only top half visible */}
+                <div className="relative h-40 bg-gray-100 dark:bg-dark-200 overflow-hidden">
                   <img
                     src={product.thumbnail || '/images/placeholder.png'}
                     alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-auto object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                    style={{ minHeight: '280px', marginTop: '-70px' }}
                   />
                   
                   {/* Discount Badge */}
@@ -213,16 +212,12 @@ const DigiLearnix = () => {
                     )}
                   </div>
 
-                  {/* WhatsApp Button */}
-                  <button
-                    onClick={() => openWhatsApp(product)}
-                    className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors shadow-sm"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    <span className="text-sm">Order on WhatsApp</span>
-                  </button>
+                  {/* View Details */}
+                  <div className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors shadow-sm text-sm group-hover:bg-blue-700">
+                    View Details
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
@@ -231,4 +226,4 @@ const DigiLearnix = () => {
   );
 };
 
-export default DigiLearnix;
+export default DigitalProducts;

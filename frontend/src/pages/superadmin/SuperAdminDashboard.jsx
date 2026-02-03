@@ -33,7 +33,7 @@ const SuperAdminDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [todos, setTodos] = useState(() => {
-    const saved = localStorage.getItem('edulearnix_admin_todos');
+    const saved = localStorage.getItem('edulumix_admin_todos');
     return saved ? JSON.parse(saved) : [
       { id: 1, text: 'Review pending contributor requests', completed: false },
       { id: 2, text: 'Update job postings for this week', completed: false },
@@ -47,7 +47,7 @@ const SuperAdminDashboard = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('edulearnix_admin_todos', JSON.stringify(todos));
+    localStorage.setItem('edulumix_admin_todos', JSON.stringify(todos));
   }, [todos]);
 
   const fetchStats = async () => {
@@ -55,11 +55,14 @@ const SuperAdminDashboard = () => {
       setLoading(true);
       
       // Fetch all stats in parallel
-      const [userStats, jobsRes, resourcesRes, blogsRes] = await Promise.all([
+      const [userStats, jobsRes, resourcesRes, blogsRes, coursesRes, productsRes, mockTestsRes] = await Promise.all([
         api.get('/users/stats'),
         api.get('/jobs?limit=1'),
         api.get('/resources?limit=1'),
         api.get('/blogs?limit=1'),
+        api.get('/courses?limit=1'),
+        api.get('/products?limit=1'),
+        api.get('/mocktests?limit=1'),
       ]);
 
       setStats({
@@ -67,9 +70,9 @@ const SuperAdminDashboard = () => {
         totalJobs: jobsRes.data.total || 0,
         totalResources: resourcesRes.data.total || 0,
         totalBlogs: blogsRes.data.total || 0,
-        totalCourses: 0, // Coming soon
-        totalProducts: 0, // Coming soon
-        totalMockTests: 0, // Coming soon
+        totalCourses: coursesRes.data.total || 0,
+        totalProducts: productsRes.data.total || 0,
+        totalMockTests: mockTestsRes.data.total || 0,
         pendingUsers: userStats.data.data.pendingUsers || 0,
         approvedUsers: userStats.data.data.approvedUsers || 0,
         blockedUsers: userStats.data.data.blockedUsers || 0,

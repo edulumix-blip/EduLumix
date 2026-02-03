@@ -21,7 +21,8 @@ import Courses from './pages/Courses';
 import CourseDetails from './pages/CourseDetails';
 import MockTests from './pages/MockTests';
 import MockTestDetails from './pages/MockTestDetails';
-import DigiLearnix from './pages/DigiLearnix';
+import DigitalProducts from './pages/DigitalProducts';
+import DigitalProductDetails from './pages/DigitalProductDetails';
 import About from './pages/About';
 import Contact from './pages/Contact';
 
@@ -140,7 +141,8 @@ function App() {
                 <Route path="/courses/:slug" element={<CourseDetails />} />
                 <Route path="/mock-test" element={<MockTests />} />
                 <Route path="/mock-test/:slug" element={<MockTestDetails />} />
-                <Route path="/digilearnix" element={<DigiLearnix />} />
+                <Route path="/digital-products" element={<DigitalProducts />} />
+                <Route path="/digital-products/:id" element={<DigitalProductDetails />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 

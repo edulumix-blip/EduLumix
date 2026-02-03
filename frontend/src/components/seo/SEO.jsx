@@ -1,21 +1,21 @@
 import { Helmet } from 'react-helmet-async';
 
 const SEO = ({
-  title = 'EduLearnix - Your Complete Career Platform',
-  description = 'EduLearnix is your ultimate destination for fresher jobs, free resources, courses, mock tests, and career guidance. Join 50,000+ students building successful careers.',
+  title = 'EduLumix - Your Complete Career Platform',
+  description = 'EduLumix is your ultimate destination for fresher jobs, free resources, courses, mock tests, and career guidance. Join 50,000+ students building successful careers.',
   keywords = 'jobs for freshers, free resources, online courses, mock tests, tech blog, career guidance, digital products, interview preparation, job portal, education platform',
-  author = 'EduLearnix Team',
-  image = 'https://edulearnix.com/og-image.jpg',
-  url = 'https://edulearnix.com',
+  author = 'EduLumix Team',
+  image = 'https://edulumix.com/og-image.jpg',
+  url = 'https://edulumix.com',
   type = 'website',
   twitterCard = 'summary_large_image',
-  twitterHandle = '@edulearnix',
+  twitterHandle = '@edulumix',
   canonical,
   children,
   noIndex = false,
   structuredData
 }) => {
-  const siteUrl = import.meta.env.VITE_APP_URL || 'https://edulearnix.com';
+  const siteUrl = import.meta.env.VITE_APP_URL || 'https://edulumix.com';
   const fullUrl = url.startsWith('http') ? url : `${siteUrl}${url}`;
   const canonicalUrl = canonical || fullUrl;
 
@@ -41,7 +41,7 @@ const SEO = ({
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={image} />
-      <meta property="og:site_name" content="EduLearnix" />
+      <meta property="og:site_name" content="EduLumix" />
       <meta property="og:locale" content="en_US" />
 
       {/* Twitter */}

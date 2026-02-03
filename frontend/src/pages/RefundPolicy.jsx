@@ -26,7 +26,7 @@ const RefundPolicy = () => {
 
           <div className="prose prose-gray dark:prose-invert max-w-none">
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
-              At EduLearnix, we strive to ensure customer satisfaction with all our digital products and 
+              At EduLumix, we strive to ensure customer satisfaction with all our digital products and 
               services. This Refund Policy outlines the conditions under which refunds may be issued for 
               purchases made on our platform.
             </p>
@@ -64,7 +64,7 @@ const RefundPolicy = () => {
 
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">Digital Products</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-              For digital products purchased through EduLearnix (DigiLearnix):
+              For digital products purchased through EduLumix:
             </p>
             <ul className="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-2 mb-6">
               <li>Refunds are available within 7 days of purchase if the product has not been downloaded or accessed</li>
@@ -75,7 +75,7 @@ const RefundPolicy = () => {
 
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">Courses</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-              For paid courses on EduLearnix:
+              For paid courses on EduLumix:
             </p>
             <ul className="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-2 mb-6">
               <li>Full refund available within 7 days if less than 20% of the course content has been accessed</li>
@@ -86,7 +86,7 @@ const RefundPolicy = () => {
 
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">Free Services</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
-              Most of EduLearnix's services, including job listings, free resources, mock tests, and tech 
+              Most of EduLumix's services, including job listings, free resources, mock tests, and tech 
               blogs, are provided free of charge and do not involve any payments. This refund policy does 
               not apply to free services.
             </p>
@@ -96,7 +96,7 @@ const RefundPolicy = () => {
               To request a refund:
             </p>
             <ol className="list-decimal list-inside text-gray-600 dark:text-gray-400 space-y-2 mb-6">
-              <li>Email us at <a href="mailto:refunds@edulearnix.com" className="text-blue-600 dark:text-blue-400 hover:underline">refunds@edulearnix.com</a></li>
+              <li>Email us at <a href="mailto:refunds@edulumix.com" className="text-blue-600 dark:text-blue-400 hover:underline">refunds@edulumix.com</a></li>
               <li>Include your order ID or transaction reference</li>
               <li>Provide the reason for your refund request</li>
               <li>Our team will review your request within 2-3 business days</li>
@@ -125,8 +125,8 @@ const RefundPolicy = () => {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">Contact Us</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
               If you have any questions about our Refund Policy, please contact us at{' '}
-              <a href="mailto:support@edulearnix.com" className="text-blue-600 dark:text-blue-400 hover:underline">
-                support@edulearnix.com
+              <a href="mailto:support@edulumix.com" className="text-blue-600 dark:text-blue-400 hover:underline">
+                support@edulumix.com
               </a>
               {' '}or reach us via WhatsApp for faster assistance.
             </p>

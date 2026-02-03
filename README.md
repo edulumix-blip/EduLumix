@@ -1,4 +1,4 @@
-# EduLearnix - Complete Career Platform for Freshers
+# EduLumix - Complete Career Platform for Freshers
 
 A comprehensive MERN stack platform providing jobs, resources, courses, blogs, mock tests, and digital products for freshers and students.
 
@@ -32,7 +32,7 @@ A comprehensive MERN stack platform providing jobs, resources, courses, blogs, m
 ## 📦 Project Structure
 
 ```
-edulearnix/
+edulumix/
 ├── backend/
 │   ├── config/          # Database configuration
 │   ├── controllers/     # Route controllers
@@ -153,7 +153,7 @@ PORT=5000
 NODE_ENV=production
 CLIENT_URL=https://your-frontend-domain.netlify.app
 SUPER_ADMIN_NAME=Md Mijanur Molla
-SUPER_ADMIN_EMAIL=mdmijanur.molla@edulearnix.com
+SUPER_ADMIN_EMAIL=mdmijanur.molla@edulumix.com
 SUPER_ADMIN_PASSWORD=your_secure_password
 ```
 
@@ -230,12 +230,12 @@ This project is licensed under the ISC License.
 ## 👨‍💻 Developer
 
 **Md Mijanur Molla**
-- Email: mdmijanur.molla@edulearnix.com
+- Email: mdmijanur.molla@edulumix.com
 - Role: Founder & Community Admin
 
 ## 🆘 Support
 
-For support, email mdmijanur.molla@edulearnix.com
+For support, email mdmijanur.molla@edulumix.com
 
 ---
 

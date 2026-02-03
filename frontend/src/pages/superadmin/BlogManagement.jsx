@@ -318,8 +318,8 @@ const BlogManagement = () => {
             <thead className="bg-gray-50 dark:bg-dark-100">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Blog</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">Author</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Category</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell w-48">Author</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell w-36">Category</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden sm:table-cell">Date</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">Stats</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
@@ -359,14 +359,14 @@ const BlogManagement = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-4 hidden lg:table-cell">
+                    <td className="px-6 py-4 hidden lg:table-cell">
                       {blog.author ? (
                         <div className="flex items-center gap-2">
                           {blog.author.avatar ? (
                             <img 
                               src={blog.author.avatar} 
                               alt={blog.author.name}
-                              className="w-8 h-8 rounded-full object-cover"
+                              className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                               onError={(e) => {
                                 e.target.style.display = 'none';
                                 e.target.nextSibling.style.display = 'flex';
@@ -397,7 +397,11 @@ const BlogManagement = () => {
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-4 hidden md:table-cell">{getCategoryBadge(blog.category)}</td>
+                    <td className="px-6 py-4 hidden md:table-cell">
+                      <div className="whitespace-nowrap">
+                        {getCategoryBadge(blog.category)}
+                      </div>
+                    </td>
                     <td className="px-4 py-4 hidden sm:table-cell">
                       <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
                         <Calendar className="w-4 h-4" />

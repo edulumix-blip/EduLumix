@@ -64,9 +64,9 @@ const About = () => {
   return (
     <div className="min-h-screen py-12 lg:py-20">
       <SEO
-        title="About EduLearnix - Empowering Careers with Jobs, Resources & Courses"
-        description="Learn about EduLearnix - your complete career platform offering fresher jobs, free resources, courses, and career guidance. Empowering 50,000+ students to build successful careers."
-        keywords="about edulearnix, career platform, job portal for freshers, education platform, about us, company info"
+        title="About EduLumix - Empowering Careers with Jobs, Resources & Courses"
+        description="Learn about EduLumix - your complete career platform offering fresher jobs, free resources, courses, and career guidance. Empowering 50,000+ students to build successful careers."
+        keywords="about edulumix, career platform, job portal for freshers, education platform, about us, company info"
         url="/about"
         structuredData={structuredData}
       />
@@ -75,7 +75,7 @@ const About = () => {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-display mb-4 text-gray-900 dark:text-white">
-            About <span className="text-blue-600 dark:text-blue-400">EduLearnix</span>
+            About <span className="text-blue-600 dark:text-blue-400">EduLumix</span>
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             Empowering freshers and students with the resources, opportunities, and guidance 
@@ -93,7 +93,7 @@ const About = () => {
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">Our Mission</h2>
             </div>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-              At EduLearnix, we believe every student and fresher deserves access to quality career 
+              At EduLumix, we believe every student and fresher deserves access to quality career 
               opportunities and learning resources. Our mission is to bridge the gap between talent 
               and opportunity by providing a comprehensive platform that caters to the unique needs 
               of those starting their professional journey.
@@ -184,7 +184,7 @@ const About = () => {
                   </p>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
                     With a deep understanding of the challenges faced by freshers and students in their career journey, 
-                    Md Mijanur Molla founded EduLearnix with a vision to bridge the gap between academic education and 
+                    Md Mijanur Molla founded EduLumix with a vision to bridge the gap between academic education and 
                     industry requirements. His passion for education technology and career development drives the platform's 
                     mission to empower thousands of students across India.
                   </p>
@@ -206,10 +206,10 @@ const About = () => {
 
         {/* CTA */}
         <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-8 md:p-12 text-center text-white">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">Join the EduLearnix Community</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Join the EduLumix Community</h2>
           <p className="opacity-90 mb-8 max-w-2xl mx-auto">
             Be part of a growing community of ambitious freshers and students who are building 
-            successful careers with the help of EduLearnix.
+            successful careers with the help of EduLumix.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link 

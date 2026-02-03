@@ -3,12 +3,12 @@
 export const generateOrganizationSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'EduLearnix',
-  alternateName: 'EduLearnix - Career & Education Platform',
-  url: 'https://edulearnix.com',
-  logo: 'https://edulearnix.com/logo.png',
-  description: 'EduLearnix is your ultimate destination for fresher jobs, free resources, courses, mock tests, and career guidance.',
-  email: 'support@edulearnix.com',
+  name: 'EduLumix',
+  alternateName: 'EduLumix - Career & Education Platform',
+  url: 'https://edulumix.com',
+  logo: 'https://edulumix.com/logo.png',
+  description: 'EduLumix is your ultimate destination for fresher jobs, free resources, courses, mock tests, and career guidance.',
+  email: 'support@edulumix.com',
   telephone: '+91-8272946202',
   address: {
     '@type': 'PostalAddress',
@@ -16,16 +16,16 @@ export const generateOrganizationSchema = () => ({
     addressRegion: 'India'
   },
   sameAs: [
-    'https://facebook.com/edulearnix',
-    'https://twitter.com/edulearnix',
-    'https://linkedin.com/company/edulearnix',
-    'https://instagram.com/edulearnix',
-    'https://youtube.com/@edulearnix',
-    'https://github.com/edulearnix'
+    'https://facebook.com/edulumix',
+    'https://twitter.com/edulumix',
+    'https://linkedin.com/company/edulumix',
+    'https://instagram.com/edulumix',
+    'https://youtube.com/@edulumix',
+    'https://github.com/edulumix'
   ],
   contactPoint: {
     '@type': 'ContactPoint',
-    email: 'support@edulearnix.com',
+    email: 'support@edulumix.com',
     contactType: 'Customer Service',
     availableLanguage: ['English', 'Hindi']
   }
@@ -34,23 +34,23 @@ export const generateOrganizationSchema = () => ({
 export const generateWebsiteSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  name: 'EduLearnix',
-  url: 'https://edulearnix.com',
+  name: 'EduLumix',
+  url: 'https://edulumix.com',
   description: 'Complete career platform for freshers - Jobs, Resources, Courses, Mock Tests & More',
   potentialAction: {
     '@type': 'SearchAction',
     target: {
       '@type': 'EntryPoint',
-      urlTemplate: 'https://edulearnix.com/search?q={search_term_string}'
+      urlTemplate: 'https://edulumix.com/search?q={search_term_string}'
     },
     'query-input': 'required name=search_term_string'
   },
   publisher: {
     '@type': 'Organization',
-    name: 'EduLearnix',
+    name: 'EduLumix',
     logo: {
       '@type': 'ImageObject',
-      url: 'https://edulearnix.com/logo.png'
+      url: 'https://edulumix.com/logo.png'
     }
   }
 });
@@ -65,9 +65,9 @@ export const generateJobPostingSchema = (job) => ({
   employmentType: job.employmentType || 'FULL_TIME',
   hiringOrganization: {
     '@type': 'Organization',
-    name: job.company || 'EduLearnix',
-    sameAs: 'https://edulearnix.com',
-    logo: job.companyLogo || 'https://edulearnix.com/logo.png'
+    name: job.company || 'EduLumix',
+    sameAs: 'https://edulumix.com',
+    logo: job.companyLogo || 'https://edulumix.com/logo.png'
   },
   jobLocation: {
     '@type': 'Place',
@@ -107,8 +107,8 @@ export const generateCourseSchema = (course) => ({
   description: course.description,
   provider: {
     '@type': 'Organization',
-    name: 'EduLearnix',
-    sameAs: 'https://edulearnix.com'
+    name: 'EduLumix',
+    sameAs: 'https://edulumix.com'
   },
   courseCode: course.slug,
   educationalLevel: course.level || 'Beginner',
@@ -119,7 +119,7 @@ export const generateCourseSchema = (course) => ({
     price: course.price,
     priceCurrency: 'INR',
     availability: 'https://schema.org/InStock',
-    url: `https://edulearnix.com/courses/${course.slug}`
+    url: `https://edulumix.com/courses/${course.slug}`
   } : undefined,
   hasCourseInstance: {
     '@type': 'CourseInstance',
@@ -140,25 +140,25 @@ export const generateBlogSchema = (blog) => ({
   '@type': 'BlogPosting',
   headline: blog.title,
   description: blog.excerpt || blog.description,
-  image: blog.image || 'https://edulearnix.com/blog-default.jpg',
+  image: blog.image || 'https://edulumix.com/blog-default.jpg',
   datePublished: blog.publishedAt || blog.createdAt,
   dateModified: blog.updatedAt || blog.createdAt,
   author: {
     '@type': 'Person',
-    name: blog.author?.name || 'EduLearnix Team',
-    url: `https://edulearnix.com/author/${blog.author?.slug || 'team'}`
+    name: blog.author?.name || 'EduLumix Team',
+    url: `https://edulumix.com/author/${blog.author?.slug || 'team'}`
   },
   publisher: {
     '@type': 'Organization',
-    name: 'EduLearnix',
+    name: 'EduLumix',
     logo: {
       '@type': 'ImageObject',
-      url: 'https://edulearnix.com/logo.png'
+      url: 'https://edulumix.com/logo.png'
     }
   },
   mainEntityOfPage: {
     '@type': 'WebPage',
-    '@id': `https://edulearnix.com/blog/${blog.slug}`
+    '@id': `https://edulumix.com/blog/${blog.slug}`
   },
   keywords: blog.tags?.join(', '),
   articleSection: blog.category,
@@ -170,21 +170,21 @@ export const generateProductSchema = (product) => ({
   '@type': 'Product',
   name: product.title,
   description: product.description,
-  image: product.image || 'https://edulearnix.com/product-default.jpg',
+  image: product.image || 'https://edulumix.com/product-default.jpg',
   brand: {
     '@type': 'Brand',
-    name: product.brand || 'EduLearnix'
+    name: product.brand || 'EduLumix'
   },
   offers: {
     '@type': 'Offer',
-    url: `https://edulearnix.com/digilearnix/${product.slug}`,
+    url: `https://edulumix.com/digital-products/${product.slug}`,
     priceCurrency: 'INR',
     price: product.price,
     priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
     availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
     seller: {
       '@type': 'Organization',
-      name: 'EduLearnix'
+      name: 'EduLumix'
     }
   },
   aggregateRating: product.rating ? {
@@ -214,8 +214,8 @@ export const generateMockTestSchema = (mockTest) => ({
   isAccessibleForFree: mockTest.isFree || true,
   provider: {
     '@type': 'Organization',
-    name: 'EduLearnix',
-    url: 'https://edulearnix.com'
+    name: 'EduLumix',
+    url: 'https://edulumix.com'
   }
 });
 
@@ -239,7 +239,7 @@ export const generateBreadcrumbSchema = (breadcrumbs) => ({
     '@type': 'ListItem',
     position: index + 1,
     name: crumb.name,
-    item: `https://edulearnix.com${crumb.path}`
+    item: `https://edulumix.com${crumb.path}`
   }))
 });
 
@@ -255,10 +255,168 @@ export const generateVideoSchema = (video) => ({
   embedUrl: video.embedUrl,
   publisher: {
     '@type': 'Organization',
-    name: 'EduLearnix',
+    name: 'EduLumix',
     logo: {
       '@type': 'ImageObject',
-      url: 'https://edulearnix.com/logo.png'
+      url: 'https://edulumix.com/logo.png'
     }
+  }
+});
+
+// Enhanced ItemList Schema for Job Listings
+export const generateJobListSchema = (jobs) => ({
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  itemListElement: jobs.map((job, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    item: {
+      '@type': 'JobPosting',
+      title: job.title,
+      description: job.description,
+      datePosted: job.createdAt,
+      hiringOrganization: {
+        '@type': 'Organization',
+        name: job.company,
+        logo: job.companyLogo
+      },
+      jobLocation: {
+        '@type': 'Place',
+        address: job.location
+      },
+      url: `https://edulumix.in/jobs/${job.slug}`
+    }
+  }))
+});
+
+// CollectionPage Schema for Resources
+export const generateResourceCollectionSchema = (resources) => ({
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Free Study Resources for Students',
+  description: 'Access free educational resources, study materials, eBooks, and career guides',
+  url: 'https://edulumix.in/resources',
+  mainEntity: {
+    '@type': 'ItemList',
+    numberOfItems: resources.length,
+    itemListElement: resources.slice(0, 10).map((resource, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      item: {
+        '@type': 'CreativeWork',
+        name: resource.title,
+        description: resource.description,
+        url: `https://edulumix.in/resources/${resource.slug}`
+      }
+    }))
+  }
+});
+
+// Enhanced Course Collection Schema
+export const generateCourseCollectionSchema = (courses) => ({
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Online Courses for Career Growth',
+  description: 'Professional online courses with certifications',
+  url: 'https://edulumix.in/courses',
+  numberOfItems: courses.length,
+  itemListElement: courses.map((course, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    item: {
+      '@type': 'Course',
+      name: course.title,
+      description: course.description,
+      provider: {
+        '@type': 'Organization',
+        name: 'EduLumix'
+      },
+      offers: {
+        '@type': 'Offer',
+        price: course.price || 0,
+        priceCurrency: 'INR'
+      }
+    }
+  }))
+});
+
+// Blog Collection Schema
+export const generateBlogCollectionSchema = (blogs) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Blog',
+  name: 'EduLumix Tech Blog',
+  description: 'Technology articles, programming tutorials and career guidance',
+  url: 'https://edulumix.in/blog',
+  blogPost: blogs.slice(0, 10).map(blog => ({
+    '@type': 'BlogPosting',
+    headline: blog.title,
+    image: blog.image,
+    datePublished: blog.createdAt,
+    author: {
+      '@type': 'Person',
+      name: blog.author?.name || 'EduLumix Team'
+    }
+  }))
+});
+
+// SearchAction Schema for better search appearance
+export const generateSearchActionSchema = () => ({
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  url: 'https://edulumix.in',
+  potentialAction: [{
+    '@type': 'SearchAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: 'https://edulumix.in/jobs?search={search_term_string}'
+    },
+    'query-input': 'required name=search_term_string'
+  }]
+});
+
+// Enhanced Organization Schema with more details
+export const generateEnhancedOrganizationSchema = () => ({
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  '@id': 'https://edulumix.in/#organization',
+  name: 'EduLumix',
+  legalName: 'EduLumix Education Platform',
+  url: 'https://edulumix.in',
+  logo: {
+    '@type': 'ImageObject',
+    url: 'https://edulumix.in/logo.png',
+    width: '200',
+    height: '60'
+  },
+  description: 'Complete career platform for students and freshers offering jobs, resources, courses, mock tests and career guidance',
+  foundingDate: '2023',
+  founder: {
+    '@type': 'Person',
+    name: 'Md Mijanur Molla'
+  },
+  address: {
+    '@type': 'PostalAddress',
+    addressCountry: 'IN'
+  },
+  contactPoint: [{
+    '@type': 'ContactPoint',
+    telephone: '+91-8272946202',
+    contactType: 'Customer Service',
+    email: 'support@edulumix.in',
+    availableLanguage: ['English', 'Hindi']
+  }],
+  sameAs: [
+    'https://facebook.com/edulumix',
+    'https://twitter.com/edulumix',
+    'https://linkedin.com/company/edulumix',
+    'https://instagram.com/edulumix',
+    'https://youtube.com/@edulumix'
+  ],
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: '4.8',
+    reviewCount: '5000',
+    bestRating: '5',
+    worstRating: '1'
   }
 });

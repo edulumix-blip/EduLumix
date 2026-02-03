@@ -375,10 +375,10 @@ const JobManagement = () => {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Job Details
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell w-48">
                   Posted By
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell w-36">
                   Category
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden sm:table-cell">
@@ -437,14 +437,14 @@ const JobManagement = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-4 hidden lg:table-cell">
+                    <td className="px-6 py-4 hidden lg:table-cell">
                       {job.postedBy ? (
                         <div className="flex items-center gap-2">
                           {job.postedBy.avatar ? (
                             <img 
                               src={job.postedBy.avatar} 
                               alt={job.postedBy.name} 
-                              className="w-8 h-8 rounded-full object-cover"
+                              className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                               onError={(e) => {
                                 e.target.style.display = 'none';
                                 e.target.nextSibling.style.display = 'flex';
@@ -456,12 +456,14 @@ const JobManagement = () => {
                           >
                             {job.postedBy.name?.charAt(0).toUpperCase()}
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-1">
-                              {job.postedBy.name}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1">
+                              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                {job.postedBy.name}
+                              </p>
                               <VerifiedBadge user={job.postedBy} size="xs" />
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">{job.postedBy.email}</p>
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{job.postedBy.email}</p>
                           </div>
                         </div>
                       ) : (
@@ -473,8 +475,10 @@ const JobManagement = () => {
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-4 hidden md:table-cell">
-                      {getCategoryBadge(job.category)}
+                    <td className="px-6 py-4 hidden md:table-cell">
+                      <div className="whitespace-nowrap">
+                        {getCategoryBadge(job.category)}
+                      </div>
                     </td>
                     <td className="px-4 py-4 hidden sm:table-cell">
                       <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">

@@ -132,7 +132,7 @@ const Courses = () => {
       generateBreadcrumbSchema(breadcrumbs),
       {
         '@type': 'ItemList',
-        '@id': 'https://edulearnix.com/courses',
+        '@id': 'https://edulumix.com/courses',
         name: 'Online Courses',
         description: 'Top online courses for skill development and career growth',
         itemListElement: courses.slice(0, 10).map((course, index) => ({
@@ -142,7 +142,7 @@ const Courses = () => {
             '@type': 'Course',
             name: course.title,
             description: course.description,
-            url: `https://edulearnix.com/courses/${course.slug}`
+            url: `https://edulumix.com/courses/${course.slug}`
           }
         }))
       }
@@ -152,7 +152,7 @@ const Courses = () => {
   return (
     <div className="min-h-screen py-8 lg:py-12">
       <SEO
-        title="Online Courses - Learn Programming, Web Development & More | EduLearnix"
+        title="Online Courses - Learn Programming, Web Development & More | EduLumix"
         description="Explore top online courses in programming, web development, data science, AI/ML, and more. Learn from industry experts with hands-on projects. Start your learning journey today!"
         keywords="online courses, programming courses, web development courses, data science courses, AI courses, machine learning courses, free courses, paid courses, skill development, learn online, certification courses"
         url="/courses"

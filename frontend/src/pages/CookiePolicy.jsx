@@ -26,8 +26,8 @@ const CookiePolicy = () => {
 
           <div className="prose prose-gray dark:prose-invert max-w-none">
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
-              This Cookie Policy explains how EduLearnix ("we", "us", or "our") uses cookies and similar 
-              technologies when you visit our website at edulearnix.com. This policy provides you with 
+              This Cookie Policy explains how EduLumix ("we", "us", or "our") uses cookies and similar 
+              technologies when you visit our website at edulumix.com. This policy provides you with 
               clear and comprehensive information about the cookies we use and the purposes for using them.
             </p>
 
@@ -86,8 +86,8 @@ const CookiePolicy = () => {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">Contact Us</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
               If you have any questions about our Cookie Policy, please contact us at{' '}
-              <a href="mailto:support@edulearnix.com" className="text-blue-600 dark:text-blue-400 hover:underline">
-                support@edulearnix.com
+              <a href="mailto:support@edulumix.com" className="text-blue-600 dark:text-blue-400 hover:underline">
+                support@edulumix.com
               </a>
             </p>
           </div>

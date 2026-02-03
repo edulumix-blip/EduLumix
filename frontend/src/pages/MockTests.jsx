@@ -92,10 +92,10 @@ const MockTests = () => {
       generateBreadcrumbSchema(breadcrumbs),
       {
         '@type': 'ItemList',
-        '@id': 'https://edulearnix.com/mock-test',
+        '@id': 'https://edulumix.com/mock-test',
         name: 'Mock Tests & Practice Exams',
         description: 'Free mock tests for interview preparation and competitive exams',
-        url: 'https://edulearnix.com/mock-test'
+        url: 'https://edulumix.com/mock-test'
       }
     ]
   };
@@ -103,7 +103,7 @@ const MockTests = () => {
   return (
     <div className="min-h-screen py-8 lg:py-12">
       <SEO
-        title="Mock Tests - Practice Tests for Interview & Exam Preparation | EduLearnix"
+        title="Mock Tests - Practice Tests for Interview & Exam Preparation | EduLumix"
         description="Take free mock tests for aptitude, reasoning, technical skills, and competitive exams. Practice with real exam patterns and boost your interview preparation. Assess your skills now!"
         keywords="mock tests, practice tests, online mock test, aptitude test, reasoning test, technical test, interview preparation, competitive exam preparation, free mock test, placement test, skill assessment"
         url="/mock-test"

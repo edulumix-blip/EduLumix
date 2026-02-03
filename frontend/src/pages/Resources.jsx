@@ -106,10 +106,10 @@ const Resources = () => {
       generateBreadcrumbSchema(breadcrumbs),
       {
         '@type': 'CollectionPage',
-        '@id': 'https://edulearnix.com/resources',
+        '@id': 'https://edulumix.com/resources',
         name: 'Free Learning Resources',
         description: 'Free notes, tutorials, projects, and study materials for students and professionals',
-        url: 'https://edulearnix.com/resources'
+        url: 'https://edulumix.com/resources'
       }
     ]
   };
@@ -117,7 +117,7 @@ const Resources = () => {
   return (
     <div className="min-h-screen py-8 lg:py-12">
       <SEO
-        title="Free Resources - Notes, Projects, Tutorials & Study Materials | EduLearnix"
+        title="Free Resources - Notes, Projects, Tutorials & Study Materials | EduLumix"
         description="Access free learning resources including notes, video tutorials, software projects, PDF books, and study materials. Download free resources for programming, web development, and more."
         keywords="free resources, study notes, free tutorials, software projects, free pdf, programming notes, web development resources, free learning materials, download free notes, free ebooks, study materials"
         url="/resources"
@@ -272,16 +272,10 @@ const Resources = () => {
                       </span>
                     </div>
                     
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleDownload(resource);
-                      }}
-                      className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition-colors"
-                    >
-                      {resource.isVideo ? 'Watch' : 'Get'}
+                    <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 text-sm font-medium transition-colors">
+                      Get
                       <ExternalLink className="w-4 h-4" />
-                    </button>
+                    </span>
                   </div>
                 </div>
               </Link>

@@ -13,7 +13,7 @@ const Footer = () => {
     { name: 'Free Resources', path: '/resources' },
     { name: 'Courses', path: '/courses' },
     { name: 'Tech Blog', path: '/blog' },
-    { name: 'Digital Products', path: '/digilearnix' },
+    { name: 'Digital Products', path: '/digital-products' },
     { name: 'Mock Tests', path: '/mock-test' },
   ];
 
@@ -33,12 +33,12 @@ const Footer = () => {
   ];
 
   const socialLinks = [
-    { icon: Github, href: 'https://github.com/edulearnix', label: 'GitHub' },
-    { icon: Twitter, href: 'https://twitter.com/edulearnix', label: 'Twitter' },
-    { icon: Linkedin, href: 'https://linkedin.com/company/edulearnix', label: 'LinkedIn' },
-    { icon: Instagram, href: 'https://instagram.com/edulearnix', label: 'Instagram' },
-    { icon: Youtube, href: 'https://youtube.com/@edulearnix', label: 'YouTube' },
-    { icon: Facebook, href: 'https://facebook.com/edulearnix', label: 'Facebook' },
+    { icon: Github, href: 'https://github.com/edulumix', label: 'GitHub' },
+    { icon: Twitter, href: 'https://twitter.com/edulumix', label: 'Twitter' },
+    { icon: Linkedin, href: 'https://linkedin.com/company/edulumix', label: 'LinkedIn' },
+    { icon: Instagram, href: 'https://instagram.com/edulumix', label: 'Instagram' },
+    { icon: Youtube, href: 'https://youtube.com/@edulumix', label: 'YouTube' },
+    { icon: Facebook, href: 'https://facebook.com/edulumix', label: 'Facebook' },
   ];
 
   return (
@@ -111,11 +111,11 @@ const Footer = () => {
             <ul className="space-y-3">
               <li>
                 <a 
-                  href="mailto:support@edulearnix.com" 
+                  href="mailto:support@edulumix.in" 
                   className="text-gray-600 dark:text-gray-400 text-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-2"
                 >
                   <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                  support@edulearnix.com
+                  support@edulumix.in
                 </a>
               </li>
               <li>
@@ -151,14 +151,9 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="py-6 border-t border-gray-200 dark:border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-gray-500 dark:text-gray-500 text-sm flex items-center gap-1">
-            © {currentYear} EduLearnix. Made with 
-            <Heart className="w-4 h-4 text-blue-500 fill-current" /> 
-            in India
-          </p>
-          <p className="text-gray-400 dark:text-gray-600 text-xs">
-            All rights reserved. EduLearnix is a registered trademark.
+        <div className="py-6 border-t border-gray-200 dark:border-gray-800 flex items-center justify-center">
+          <p className="text-gray-500 dark:text-gray-500 text-sm">
+            © {currentYear} EduLumix. All rights reserved
           </p>
         </div>
       </div>

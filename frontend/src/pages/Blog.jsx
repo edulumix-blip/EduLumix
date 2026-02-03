@@ -201,13 +201,13 @@ const Blog = () => {
       generateBreadcrumbSchema(breadcrumbs),
       {
         '@type': 'Blog',
-        '@id': 'https://edulearnix.com/blog',
-        name: 'EduLearnix Tech Blog',
+        '@id': 'https://edulumix.com/blog',
+        name: 'EduLumix Tech Blog',
         description: 'Technology tutorials, career tips, programming guides, and latest tech trends',
-        url: 'https://edulearnix.com/blog',
+        url: 'https://edulumix.com/blog',
         publisher: {
           '@type': 'Organization',
-          name: 'EduLearnix'
+          name: 'EduLumix'
         }
       }
     ]
@@ -216,7 +216,7 @@ const Blog = () => {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-dark-300">
       <SEO
-        title="Tech Blog - Programming Tutorials, Career Tips & Technology Guides | EduLearnix"
+        title="Tech Blog - Programming Tutorials, Career Tips & Technology Guides | EduLumix"
         description="Read latest tech blogs, programming tutorials, interview tips, career guidance, web development guides, and technology trends. Learn from industry experts and enhance your technical skills."
         keywords="tech blog, programming tutorials, coding tutorials, web development, interview tips, career guidance, technology trends, software development blog, learning resources, programming guides, tech articles"
         url="/blog"
@@ -550,7 +550,7 @@ const Blog = () => {
                 <span>•</span>
                 <Link to="/terms-of-service" className="hover:underline">Terms</Link>
               </div>
-              <p className="mt-2">© 2026 EduLearnix. All rights reserved.</p>
+              <p className="mt-2">© 2026 EduLumix. All rights reserved.</p>
             </div>
           </div>
         </div>

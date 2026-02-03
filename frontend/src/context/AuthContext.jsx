@@ -20,8 +20,8 @@ export const AuthProvider = ({ children }) => {
   // Check if user is logged in on mount
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('edulearnix_token');
-      const savedUser = localStorage.getItem('edulearnix_user');
+      const token = localStorage.getItem('edulumix_token');
+      const savedUser = localStorage.getItem('edulumix_user');
 
       if (token && savedUser) {
         try {
@@ -33,8 +33,8 @@ export const AuthProvider = ({ children }) => {
           }
         } catch (error) {
           // Token invalid, clear storage
-          localStorage.removeItem('edulearnix_token');
-          localStorage.removeItem('edulearnix_user');
+          localStorage.removeItem('edulumix_token');
+          localStorage.removeItem('edulumix_user');
         }
       }
       setLoading(false);
@@ -64,8 +64,8 @@ export const AuthProvider = ({ children }) => {
       if (response.data.success) {
         const { token, ...userData } = response.data.data;
         
-        localStorage.setItem('edulearnix_token', token);
-        localStorage.setItem('edulearnix_user', JSON.stringify(userData));
+        localStorage.setItem('edulumix_token', token);
+        localStorage.setItem('edulumix_user', JSON.stringify(userData));
         
         setUser(userData);
         setIsAuthenticated(true);
@@ -83,8 +83,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('edulearnix_token');
-    localStorage.removeItem('edulearnix_user');
+    localStorage.removeItem('edulumix_token');
+    localStorage.removeItem('edulumix_user');
     setUser(null);
     setIsAuthenticated(false);
     toast.success('Logged out successfully');
@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }) => {
       const response = await api.put('/auth/profile', profileData);
       if (response.data.success) {
         setUser(response.data.data);
-        localStorage.setItem('edulearnix_user', JSON.stringify(response.data.data));
+        localStorage.setItem('edulumix_user', JSON.stringify(response.data.data));
         toast.success('Profile updated successfully');
         return { success: true };
       }

@@ -2,9 +2,37 @@
   <defs>
     <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#2563eb"/>
+      <stop offset="50%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0"/>
+      <stop offset="50%" style="stop-color:#ffffff;stop-opacity:0.25"/>
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0"/>
+    </linearGradient>
+    <linearGradient id="accentBar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#60a5fa"/>
+      <stop offset="50%" style="stop-color:#93c5fd"/>
       <stop offset="100%" style="stop-color:#60a5fa"/>
     </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="1.5" dy="1.5" stdDeviation="2" flood-opacity="0.4"/>
+    </filter>
   </defs>
+  
+  <!-- Background -->
   <rect width="64" height="64" rx="14" fill="url(#bgGradient)"/>
-  <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="bold" fill="white">NK</text>
+  
+  <!-- Shine overlay -->
+  <rect width="64" height="64" rx="14" fill="url(#shine)"/>
+  
+  <!-- Decorative elements -->
+  <circle cx="54" cy="10" r="2.5" fill="white" opacity="0.15"/>
+  <circle cx="10" cy="54" r="2" fill="white" opacity="0.15"/>
+  
+  <!-- EL Text -->
+  <text x="50%" y="52%" dominant-baseline="middle" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="900" fill="white" filter="url(#shadow)" letter-spacing="-1">EL</text>
+  
+  <!-- Bottom accent -->
+  <rect x="0" y="58" width="64" height="6" fill="url(#accentBar)" rx="0 0 14 14"/>
 </svg>

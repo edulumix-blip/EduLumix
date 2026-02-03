@@ -169,11 +169,11 @@ const ResourceDetails = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-300">
       <SEO
-        title={`${resource.title} - Free Resource | EduLearnix`}
+        title={`${resource.title} - Free Resource | EduLumix`}
         description={resource.description || `Download ${resource.title} - ${resource.category}`}
-        keywords={`${resource.title}, ${resource.category}, ${resource.subcategory}, free resources, download, edulearnix`}
+        keywords={`${resource.title}, ${resource.category}, ${resource.subcategory}, free resources, download, edulumix`}
         ogType="article"
-        canonicalUrl={`https://edulearnix.in/resources/${id}`}
+        canonicalUrl={`https://edulumix.in/resources/${id}`}
       />
       
       {/* Back Button */}

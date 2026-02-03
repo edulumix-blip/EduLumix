@@ -26,7 +26,7 @@ const TermsOfService = () => {
 
           <div className="prose prose-gray dark:prose-invert max-w-none">
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
-              Welcome to EduLearnix. By accessing or using our platform, you agree to be bound by these 
+              Welcome to EduLumix. By accessing or using our platform, you agree to be bound by these 
               Terms of Service ("Terms"). Please read them carefully before using our services.
             </p>
 
@@ -34,7 +34,7 @@ const TermsOfService = () => {
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  By using EduLearnix, you acknowledge that you have read, understood, and agree to be 
+                  By using EduLumix, you acknowledge that you have read, understood, and agree to be 
                   bound by these Terms. If you do not agree, please do not use our services.
                 </p>
               </div>
@@ -42,14 +42,14 @@ const TermsOfService = () => {
 
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">1. Acceptance of Terms</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
-              By creating an account or using any part of EduLearnix, you agree to these Terms of Service, 
+              By creating an account or using any part of EduLumix, you agree to these Terms of Service, 
               our Privacy Policy, and any other policies referenced herein. These Terms constitute a 
-              legally binding agreement between you and EduLearnix.
+              legally binding agreement between you and EduLumix.
             </p>
 
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">2. Eligibility</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
-              You must be at least 16 years old to use EduLearnix. By using our platform, you represent 
+              You must be at least 16 years old to use EduLumix. By using our platform, you represent 
               and warrant that you meet this age requirement and have the legal capacity to enter into 
               this agreement.
             </p>
@@ -80,14 +80,14 @@ const TermsOfService = () => {
 
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">5. Content and Intellectual Property</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
-              All content on EduLearnix, including text, graphics, logos, and software, is the property 
-              of EduLearnix or its content suppliers and is protected by intellectual property laws. 
+              All content on EduLumix, including text, graphics, logos, and software, is the property 
+              of EduLumix or its content suppliers and is protected by intellectual property laws. 
               You may not reproduce, distribute, or create derivative works without our prior written consent.
             </p>
 
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">6. User-Generated Content</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
-              By submitting content to EduLearnix (such as job posts, resources, or comments), you grant 
+              By submitting content to EduLumix (such as job posts, resources, or comments), you grant 
               us a non-exclusive, worldwide, royalty-free license to use, display, and distribute that 
               content on our platform. You retain ownership of your content and are responsible for ensuring 
               it does not violate any third-party rights.
@@ -95,7 +95,7 @@ const TermsOfService = () => {
 
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">7. Disclaimer of Warranties</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
-              EduLearnix is provided "as is" without warranties of any kind. We do not guarantee the 
+              EduLumix is provided "as is" without warranties of any kind. We do not guarantee the 
               accuracy, completeness, or reliability of any job listings, resources, or other content. 
               We are not responsible for the outcome of any job applications or career decisions made 
               based on information found on our platform.
@@ -103,7 +103,7 @@ const TermsOfService = () => {
 
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">8. Limitation of Liability</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
-              To the maximum extent permitted by law, EduLearnix shall not be liable for any indirect, 
+              To the maximum extent permitted by law, EduLumix shall not be liable for any indirect, 
               incidental, special, consequential, or punitive damages arising out of your use of the 
               platform, even if we have been advised of the possibility of such damages.
             </p>
@@ -118,7 +118,7 @@ const TermsOfService = () => {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">10. Changes to Terms</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
               We may update these Terms from time to time. We will notify you of significant changes 
-              via email or through the platform. Your continued use of EduLearnix after changes become 
+              via email or through the platform. Your continued use of EduLumix after changes become 
               effective constitutes acceptance of the new Terms.
             </p>
 
@@ -132,8 +132,8 @@ const TermsOfService = () => {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">Contact Us</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
               If you have any questions about these Terms of Service, please contact us at{' '}
-              <a href="mailto:legal@edulearnix.com" className="text-blue-600 dark:text-blue-400 hover:underline">
-                legal@edulearnix.com
+              <a href="mailto:legal@edulumix.com" className="text-blue-600 dark:text-blue-400 hover:underline">
+                legal@edulumix.com
               </a>
             </p>
           </div>

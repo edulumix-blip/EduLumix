@@ -13,7 +13,7 @@ export const useTheme = () => {
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
     // Check localStorage first
-    const savedTheme = localStorage.getItem('edulearnix_theme');
+    const savedTheme = localStorage.getItem('edulumix_theme');
     if (savedTheme) return savedTheme;
     
     // Default to light theme
@@ -29,7 +29,7 @@ export const ThemeProvider = ({ children }) => {
       root.classList.remove('dark');
     }
     
-    localStorage.setItem('edulearnix_theme', theme);
+    localStorage.setItem('edulumix_theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {

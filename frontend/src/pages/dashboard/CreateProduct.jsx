@@ -73,7 +73,7 @@ const CreateProduct = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Add Digital Product</h1>
-              <p className="text-gray-400">List a product for DigiLearnix</p>
+              <p className="text-gray-400">List a product for Digital Products</p>
             </div>
           </div>
 

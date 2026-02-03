@@ -361,10 +361,10 @@ const ResourceManagement = () => {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Resource Details
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell w-48">
                   Posted By
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell w-36">
                   Category
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden sm:table-cell">
@@ -432,14 +432,14 @@ const ResourceManagement = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-4 hidden lg:table-cell">
+                      <td className="px-6 py-4 hidden lg:table-cell">
                         {resource.postedBy ? (
                           <div className="flex items-center gap-2">
                             {resource.postedBy.avatar ? (
                               <img 
                                 src={resource.postedBy.avatar} 
                                 alt={resource.postedBy.name}
-                                className="w-8 h-8 rounded-full object-cover"
+                                className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                                 onError={(e) => {
                                   e.target.style.display = 'none';
                                   e.target.nextSibling.style.display = 'flex';
@@ -470,8 +470,10 @@ const ResourceManagement = () => {
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-4 hidden md:table-cell">
-                        {getCategoryBadge(resource.category)}
+                      <td className="px-6 py-4 hidden md:table-cell">
+                        <div className="whitespace-nowrap">
+                          {getCategoryBadge(resource.category)}
+                        </div>
                       </td>
                       <td className="px-4 py-4 hidden sm:table-cell">
                         <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">

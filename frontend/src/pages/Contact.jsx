@@ -33,8 +33,8 @@ const Contact = () => {
     {
       icon: Mail,
       title: 'Email',
-      value: 'support@edulearnix.com',
-      link: 'mailto:support@edulearnix.com',
+      value: 'support@edulumix.in',
+      link: 'mailto:support@edulumix.com',
     },
     {
       icon: Phone,
@@ -66,9 +66,9 @@ const Contact = () => {
   return (
     <div className="min-h-screen py-12 lg:py-20">
       <SEO
-        title="Contact Us - Get in Touch with EduLearnix | Support & Inquiries"
-        description="Contact EduLearnix for support, inquiries, or feedback. Reach us via email, phone, or contact form. We're here to help you with jobs, courses, and career guidance."
-        keywords="contact edulearnix, support, help, inquiries, feedback, contact us, customer support, get in touch"
+        title="Contact Us - Get in Touch with EduLumix | Support & Inquiries"
+        description="Contact EduLumix for support, inquiries, or feedback. Reach us via email, phone, or contact form. We're here to help you with jobs, courses, and career guidance."
+        keywords="contact edulumix, support, help, inquiries, feedback, contact us, customer support, get in touch"
         url="/contact"
         structuredData={structuredData}
       />

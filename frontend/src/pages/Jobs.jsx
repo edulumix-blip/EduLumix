@@ -8,7 +8,8 @@ import {
 import { jobService } from '../services/dataService';
 import toast from 'react-hot-toast';
 import SEO from '../components/seo/SEO';
-import { generateBreadcrumbSchema } from '../utils/seoSchemas';
+import { generateBreadcrumbSchema, generateJobListSchema, generateSearchActionSchema } from '../utils/seoSchemas';
+import { getSEOConfig, JOB_CATEGORY_SEO, getRandomVariant } from '../config/seoConfig';
 
 const Jobs = () => {
   const navigate = useNavigate();
@@ -147,18 +148,32 @@ const Jobs = () => {
     { name: 'Jobs', path: '/jobs' }
   ];
 
+  // Get SEO config based on category
+  const seoConfig = selectedCategory !== 'All' && JOB_CATEGORY_SEO[selectedCategory]
+    ? {
+        title: getRandomVariant(JOB_CATEGORY_SEO[selectedCategory].titles),
+        description: getRandomVariant(JOB_CATEGORY_SEO[selectedCategory].descriptions)
+      }
+    : getSEOConfig('jobs');
+
+  // Enhanced structured data with JobPosting schema
   const structuredData = {
     '@context': 'https://schema.org',
     '@graph': [
       generateBreadcrumbSchema(breadcrumbs),
+      generateSearchActionSchema(),
+      generateJobListSchema(jobs.slice(0, 20)), // Top 20 jobs for structured data
       {
         '@type': 'CollectionPage',
-        '@id': 'https://edulearnix.com/jobs',
-        url: 'https://edulearnix.com/jobs',
-        name: 'Fresher Jobs - Latest Entry Level Job Openings | EduLearnix',
-        description: 'Find latest fresher jobs and entry-level positions. Browse thousands of job opportunities for freshers in IT, Non-IT, Government sectors, and more.',
+        '@id': 'https://edulumix.in/jobs',
+        url: 'https://edulumix.in/jobs',
+        name: seoConfig.title,
+        description: seoConfig.description,
         isPartOf: {
-          '@id': 'https://edulearnix.com/#website'
+          '@id': 'https://edulumix.in/#website'
+        },
+        breadcrumb: {
+          '@id': 'https://edulumix.in/jobs#breadcrumb'
         }
       }
     ]
@@ -167,10 +182,12 @@ const Jobs = () => {
   return (
     <div className="min-h-screen py-8 lg:py-12">
       <SEO
-        title="Fresher Jobs 2026 - Latest Entry Level Jobs & Job Openings for Freshers | EduLearnix"
-        description="Find latest fresher jobs, entry-level positions, and graduate job openings. Browse thousands of job opportunities for freshers in IT, Software Development, Non-IT, Government sectors, Banking, and more. Apply now and start your career journey!"
-        keywords="fresher jobs, jobs for freshers, entry level jobs, graduate jobs, fresher job openings, IT jobs for freshers, software developer jobs, fresher vacancies, campus placement jobs, first job, jobs after graduation, job openings 2026, fresher recruitment, entry level positions, graduate trainee jobs"
+        title={seoConfig.title}
+        description={seoConfig.description}
+        keywords="fresher jobs 2026, jobs for freshers india, entry level jobs, IT jobs freshers, software developer jobs, fresher vacancies, govt jobs, internship opportunities, walk in drive, remote jobs freshers, job openings 2026, campus placement, graduate jobs, first job, fresher recruitment, job portal india, career opportunities, fresher hiring, entry level positions, job search india"
         url="/jobs"
+        type="website"
+        canonical="https://edulumix.in/jobs"
         structuredData={structuredData}
       />
       

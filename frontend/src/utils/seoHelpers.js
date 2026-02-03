@@ -67,7 +67,7 @@ export const generateMetaDescription = (content, title = '') => {
 /**
  * Create canonical URL
  */
-export const createCanonicalUrl = (path, baseUrl = 'https://edulearnix.com') => {
+export const createCanonicalUrl = (path, baseUrl = 'https://edulumix.com') => {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   return `${baseUrl}${cleanPath}`;
 };

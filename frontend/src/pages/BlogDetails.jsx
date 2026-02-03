@@ -157,8 +157,8 @@ const BlogDetails = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Content - 70% */}
           <article className="flex-1 bg-white dark:bg-dark-200 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
-            {/* Smart Fixed-Size Cover Image Container */}
-            {blog.coverImage && (
+            {/* Cover Image or Title Card */}
+            {blog.coverImage ? (
               <div className="relative w-full h-[400px] bg-gray-100 dark:bg-dark-100 overflow-hidden">
                 <img
                   src={blog.coverImage}
@@ -167,6 +167,20 @@ const BlogDetails = () => {
                   style={{ objectFit: 'contain' }}
                   onError={(e) => { e.target.parentElement.style.display = 'none'; }}
                 />
+              </div>
+            ) : (
+              <div className="relative w-full h-[400px] bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 dark:from-blue-700 dark:via-blue-600 dark:to-indigo-700 overflow-hidden flex items-center justify-center p-8 lg:p-12">
+                {/* Decorative Elements */}
+                <div className="absolute inset-0 opacity-10">
+                  <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl"></div>
+                  <div className="absolute bottom-10 right-10 w-40 h-40 bg-white rounded-full blur-3xl"></div>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white rounded-full blur-3xl"></div>
+                </div>
+                
+                {/* Title */}
+                <h1 className="relative z-10 text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center leading-tight drop-shadow-lg">
+                  {blog.title}
+                </h1>
               </div>
             )}
 

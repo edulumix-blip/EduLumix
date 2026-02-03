@@ -196,8 +196,8 @@ const CreateJob = () => {
                         </h3>
                         <p className="text-blue-800 dark:text-blue-200 text-sm">
                           If you have any issues or questions, please contact our support team at{' '}
-                          <a href="mailto:edulearnix@gmail.com" className="font-semibold underline hover:text-blue-600 dark:hover:text-blue-400">
-                            edulearnix@gmail.com
+                          <a href="mailto:edulumix@gmail.com" className="font-semibold underline hover:text-blue-600 dark:hover:text-blue-400">
+                            edulumix@gmail.com
                           </a>
                         </p>
                       </div>

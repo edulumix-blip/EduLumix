@@ -23,7 +23,7 @@ const Navbar = () => {
     { name: 'Free Resources', path: '/resources', icon: FolderOpen },
     { name: 'Courses', path: '/courses', icon: GraduationCap },
     { name: 'Tech Blog', path: '/blog', icon: FileText },
-    { name: 'Digital Product', path: '/digilearnix', icon: ShoppingBag },
+    { name: 'Digital Product', path: '/digital-products', icon: ShoppingBag },
     { name: 'Mock Test', path: '/mock-test', icon: ClipboardList },
   ];
 

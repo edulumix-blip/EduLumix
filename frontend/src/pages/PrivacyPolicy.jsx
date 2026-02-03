@@ -26,7 +26,7 @@ const PrivacyPolicy = () => {
 
           <div className="prose prose-gray dark:prose-invert max-w-none">
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
-              At EduLearnix, we are committed to protecting your privacy and ensuring the security of your 
+              At EduLumix, we are committed to protecting your privacy and ensuring the security of your 
               personal information. This Privacy Policy outlines how we collect, use, store, and protect 
               your data when you use our platform and services.
             </p>
@@ -117,8 +117,8 @@ const PrivacyPolicy = () => {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4">Contact Us</h2>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
               If you have any questions about this Privacy Policy or our data practices, please contact us at{' '}
-              <a href="mailto:privacy@edulearnix.com" className="text-blue-600 dark:text-blue-400 hover:underline">
-                privacy@edulearnix.com
+              <a href="mailto:privacy@edulumix.com" className="text-blue-600 dark:text-blue-400 hover:underline">
+                privacy@edulumix.com
               </a>
             </p>
           </div>
