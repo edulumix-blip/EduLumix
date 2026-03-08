@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { User } from 'lucide-react';
 
 /**
@@ -66,23 +67,28 @@ const UserAvatar = ({
     'rounded-2xl': 'rounded-2xl',
   };
 
+  const [imgError, setImgError] = useState(false);
   const baseClasses = `${sizeClasses[size] || sizeClasses.md} ${shapeClasses[shape] || shapeClasses.circle} flex items-center justify-center font-bold overflow-hidden flex-shrink-0`;
 
-  // If avatar URL exists, show the image
-  if (avatar && avatar.trim() !== '') {
+  // If avatar URL exists and no error, show the image
+  if (avatar && avatar.trim() !== '' && !imgError) {
     return (
       <div className={`${baseClasses} ${className}`}>
         <img 
           src={avatar} 
           alt={name || 'User avatar'} 
           className="w-full h-full object-cover"
-          onError={(e) => {
-            // If image fails to load, replace with initials
-            e.target.style.display = 'none';
-            e.target.parentElement.classList.add(`bg-gradient-to-br`, `from-${gradientFrom}`, `to-${gradientTo}`);
-            e.target.parentElement.innerHTML = `<span class="text-white font-bold">${getInitials()}</span>`;
-          }}
+          onError={() => setImgError(true)}
         />
+      </div>
+    );
+  }
+
+  // Fallback when img errors or no avatar - render initials safely (no innerHTML with user data)
+  if (avatar && avatar.trim() !== '' && imgError) {
+    return (
+      <div className={`${baseClasses} bg-gradient-to-br from-${gradientFrom} to-${gradientTo} text-white ${className}`}>
+        {showIcon ? <User className={iconSizes[size] || iconSizes.md} /> : getInitials()}
       </div>
     );
   }

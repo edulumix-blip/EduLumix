@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { mockTestService } from '../services/dataService';
 import toast from 'react-hot-toast';
+import AdSlot from '../components/ads/AdSlot';
+import { AD_SLOTS } from '../config/ads';
 
 const MockTestDetails = () => {
   const { slug } = useParams();
@@ -562,6 +564,9 @@ const MockTestDetails = () => {
             </div>
           </div>
         </div>
+
+        {/* In-content Ad */}
+        <AdSlot slotId={AD_SLOTS.IN_ARTICLE} className="my-6" />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Content */}

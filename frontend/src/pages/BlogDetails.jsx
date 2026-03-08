@@ -9,6 +9,8 @@ import { blogService } from '../services/dataService';
 import toast from 'react-hot-toast';
 import VerifiedBadge from '../components/common/VerifiedBadge';
 import { useAuth } from '../context/AuthContext';
+import AdSlot from '../components/ads/AdSlot';
+import { AD_SLOTS } from '../config/ads';
 
 const BlogDetails = () => {
   const { slug } = useParams();
@@ -221,7 +223,7 @@ const BlogDetails = () => {
                         className="w-12 h-12 rounded-full object-cover shadow-lg"
                         onError={(e) => {
                           e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
+                          e.target.nextSibling?.style?.setProperty('display', 'flex');
                         }}
                       />
                     ) : null}
@@ -265,6 +267,9 @@ const BlogDetails = () => {
                 </span>
               </div>
             </div>
+
+            {/* In-article Ad */}
+            <AdSlot slotId={AD_SLOTS.IN_ARTICLE} className="my-8" />
 
             {/* Content */}
             <div className="prose dark:prose-invert prose-lg max-w-none mb-8">
@@ -344,6 +349,8 @@ const BlogDetails = () => {
           <aside className="lg:w-80 flex-shrink-0">
             <div className="sticky top-8 space-y-6">
               {/* Trending Section */}
+              {/* Sidebar Ad */}
+              <AdSlot slotId={AD_SLOTS.SIDEBAR} className="mb-6 rounded-2xl overflow-hidden" />
               <div className="bg-white dark:bg-dark-200 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
                 <div className="flex items-center gap-2 mb-6">
                   <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />

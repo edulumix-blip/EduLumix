@@ -52,8 +52,8 @@ Allow: /courses
 Allow: /courses/*
 Allow: /blog
 Allow: /blog/*
-Allow: /mock-tests
-Allow: /mock-tests/*
+Allow: /mock-test
+Allow: /mock-test/*
 Allow: /digital-products
 Allow: /digital-products/*
 Allow: /about
@@ -61,14 +61,8 @@ Allow: /contact
 Allow: /assets/
 Allow: /images/
 
-# Multiple sitemaps for better organization
+# Main sitemap (submit this to Google Search Console)
 Sitemap: https://edulumix.in/sitemap.xml
-Sitemap: https://edulumix.in/sitemap-jobs.xml
-Sitemap: https://edulumix.in/sitemap-resources.xml
-Sitemap: https://edulumix.in/sitemap-blog.xml
-Sitemap: https://edulumix.in/sitemap-courses.xml
-Sitemap: https://edulumix.in/sitemap-products.xml
-Sitemap: https://edulumix.in/sitemap-mock-tests.xml
 
 # Host (preferred domain)
 Host: https://edulumix.in

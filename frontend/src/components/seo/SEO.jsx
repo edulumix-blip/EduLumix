@@ -5,8 +5,8 @@ const SEO = ({
   description = 'EduLumix is your ultimate destination for fresher jobs, free resources, courses, mock tests, and career guidance. Join 50,000+ students building successful careers.',
   keywords = 'jobs for freshers, free resources, online courses, mock tests, tech blog, career guidance, digital products, interview preparation, job portal, education platform',
   author = 'EduLumix Team',
-  image = 'https://edulumix.com/og-image.jpg',
-  url = 'https://edulumix.com',
+  image = 'https://edulumix.in/og-image.jpg',
+  url = 'https://edulumix.in',
   type = 'website',
   twitterCard = 'summary_large_image',
   twitterHandle = '@edulumix',
@@ -15,7 +15,7 @@ const SEO = ({
   noIndex = false,
   structuredData
 }) => {
-  const siteUrl = import.meta.env.VITE_APP_URL || 'https://edulumix.com';
+  const siteUrl = import.meta.env.VITE_APP_URL || 'https://edulumix.in';
   const fullUrl = url.startsWith('http') ? url : `${siteUrl}${url}`;
   const canonicalUrl = canonical || fullUrl;
 

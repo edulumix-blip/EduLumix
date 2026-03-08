@@ -13,8 +13,9 @@ import toast from 'react-hot-toast';
 import SEO from '../components/seo/SEO';
 import { generateBreadcrumbSchema } from '../utils/seoSchemas';
 
+const PAGE_SIZE = 20;
+
 const Blog = () => {
-  const [blogs, setBlogs] = useState([]);
   const [displayedBlogs, setDisplayedBlogs] = useState([]);
   const [featuredBlogs, setFeaturedBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,7 @@ const Blog = () => {
   const [likedPosts, setLikedPosts] = useState({});
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
   const observerTarget = useRef(null);
 
   const categories = [
@@ -38,14 +40,16 @@ const Blog = () => {
   ];
 
   useEffect(() => {
-    fetchBlogs();
+    fetchBlogs(1);
     fetchFeaturedBlogs();
   }, [selectedCategory]);
 
-  const fetchBlogs = async () => {
+  const fetchBlogs = async (pageNum = 1, append = false) => {
     try {
-      setLoading(true);
-      const params = { limit: 1000 }; // Get all blogs
+      if (pageNum === 1) setLoading(true);
+      else setLoadingMore(true);
+
+      const params = { limit: PAGE_SIZE, page: pageNum };
       if (selectedCategory !== 'All') {
         params.category = selectedCategory;
       }
@@ -54,16 +58,23 @@ const Blog = () => {
       }
       const response = await blogService.getAll(params);
       if (response.data.success) {
-        const allBlogs = response.data.data || [];
-        setBlogs(allBlogs);
-        setDisplayedBlogs(allBlogs.slice(0, 5));
-        setPage(1);
-        setHasMore(allBlogs.length > 5);
+        const data = response.data.data || [];
+        const pages = response.data.totalPages ?? 1;
+        setTotalPages(pages);
+        setPage(pageNum);
+        setHasMore(pageNum < pages);
+
+        if (append) {
+          setDisplayedBlogs(prev => [...prev, ...data]);
+        } else {
+          setDisplayedBlogs(data);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch blogs:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -80,24 +91,8 @@ const Blog = () => {
 
   const loadMoreBlogs = useCallback(() => {
     if (loadingMore || !hasMore) return;
-
-    setLoadingMore(true);
-    setTimeout(() => {
-      const nextPage = page + 1;
-      const startIndex = page * 5;
-      const endIndex = startIndex + 5;
-      const newBlogs = blogs.slice(startIndex, endIndex);
-      
-      if (newBlogs.length > 0) {
-        setDisplayedBlogs(prev => [...prev, ...newBlogs]);
-        setPage(nextPage);
-        setHasMore(endIndex < blogs.length);
-      } else {
-        setHasMore(false);
-      }
-      setLoadingMore(false);
-    }, 800);
-  }, [blogs, page, loadingMore, hasMore]);
+    fetchBlogs(page + 1, true);
+  }, [page, hasMore, loadingMore, selectedCategory, searchTerm]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -130,13 +125,10 @@ const Blog = () => {
     if (likedPosts[id]) return;
     try {
       await blogService.like(id);
-      setBlogs(blogs.map(b => 
+      setDisplayedBlogs(prev => prev.map(b =>
         b._id === id ? { ...b, likes: (b.likes || 0) + 1 } : b
       ));
-      setDisplayedBlogs(displayedBlogs.map(b => 
-        b._id === id ? { ...b, likes: (b.likes || 0) + 1 } : b
-      ));
-      setLikedPosts({ ...likedPosts, [id]: true });
+      setLikedPosts(prev => ({ ...prev, [id]: true }));
     } catch (error) {
       console.error('Failed to like blog');
     }

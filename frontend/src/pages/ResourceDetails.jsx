@@ -21,6 +21,8 @@ import { resourceService } from '../services/dataService';
 import toast from 'react-hot-toast';
 import SEO from '../components/seo/SEO';
 import VerifiedBadge from '../components/common/VerifiedBadge';
+import AdSlot from '../components/ads/AdSlot';
+import { AD_SLOTS } from '../config/ads';
 
 const ResourceDetails = () => {
   const { id } = useParams();
@@ -289,6 +291,9 @@ const ResourceDetails = () => {
               </div>
             </div>
           </div>
+
+          {/* In-content Ad */}
+          <AdSlot slotId={AD_SLOTS.IN_ARTICLE} className="px-6 lg:px-8 py-6 border-b border-gray-200 dark:border-gray-800" />
 
           {/* Description */}
           {resource.description && (

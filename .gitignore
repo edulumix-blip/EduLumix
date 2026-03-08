@@ -34,6 +34,7 @@ desktop.ini
 # Temporary files
 *.tmp
 .cache/
+edulumix-backend-temp/
 
 # Firebase
 firebase-debug.log

@@ -10,6 +10,8 @@ import { jobService } from '../services/dataService';
 import toast from 'react-hot-toast';
 import VerifiedBadge from '../components/common/VerifiedBadge';
 import SEO from '../components/seo/SEO';
+import AdSlot from '../components/ads/AdSlot';
+import { AD_SLOTS } from '../config/ads';
 import { generateJobPostingSchema, generateBreadcrumbSchema } from '../utils/seoSchemas';
 
 const JobDetails = () => {
@@ -304,6 +306,9 @@ const JobDetails = () => {
               <p className="font-medium text-gray-900 dark:text-white">{formatDate(job.createdAt)}</p>
             </div>
           </div>
+
+          {/* In-content Ad */}
+          <AdSlot slotId={AD_SLOTS.IN_ARTICLE} className="p-6 lg:p-8 border-b border-gray-200 dark:border-gray-800" />
 
           {/* Job Description */}
           <div className="p-6 lg:p-8 border-b border-gray-200 dark:border-gray-800">

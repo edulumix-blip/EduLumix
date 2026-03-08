@@ -36,6 +36,26 @@
   }
 }
 
+/* Chatbot wave/ripple animation - highlights the bot */
+@keyframes chatbot-wave {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+.chatbot-wave-ring {
+  animation: chatbot-wave 2s ease-out infinite;
+}
+
+/* TechForDev button wave - highlights CTA */
+.btn-wave-ring {
+  animation: chatbot-wave 2s ease-out infinite;
+}
+
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center px-6 py-3 font-medium rounded-xl 

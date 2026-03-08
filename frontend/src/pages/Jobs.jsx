@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Search, Filter, Briefcase, MapPin, Clock, 
   Building, Heart, Eye, Share2, ExternalLink, 
-  IndianRupee, Tag, X, ChevronRight
+  IndianRupee, Tag, X, ChevronRight, Loader2
 } from 'lucide-react';
 import { jobService } from '../services/dataService';
 import toast from 'react-hot-toast';
@@ -11,14 +11,19 @@ import SEO from '../components/seo/SEO';
 import { generateBreadcrumbSchema, generateJobListSchema, generateSearchActionSchema } from '../utils/seoSchemas';
 import { getSEOConfig, JOB_CATEGORY_SEO, getRandomVariant } from '../config/seoConfig';
 
+const PAGE_SIZE = 12;
+
 const Jobs = () => {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [showFilters, setShowFilters] = useState(false);
   const [likedJobs, setLikedJobs] = useState(new Set());
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   const categories = [
     'All', 'IT Job', 'Non IT Job', 'Walk In Drive', 
@@ -26,18 +31,18 @@ const Jobs = () => {
   ];
 
   useEffect(() => {
-    fetchJobs();
-    // Load liked jobs from localStorage
     const savedLikes = localStorage.getItem('likedJobs');
     if (savedLikes) {
       setLikedJobs(new Set(JSON.parse(savedLikes)));
     }
-  }, [selectedCategory]);
+  }, []);
 
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async (pageNum = 1, append = false) => {
     try {
-      setLoading(true);
-      const params = {};
+      if (pageNum === 1) setLoading(true);
+      else setLoadingMore(true);
+
+      const params = { limit: PAGE_SIZE, page: pageNum };
       if (selectedCategory !== 'All') {
         params.category = selectedCategory;
       }
@@ -46,18 +51,38 @@ const Jobs = () => {
       }
       const response = await jobService.getAll(params);
       if (response.data.success) {
-        setJobs(response.data.data);
+        const data = response.data.data || [];
+        const totalPages = response.data.totalPages ?? 1;
+        setPage(pageNum);
+        setHasMore(pageNum < totalPages);
+
+        if (append) {
+          setJobs(prev => [...prev, ...data]);
+        } else {
+          setJobs(data);
+        }
       }
     } catch (error) {
       toast.error('Failed to fetch jobs');
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  };
+  }, [selectedCategory, searchTerm]);
+
+  useEffect(() => {
+    fetchJobs(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only refetch when category changes; search uses handleSearch
+  }, [selectedCategory]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchJobs();
+    fetchJobs(1);
+  };
+
+  const loadMore = () => {
+    if (loadingMore || !hasMore) return;
+    fetchJobs(page + 1, true);
   };
 
   const handleLike = async (id, e) => {
@@ -77,7 +102,7 @@ const Jobs = () => {
       localStorage.setItem('likedJobs', JSON.stringify([...newLikedJobs]));
       
       // Update job likes count
-      setJobs(jobs.map(job => 
+      setJobs(prev => prev.map(job =>
         job._id === id ? { ...job, likesCount: response.data.likesCount } : job
       ));
     } catch (error) {
@@ -401,6 +426,29 @@ const Jobs = () => {
               </div>
             ))}
           </div>
+        )}
+
+        {/* Load more */}
+        {!loading && jobs.length > 0 && hasMore && (
+          <div className="flex justify-center mt-10">
+            <button
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl font-medium transition-colors"
+            >
+              {loadingMore ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                'Load more jobs'
+              )}
+            </button>
+          </div>
+        )}
+        {!loading && jobs.length > 0 && !hasMore && (
+          <p className="text-center text-gray-500 dark:text-gray-400 mt-8">You've seen all jobs</p>
         )}
       </div>
     </div>

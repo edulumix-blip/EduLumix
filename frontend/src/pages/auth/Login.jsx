@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Logo from '../../components/common/Logo';
 import { 
   Mail, Lock, Eye, EyeOff, LogIn, Shield,
   Gift, Trophy, Coins, TrendingUp, Star, Sparkles
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 // Rewards Info Component
 const RewardsSection = () => {
@@ -102,7 +103,6 @@ const Login = () => {
   
   const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

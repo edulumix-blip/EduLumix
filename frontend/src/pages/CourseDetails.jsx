@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { courseService } from '../services/dataService';
 import toast from 'react-hot-toast';
+import AdSlot from '../components/ads/AdSlot';
+import { AD_SLOTS } from '../config/ads';
 
 const CourseDetails = () => {
   const { slug } = useParams();
@@ -242,6 +244,9 @@ const CourseDetails = () => {
             </div>
           </div>
         </div>
+
+        {/* In-content Ad */}
+        <AdSlot slotId={AD_SLOTS.IN_ARTICLE} className="mb-8" />
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

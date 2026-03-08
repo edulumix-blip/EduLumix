@@ -1,19 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Search, FolderOpen, FileText, Video, Download, 
-  Heart, ExternalLink, Play 
+  Heart, ExternalLink, Play, Loader2
 } from 'lucide-react';
 import { resourceService } from '../services/dataService';
 import toast from 'react-hot-toast';
 import SEO from '../components/seo/SEO';
 import { generateBreadcrumbSchema } from '../utils/seoSchemas';
 
+const PAGE_SIZE = 12;
+
 const Resources = () => {
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   const categories = [
     'All',
@@ -37,14 +42,12 @@ const Resources = () => {
     'Hardware Project': 'from-teal-500 to-teal-600',
   };
 
-  useEffect(() => {
-    fetchResources();
-  }, [selectedCategory]);
-
-  const fetchResources = async () => {
+  const fetchResources = useCallback(async (pageNum = 1, append = false) => {
     try {
-      setLoading(true);
-      const params = {};
+      if (pageNum === 1) setLoading(true);
+      else setLoadingMore(true);
+
+      const params = { limit: PAGE_SIZE, page: pageNum };
       if (selectedCategory !== 'All') {
         params.category = selectedCategory;
       }
@@ -53,25 +56,47 @@ const Resources = () => {
       }
       const response = await resourceService.getAll(params);
       if (response.data.success) {
-        setResources(response.data.data);
+        const data = response.data.data || [];
+        const totalPages = response.data.totalPages ?? 1;
+        setPage(pageNum);
+        setHasMore(pageNum < totalPages);
+
+        if (append) {
+          setResources(prev => [...prev, ...data]);
+        } else {
+          setResources(data);
+        }
       }
     } catch (error) {
       toast.error('Failed to fetch resources');
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  };
+  }, [selectedCategory, searchTerm]);
+
+  useEffect(() => {
+    fetchResources(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only refetch when category changes; search uses handleSearch
+  }, [selectedCategory]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchResources();
+    fetchResources(1);
   };
 
-  const handleLike = async (id) => {
+  const loadMore = () => {
+    if (loadingMore || !hasMore) return;
+    fetchResources(page + 1, true);
+  };
+
+  const handleLike = async (id, e) => {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
     try {
       await resourceService.like(id);
-      setResources(resources.map(r => 
-        r._id === id ? { ...r, likes: r.likes + 1 } : r
+      setResources(prev => prev.map(r =>
+        r._id === id ? { ...r, likes: (r.likes || 0) + 1 } : r
       ));
     } catch (error) {
       console.error('Failed to like');
@@ -81,8 +106,8 @@ const Resources = () => {
   const handleDownload = async (resource) => {
     try {
       await resourceService.download(resource._id);
-      setResources(resources.map(r => 
-        r._id === resource._id ? { ...r, downloads: r.downloads + 1 } : r
+      setResources(prev => prev.map(r =>
+        r._id === resource._id ? { ...r, downloads: (r.downloads || 0) + 1 } : r
       ));
       window.open(resource.link, '_blank');
     } catch (error) {
@@ -260,7 +285,7 @@ const Resources = () => {
                   <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-800">
                     <div className="flex items-center gap-3 text-gray-500 dark:text-gray-500 text-sm">
                       <button
-                        onClick={() => handleLike(resource._id)}
+                        onClick={(e) => handleLike(resource._id, e)}
                         className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                       >
                         <Heart className="w-4 h-4" />
@@ -281,6 +306,29 @@ const Resources = () => {
               </Link>
             ))}
           </div>
+        )}
+
+        {/* Load more */}
+        {!loading && resources.length > 0 && hasMore && (
+          <div className="flex justify-center mt-10">
+            <button
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl font-medium transition-colors"
+            >
+              {loadingMore ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                'Load more resources'
+              )}
+            </button>
+          </div>
+        )}
+        {!loading && resources.length > 0 && !hasMore && (
+          <p className="text-center text-gray-500 dark:text-gray-400 mt-8">You've seen all resources</p>
         )}
       </div>
     </div>

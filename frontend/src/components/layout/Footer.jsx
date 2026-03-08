@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import Logo from '../common/Logo';
+import AdSlot from '../ads/AdSlot';
+import { AD_SLOTS } from '../../config/ads';
 import { 
   Github, Twitter, Linkedin, Instagram, Youtube, Facebook,
   Mail, MapPin, Phone, Heart, ExternalLink
@@ -134,6 +136,9 @@ const Footer = () => {
             </ul>
           </div>
         </div>
+
+        {/* AdSense - footer banner (all pages) */}
+        <AdSlot slotId={AD_SLOTS.BANNER} className="py-6 border-t border-gray-200 dark:border-gray-800" />
 
         {/* Legal Links Bar */}
         <div className="py-4 border-t border-gray-200 dark:border-gray-800">

@@ -1,93 +1,87 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
 import Loader from './components/common/Loader';
 import ScrollToTop from './components/common/ScrollToTop';
+import EduLumixChatbot from './components/chat/EduLumixChatbot';
 
-// Layout Components
+// Layout Components (needed for first paint)
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import SuperAdminRoute from './components/auth/SuperAdminRoute';
 
-// Public Pages
+// Critical: Home (load first for landing)
 import Home from './pages/Home';
-import Jobs from './pages/Jobs';
-import JobDetails from './pages/JobDetails';
-import Resources from './pages/Resources';
-import ResourceDetails from './pages/ResourceDetails';
-import Blog from './pages/Blog';
-import BlogDetails from './pages/BlogDetails';
-import Courses from './pages/Courses';
-import CourseDetails from './pages/CourseDetails';
-import MockTests from './pages/MockTests';
-import MockTestDetails from './pages/MockTestDetails';
-import DigitalProducts from './pages/DigitalProducts';
-import DigitalProductDetails from './pages/DigitalProductDetails';
-import About from './pages/About';
-import Contact from './pages/Contact';
 
-// Policy Pages
-import CookiePolicy from './pages/CookiePolicy';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfService from './pages/TermsOfService';
-import RefundPolicy from './pages/RefundPolicy';
+// Lazy load content pages (split chunks - load on demand)
+const Jobs = lazy(() => import('./pages/Jobs'));
+const JobDetails = lazy(() => import('./pages/JobDetails'));
+const Resources = lazy(() => import('./pages/Resources'));
+const ResourceDetails = lazy(() => import('./pages/ResourceDetails'));
+const Blog = lazy(() => import('./pages/Blog'));
+const BlogDetails = lazy(() => import('./pages/BlogDetails'));
 
-// Auth Pages
-import Login from './pages/auth/Login';
-import Signup from './pages/auth/Signup';
-import PendingApproval from './pages/auth/PendingApproval';
+// Lazy load rest (split chunks - load on demand)
+const Courses = lazy(() => import('./pages/Courses'));
+const CourseDetails = lazy(() => import('./pages/CourseDetails'));
+const MockTests = lazy(() => import('./pages/MockTests'));
+const MockTestDetails = lazy(() => import('./pages/MockTestDetails'));
+const DigitalProducts = lazy(() => import('./pages/DigitalProducts'));
+const DigitalProductDetails = lazy(() => import('./pages/DigitalProductDetails'));
+const About = lazy(() => import('./pages/About'));
+const Contact = lazy(() => import('./pages/Contact'));
+const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
+const RefundPolicy = lazy(() => import('./pages/RefundPolicy'));
+const Login = lazy(() => import('./pages/auth/Login'));
+const Signup = lazy(() => import('./pages/auth/Signup'));
+const PendingApproval = lazy(() => import('./pages/auth/PendingApproval'));
+const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
+const MyPosts = lazy(() => import('./pages/dashboard/MyPosts'));
+const Profile = lazy(() => import('./pages/dashboard/Profile'));
+const CreateJob = lazy(() => import('./pages/dashboard/CreateJob'));
+const CreateResource = lazy(() => import('./pages/dashboard/CreateResource'));
+const CreateBlog = lazy(() => import('./pages/dashboard/CreateBlog'));
+const CreateProduct = lazy(() => import('./pages/dashboard/CreateProduct'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const ManageUsers = lazy(() => import('./pages/admin/ManageUsers'));
+const PendingApprovals = lazy(() => import('./pages/admin/PendingApprovals'));
+const SuperAdminLayout = lazy(() => import('./pages/superadmin/SuperAdminLayout'));
+const SuperAdminDashboard = lazy(() => import('./pages/superadmin/SuperAdminDashboard'));
+const ContributorManagement = lazy(() => import('./pages/superadmin/ContributorManagement'));
+const JobManagement = lazy(() => import('./pages/superadmin/JobManagement'));
+const ResourceManagement = lazy(() => import('./pages/superadmin/ResourceManagement'));
+const BlogManagement = lazy(() => import('./pages/superadmin/BlogManagement'));
+const CourseManagement = lazy(() => import('./pages/superadmin/CourseManagement'));
+const DigitalProductManagement = lazy(() => import('./pages/superadmin/DigitalProductManagement'));
+const MockTestManagement = lazy(() => import('./pages/superadmin/MockTestManagement'));
+const SuperAdminProfile = lazy(() => import('./pages/superadmin/SuperAdminProfile'));
+const ClaimsManagement = lazy(() => import('./pages/superadmin/ClaimsManagement'));
+const ContributorLayout = lazy(() => import('./pages/contributor/ContributorLayout'));
+const ContributorDashboard = lazy(() => import('./pages/contributor/ContributorDashboard'));
+const ContributorMyPosts = lazy(() => import('./pages/contributor/ContributorMyPosts'));
+const ContributorProfile = lazy(() => import('./pages/contributor/ContributorProfile'));
+const ContributorRewards = lazy(() => import('./pages/contributor/ContributorRewards'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
-// Dashboard Pages
-import Dashboard from './pages/dashboard/Dashboard';
-import MyPosts from './pages/dashboard/MyPosts';
-import Profile from './pages/dashboard/Profile';
-import CreateJob from './pages/dashboard/CreateJob';
-import CreateResource from './pages/dashboard/CreateResource';
-import CreateBlog from './pages/dashboard/CreateBlog';
-import CreateProduct from './pages/dashboard/CreateProduct';
-
-// Old Super Admin Pages (legacy)
-import AdminDashboard from './pages/admin/AdminDashboard';
-import ManageUsers from './pages/admin/ManageUsers';
-import PendingApprovals from './pages/admin/PendingApprovals';
-
-// New Super Admin Pages with Sidebar Layout
-import SuperAdminLayout from './pages/superadmin/SuperAdminLayout';
-import SuperAdminDashboard from './pages/superadmin/SuperAdminDashboard';
-import ContributorManagement from './pages/superadmin/ContributorManagement';
-import JobManagement from './pages/superadmin/JobManagement';
-import ResourceManagement from './pages/superadmin/ResourceManagement';
-import BlogManagement from './pages/superadmin/BlogManagement';
-import CourseManagement from './pages/superadmin/CourseManagement';
-import DigitalProductManagement from './pages/superadmin/DigitalProductManagement';
-import MockTestManagement from './pages/superadmin/MockTestManagement';
-import SuperAdminProfile from './pages/superadmin/SuperAdminProfile';
-import ClaimsManagement from './pages/superadmin/ClaimsManagement';
-
-// Contributor Pages with Sidebar Layout
-import ContributorLayout from './pages/contributor/ContributorLayout';
-import ContributorDashboard from './pages/contributor/ContributorDashboard';
-import ContributorMyPosts from './pages/contributor/ContributorMyPosts';
-import ContributorProfile from './pages/contributor/ContributorProfile';
-import ContributorRewards from './pages/contributor/ContributorRewards';
-
-// 404 Page
-import NotFound from './pages/NotFound';
+// Lightweight fallback for lazy routes
+const PageLoader = () => (
+  <div className="flex justify-center items-center min-h-[40vh]">
+    <Loader size="md" text="" />
+  </div>
+);
 
 function App() {
-  const { loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-dark-300">
-        <Loader size="lg" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-300 flex flex-col">
       <ScrollToTop />
+      <EduLumixChatbot />
+      <Suspense fallback={
+        <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-dark-300">
+          <Loader size="lg" text="" />
+        </div>
+      }>
       <Routes>
         {/* Routes with their own layout (no global Navbar/Footer) */}
         <Route path="/super-admin/*" element={
@@ -179,6 +173,7 @@ function App() {
           </>
         } />
       </Routes>
+      </Suspense>
     </div>
   );
 }

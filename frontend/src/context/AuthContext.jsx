@@ -17,30 +17,37 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Check if user is logged in on mount
+  // Check auth - show app IMMEDIATELY, never block on slow API
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem('edulumix_token');
-      const savedUser = localStorage.getItem('edulumix_user');
+    const token = localStorage.getItem('edulumix_token');
+    const savedUser = localStorage.getItem('edulumix_user');
 
-      if (token && savedUser) {
-        try {
-          // Verify token by fetching current user
-          const response = await api.get('/auth/me');
-          if (response.data.success) {
-            setUser(response.data.data);
-            setIsAuthenticated(true);
+    // Use cached user instantly so app shows right away
+    if (token && savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+        setIsAuthenticated(true);
+      } catch (_) {}
+    }
+
+    setLoading(false); // Always show app immediately
+
+    // Verify token in background (no blocking)
+    if (token) {
+      api.get('/auth/me')
+        .then((res) => {
+          if (res.data?.success) {
+            setUser(res.data.data);
+            localStorage.setItem('edulumix_user', JSON.stringify(res.data.data));
           }
-        } catch (error) {
-          // Token invalid, clear storage
+        })
+        .catch(() => {
           localStorage.removeItem('edulumix_token');
           localStorage.removeItem('edulumix_user');
-        }
-      }
-      setLoading(false);
-    };
-
-    checkAuth();
+          setUser(null);
+          setIsAuthenticated(false);
+        });
+    }
   }, []);
 
   const signup = async (userData) => {
@@ -82,6 +89,31 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithFirebase = async (idToken) => {
+    try {
+      const response = await api.post('/auth/firebase-login', { idToken });
+      
+      if (response.data.success) {
+        const { token, ...userData } = response.data.data;
+        
+        localStorage.setItem('edulumix_token', token);
+        localStorage.setItem('edulumix_user', JSON.stringify(userData));
+        
+        setUser(userData);
+        setIsAuthenticated(true);
+        
+        toast.success('Login successful!');
+        return { success: true, data: userData };
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Firebase login failed';
+      const status = error.response?.data?.status;
+      
+      toast.error(message);
+      return { success: false, message, status };
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('edulumix_token');
     localStorage.removeItem('edulumix_user');
@@ -112,6 +144,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     signup,
     login,
+    loginWithFirebase,
     logout,
     updateProfile,
     isSuperAdmin: user?.role === 'super_admin',

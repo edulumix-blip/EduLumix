@@ -8,6 +8,8 @@ import { productService } from '../services/dataService';
 import toast from 'react-hot-toast';
 import SEO from '../components/seo/SEO';
 import VerifiedBadge from '../components/common/VerifiedBadge';
+import AdSlot from '../components/ads/AdSlot';
+import { AD_SLOTS } from '../config/ads';
 
 const DigitalProductDetails = () => {
   const { id } = useParams();
@@ -176,6 +178,9 @@ const DigitalProductDetails = () => {
                 </p>
               )}
             </div>
+
+            {/* In-content Ad */}
+            <AdSlot slotId={AD_SLOTS.IN_ARTICLE} className="my-6" />
 
             {/* Description */}
             {product.description && (

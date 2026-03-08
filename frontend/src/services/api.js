@@ -1,17 +1,26 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const PRODUCTION_API = 'https://edulumix-backend.onrender.com/api';
+const LOCAL_API = 'http://localhost:5000/api';
+
+function getBaseURL() {
+  if (typeof window === 'undefined') return PRODUCTION_API;
+  const host = window.location?.hostname || '';
+  if (host === 'localhost' || host === '127.0.0.1') return LOCAL_API;
+  return PRODUCTION_API;
+}
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor - add token to requests
+// Request interceptor - fix API URL + add token
 api.interceptors.request.use(
   (config) => {
+    config.baseURL = getBaseURL();
     const token = localStorage.getItem('edulumix_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
