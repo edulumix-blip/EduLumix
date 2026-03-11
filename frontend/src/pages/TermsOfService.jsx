@@ -1,9 +1,16 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, FileText, CheckCircle, AlertCircle, Scale } from 'lucide-react';
+import SEO from '../components/seo/SEO';
 
 const TermsOfService = () => {
   return (
     <div className="min-h-screen py-12 lg:py-20">
+      <SEO
+        title="Terms of Service | EduLumix"
+        description="EduLumix Terms of Service - Read our terms and conditions for using our career platform and services."
+        keywords="EduLumix terms of service, terms and conditions"
+        url="/terms-of-service"
+      />
       <div className="px-4 sm:px-6 lg:px-12 xl:px-20">
         <Link
           to="/"

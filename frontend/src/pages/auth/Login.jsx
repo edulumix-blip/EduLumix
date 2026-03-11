@@ -7,6 +7,7 @@ import {
   Gift, Trophy, Coins, TrendingUp, Star, Sparkles
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import SEO from '../../components/seo/SEO';
 
 // Rewards Info Component
 const RewardsSection = () => {
@@ -131,6 +132,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex">
+      <SEO title="Login | EduLumix" noIndex />
       {/* Left Side - Animated Services (Hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-blue-700 relative overflow-hidden">
         {/* Background Pattern */}

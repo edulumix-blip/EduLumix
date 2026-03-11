@@ -1,14 +1,16 @@
 // Structured Data Schema Generator for SEO
 
+const BASE_DOMAIN = 'https://edulumix.in';
+
 export const generateOrganizationSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'EduLumix',
-  alternateName: 'EduLumix - Career & Education Platform',
-  url: 'https://edulumix.com',
-  logo: 'https://edulumix.com/logo.png',
+  alternateName: ['Edu Lumix', 'Edu lumix', 'edulumix', 'EDULUMIX', 'EduLumix - Career & Education Platform'],
+  url: BASE_DOMAIN,
+  logo: `${BASE_DOMAIN}/favicon.svg`,
   description: 'EduLumix is your ultimate destination for fresher jobs, free resources, courses, mock tests, and career guidance.',
-  email: 'support@edulumix.com',
+  email: 'support@edulumix.in',
   telephone: '+91-8272946202',
   address: {
     '@type': 'PostalAddress',
@@ -25,7 +27,7 @@ export const generateOrganizationSchema = () => ({
   ],
   contactPoint: {
     '@type': 'ContactPoint',
-    email: 'support@edulumix.com',
+    email: 'support@edulumix.in',
     contactType: 'Customer Service',
     availableLanguage: ['English', 'Hindi']
   }
@@ -35,13 +37,13 @@ export const generateWebsiteSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'EduLumix',
-  url: 'https://edulumix.com',
+  url: BASE_DOMAIN,
   description: 'Complete career platform for freshers - Jobs, Resources, Courses, Mock Tests & More',
   potentialAction: {
     '@type': 'SearchAction',
     target: {
       '@type': 'EntryPoint',
-      urlTemplate: 'https://edulumix.com/search?q={search_term_string}'
+      urlTemplate: `${BASE_DOMAIN}/search?q={search_term_string}`
     },
     'query-input': 'required name=search_term_string'
   },
@@ -50,7 +52,7 @@ export const generateWebsiteSchema = () => ({
     name: 'EduLumix',
     logo: {
       '@type': 'ImageObject',
-      url: 'https://edulumix.com/logo.png'
+      url: `${BASE_DOMAIN}/favicon.svg`
     }
   }
 });
@@ -66,8 +68,8 @@ export const generateJobPostingSchema = (job) => ({
   hiringOrganization: {
     '@type': 'Organization',
     name: job.company || 'EduLumix',
-    sameAs: 'https://edulumix.com',
-    logo: job.companyLogo || 'https://edulumix.com/logo.png'
+    sameAs: BASE_DOMAIN,
+    logo: job.companyLogo || `${BASE_DOMAIN}/favicon.svg`
   },
   jobLocation: {
     '@type': 'Place',
@@ -100,26 +102,29 @@ export const generateJobPostingSchema = (job) => ({
   }
 });
 
-export const generateCourseSchema = (course) => ({
+export const generateCourseSchema = (course) => {
+  const price = course.offerPrice ?? course.actualPrice ?? course.price ?? 0;
+  const isFree = course.isFree || price === 0;
+  return {
   '@context': 'https://schema.org',
   '@type': 'Course',
   name: course.title,
-  description: course.description,
+  description: course.description || course.shortDescription,
   provider: {
     '@type': 'Organization',
     name: 'EduLumix',
-    sameAs: 'https://edulumix.com'
+    sameAs: BASE_DOMAIN
   },
   courseCode: course.slug,
   educationalLevel: course.level || 'Beginner',
   inLanguage: 'en',
-  isAccessibleForFree: course.price === 0 || course.isFree,
-  offers: course.price > 0 ? {
+  isAccessibleForFree: isFree,
+  offers: !isFree && price > 0 ? {
     '@type': 'Offer',
-    price: course.price,
+    price: price,
     priceCurrency: 'INR',
     availability: 'https://schema.org/InStock',
-    url: `https://edulumix.com/courses/${course.slug}`
+    url: `${BASE_DOMAIN}/courses/${course.slug}`
   } : undefined,
   hasCourseInstance: {
     '@type': 'CourseInstance',
@@ -129,36 +134,37 @@ export const generateCourseSchema = (course) => ({
   aggregateRating: course.rating ? {
     '@type': 'AggregateRating',
     ratingValue: course.rating,
-    ratingCount: course.reviews || 1,
+    ratingCount: course.ratingCount || course.reviews || 1,
     bestRating: 5,
     worstRating: 1
   } : undefined
-});
+};
+};
 
 export const generateBlogSchema = (blog) => ({
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
   headline: blog.title,
   description: blog.excerpt || blog.description,
-  image: blog.image || 'https://edulumix.com/blog-default.jpg',
+  image: blog.coverImage || blog.image || `${BASE_DOMAIN}/favicon.svg`,
   datePublished: blog.publishedAt || blog.createdAt,
   dateModified: blog.updatedAt || blog.createdAt,
   author: {
     '@type': 'Person',
     name: blog.author?.name || 'EduLumix Team',
-    url: `https://edulumix.com/author/${blog.author?.slug || 'team'}`
+    url: `${BASE_DOMAIN}/author/${blog.author?.slug || 'team'}`
   },
   publisher: {
     '@type': 'Organization',
     name: 'EduLumix',
     logo: {
       '@type': 'ImageObject',
-      url: 'https://edulumix.com/logo.png'
+      url: `${BASE_DOMAIN}/favicon.svg`
     }
   },
   mainEntityOfPage: {
     '@type': 'WebPage',
-    '@id': `https://edulumix.com/blog/${blog.slug}`
+    '@id': `${BASE_DOMAIN}/blog/${blog.slug}`
   },
   keywords: blog.tags?.join(', '),
   articleSection: blog.category,
@@ -170,14 +176,14 @@ export const generateProductSchema = (product) => ({
   '@type': 'Product',
   name: product.title,
   description: product.description,
-  image: product.image || 'https://edulumix.com/product-default.jpg',
+  image: product.image || `${BASE_DOMAIN}/favicon.svg`,
   brand: {
     '@type': 'Brand',
     name: product.brand || 'EduLumix'
   },
   offers: {
     '@type': 'Offer',
-    url: `https://edulumix.com/digital-products/${product.slug}`,
+    url: `${BASE_DOMAIN}/digital-products/${product.slug}`,
     priceCurrency: 'INR',
     price: product.price,
     priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
@@ -197,7 +203,11 @@ export const generateProductSchema = (product) => ({
   category: product.category
 });
 
-export const generateMockTestSchema = (mockTest) => ({
+export const generateMockTestSchema = (mockTest) => {
+  const duration = mockTest.duration;
+  const timeRequired = typeof duration === 'number' ? `PT${duration}M` : (duration || 'PT60M');
+  const questionCount = mockTest.questions?.length || mockTest.questionsCount || 50;
+  return {
   '@context': 'https://schema.org',
   '@type': 'Quiz',
   name: mockTest.title,
@@ -209,15 +219,16 @@ export const generateMockTestSchema = (mockTest) => ({
   educationalLevel: mockTest.level || 'Intermediate',
   inLanguage: 'en',
   typicalAgeRange: '18-35',
-  numberOfQuestions: mockTest.questionsCount || 50,
-  timeRequired: mockTest.duration || 'PT60M',
-  isAccessibleForFree: mockTest.isFree || true,
+  numberOfQuestions: questionCount,
+  timeRequired,
+  isAccessibleForFree: mockTest.isFree !== false,
   provider: {
     '@type': 'Organization',
     name: 'EduLumix',
-    url: 'https://edulumix.com'
+    url: BASE_DOMAIN
   }
-});
+};
+};
 
 export const generateFAQSchema = (faqs) => ({
   '@context': 'https://schema.org',
@@ -239,7 +250,7 @@ export const generateBreadcrumbSchema = (breadcrumbs) => ({
     '@type': 'ListItem',
     position: index + 1,
     name: crumb.name,
-    item: `https://edulumix.com${crumb.path}`
+    item: `${BASE_DOMAIN}${crumb.path}`
   }))
 });
 
@@ -258,7 +269,7 @@ export const generateVideoSchema = (video) => ({
     name: 'EduLumix',
     logo: {
       '@type': 'ImageObject',
-      url: 'https://edulumix.com/logo.png'
+      url: `${BASE_DOMAIN}/favicon.svg`
     }
   }
 });

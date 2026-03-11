@@ -9,6 +9,7 @@ import {
 import { jobService } from '../services/dataService';
 import toast from 'react-hot-toast';
 import VerifiedBadge from '../components/common/VerifiedBadge';
+import FormattedJobDescription from '../components/job/FormattedJobDescription';
 import SEO from '../components/seo/SEO';
 import AdSlot from '../components/ads/AdSlot';
 import { AD_SLOTS } from '../config/ads';
@@ -317,8 +318,13 @@ const JobDetails = () => {
               Job Description
             </h2>
             <div className="prose prose-sm lg:prose max-w-none text-gray-600 dark:text-gray-300 prose-headings:text-gray-900 dark:prose-headings:text-white prose-strong:text-gray-900 dark:prose-strong:text-white prose-ul:text-gray-600 dark:prose-ul:text-gray-300">
-              <div className="whitespace-pre-wrap">{job.description}</div>
+              <FormattedJobDescription text={job.description} />
             </div>
+            {job.source === 'adzuna' && (
+              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400 italic">
+                Full description available on the company's apply page.
+              </p>
+            )}
           </div>
 
           {/* Stats */}

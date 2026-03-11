@@ -38,8 +38,12 @@ export default defineConfig({
   server: {
     host: true,
     port: 3045,
-    // Proxy only needed for local development
-    // In production, API calls go directly to Render backend
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     outDir: 'dist',

@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const PRODUCTION_API = 'https://edulumix-backend.onrender.com/api';
-const LOCAL_API = 'http://localhost:5000/api';
+// In dev: use /api (Vite proxy forwards to backend) - avoids CORS
+const LOCAL_API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : 'http://localhost:5000/api');
 
 function getBaseURL() {
   if (typeof window === 'undefined') return PRODUCTION_API;

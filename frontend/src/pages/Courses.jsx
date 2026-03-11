@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Search, Filter, GraduationCap, Clock, Users, Star,
   Play, BookOpen, Globe, IndianRupee, X, ChevronRight,
-  Award, Video, CheckCircle
+  Award, Video, CheckCircle, Loader2
 } from 'lucide-react';
 import { courseService } from '../services/dataService';
+import { CourseCardSkeleton } from '../components/skeleton';
 import toast from 'react-hot-toast';
 import SEO from '../components/seo/SEO';
 import { generateBreadcrumbSchema } from '../utils/seoSchemas';
@@ -18,6 +19,10 @@ const Courses = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedLevel, setSelectedLevel] = useState('All');
   const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const observerTarget = useRef(null);
 
   const categories = [
     'All', 'Web Development', 'Mobile Development', 'Data Science',
@@ -28,37 +33,54 @@ const Courses = () => {
 
   const levels = ['All', 'Beginner', 'Intermediate', 'Advanced', 'All Levels'];
 
-  useEffect(() => {
-    fetchCourses();
-  }, [selectedCategory, selectedLevel]);
+  const PAGE_SIZE = 12;
 
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async (pageNum = 1, append = false) => {
     try {
-      setLoading(true);
-      const params = {};
-      if (selectedCategory !== 'All') {
-        params.category = selectedCategory;
-      }
-      if (selectedLevel !== 'All') {
-        params.level = selectedLevel;
-      }
-      if (searchTerm) {
-        params.search = searchTerm;
-      }
+      if (pageNum === 1) setLoading(true);
+      else setLoadingMore(true);
+      const params = { limit: PAGE_SIZE, page: pageNum };
+      if (selectedCategory !== 'All') params.category = selectedCategory;
+      if (selectedLevel !== 'All') params.level = selectedLevel;
+      if (searchTerm) params.search = searchTerm;
       const response = await courseService.getAll(params);
       if (response.data.success) {
-        setCourses(response.data.data);
+        const data = response.data.data || [];
+        const totalPages = response.data.totalPages ?? 1;
+        setPage(pageNum);
+        setHasMore(pageNum < totalPages);
+        if (append) setCourses((prev) => [...prev, ...data]);
+        else setCourses(data);
       }
     } catch (error) {
       toast.error('Failed to fetch courses');
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  };
+  }, [selectedCategory, selectedLevel, searchTerm]);
+
+  useEffect(() => {
+    fetchCourses(1);
+  }, [selectedCategory, selectedLevel]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasMore && !loadingMore && !loading) {
+          fetchCourses(page + 1, true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    const target = observerTarget.current;
+    if (target) observer.observe(target);
+    return () => { if (target) observer.unobserve(target); };
+  }, [hasMore, loadingMore, loading, page, selectedCategory, selectedLevel, searchTerm]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchCourses();
+    fetchCourses(1);
   };
 
   const handleViewCourse = (course) => {
@@ -67,8 +89,17 @@ const Courses = () => {
   };
 
   const formatPrice = (course) => {
+    // Udemy: show actual course fee (INR), now free with coupon
+    if (course.isFree && course.actualPrice > 0) {
+      return (
+        <span className="flex flex-col items-start gap-0.5">
+          <span className="text-gray-700 dark:text-gray-300 font-semibold">₹{course.actualPrice}</span>
+          <span className="text-green-600 dark:text-green-400 text-xs font-medium">Free with coupon</span>
+        </span>
+      );
+    }
     if (course.isFree) return 'Free';
-    if (course.offerPrice && course.offerPrice < course.actualPrice) {
+    if (course.offerPrice !== undefined && course.offerPrice < course.actualPrice) {
       return (
         <span className="flex items-center gap-2">
           <span className="text-green-600 dark:text-green-400 font-bold">₹{course.offerPrice}</span>
@@ -132,7 +163,7 @@ const Courses = () => {
       generateBreadcrumbSchema(breadcrumbs),
       {
         '@type': 'ItemList',
-        '@id': 'https://edulumix.com/courses',
+        '@id': 'https://edulumix.in/courses',
         name: 'Online Courses',
         description: 'Top online courses for skill development and career growth',
         itemListElement: courses.slice(0, 10).map((course, index) => ({
@@ -142,7 +173,7 @@ const Courses = () => {
             '@type': 'Course',
             name: course.title,
             description: course.description,
-            url: `https://edulumix.com/courses/${course.slug}`
+            url: `https://edulumix.in/courses/${course.slug}`
           }
         }))
       }
@@ -279,14 +310,7 @@ const Courses = () => {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white dark:bg-dark-200 rounded-2xl overflow-hidden animate-pulse">
-                <div className="h-48 bg-gray-200 dark:bg-dark-100" />
-                <div className="p-6 space-y-4">
-                  <div className="h-4 bg-gray-200 dark:bg-dark-100 rounded w-3/4" />
-                  <div className="h-4 bg-gray-200 dark:bg-dark-100 rounded w-1/2" />
-                  <div className="h-10 bg-gray-200 dark:bg-dark-100 rounded" />
-                </div>
-              </div>
+              <CourseCardSkeleton key={i} />
             ))}
           </div>
         ) : courses.length === 0 ? (
@@ -335,6 +359,8 @@ const Courses = () => {
                     <img
                       src={course.thumbnail}
                       alt={course.title}
+                      loading="lazy"
+                      decoding="async"
                       className="absolute inset-0 w-full h-full object-cover z-10 group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
                         e.target.style.display = 'none';
@@ -423,6 +449,20 @@ const Courses = () => {
           </div>
         )}
 
+        {!loading && courses.length > 0 && hasMore && (
+          <div ref={observerTarget} className="flex justify-center mt-10 min-h-[60px]">
+            {loadingMore && (
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Loading more...
+              </div>
+            )}
+          </div>
+        )}
+        {!loading && courses.length > 0 && !hasMore && (
+          <p className="text-center text-gray-500 dark:text-gray-400 mt-8">You've seen all courses</p>
+        )}
+
         {/* Featured Section - if we have featured courses */}
         {!loading && courses.length > 0 && courses.some(c => c.isFeatured) && (
           <div className="mt-16">
@@ -447,7 +487,9 @@ const Courses = () => {
                       {course.thumbnail && course.thumbnail.startsWith('http') && (
                         <img 
                           src={course.thumbnail} 
-                          alt={course.title} 
+                          alt={course.title}
+                          loading="lazy"
+                          decoding="async"
                           className="absolute inset-0 w-full h-full object-cover z-10" 
                           onError={(e) => {
                             e.target.style.display = 'none';

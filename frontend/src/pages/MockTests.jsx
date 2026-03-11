@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
-  Search, Filter, ClipboardList, Clock, Users, Star,
+  Search, Filter,   ClipboardList, Clock, Users, Star,
   Award, BookOpen, Target, X, ChevronRight, Trophy,
-  CheckCircle, AlertCircle, Timer, Brain
+  CheckCircle, AlertCircle, Timer, Brain, Loader2
 } from 'lucide-react';
 import { mockTestService } from '../services/dataService';
+import { MockTestCardSkeleton } from '../components/skeleton';
 import toast from 'react-hot-toast';
 import SEO from '../components/seo/SEO';
 import { generateBreadcrumbSchema } from '../utils/seoSchemas';
@@ -18,6 +19,10 @@ const MockTests = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const observerTarget = useRef(null);
 
   const categories = [
     'All', 'Aptitude', 'Logical Reasoning', 'Verbal Ability',
@@ -27,37 +32,54 @@ const MockTests = () => {
 
   const difficulties = ['All', 'Easy', 'Medium', 'Hard'];
 
-  useEffect(() => {
-    fetchMockTests();
-  }, [selectedCategory, selectedDifficulty]);
+  const PAGE_SIZE = 12;
 
-  const fetchMockTests = async () => {
+  const fetchMockTests = useCallback(async (pageNum = 1, append = false) => {
     try {
-      setLoading(true);
-      const params = {};
-      if (selectedCategory !== 'All') {
-        params.category = selectedCategory;
-      }
-      if (selectedDifficulty !== 'All') {
-        params.difficulty = selectedDifficulty;
-      }
-      if (searchTerm) {
-        params.search = searchTerm;
-      }
+      if (pageNum === 1) setLoading(true);
+      else setLoadingMore(true);
+      const params = { limit: PAGE_SIZE, page: pageNum };
+      if (selectedCategory !== 'All') params.category = selectedCategory;
+      if (selectedDifficulty !== 'All') params.difficulty = selectedDifficulty;
+      if (searchTerm) params.search = searchTerm;
       const response = await mockTestService.getAll(params);
       if (response.data.success) {
-        setMockTests(response.data.data);
+        const data = response.data.data || [];
+        const totalPages = response.data.totalPages ?? 1;
+        setPage(pageNum);
+        setHasMore(pageNum < totalPages);
+        if (append) setMockTests((prev) => [...prev, ...data]);
+        else setMockTests(data);
       }
     } catch (error) {
       toast.error('Failed to fetch mock tests');
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  };
+  }, [selectedCategory, selectedDifficulty, searchTerm]);
+
+  useEffect(() => {
+    fetchMockTests(1);
+  }, [selectedCategory, selectedDifficulty]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasMore && !loadingMore && !loading) {
+          fetchMockTests(page + 1, true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    const target = observerTarget.current;
+    if (target) observer.observe(target);
+    return () => { if (target) observer.unobserve(target); };
+  }, [hasMore, loadingMore, loading, page, selectedCategory, selectedDifficulty, searchTerm]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchMockTests();
+    fetchMockTests(1);
   };
 
   const handleViewTest = (test) => {
@@ -92,10 +114,10 @@ const MockTests = () => {
       generateBreadcrumbSchema(breadcrumbs),
       {
         '@type': 'ItemList',
-        '@id': 'https://edulumix.com/mock-test',
+        '@id': 'https://edulumix.in/mock-test',
         name: 'Mock Tests & Practice Exams',
         description: 'Free mock tests for interview preparation and competitive exams',
-        url: 'https://edulumix.com/mock-test'
+        url: 'https://edulumix.in/mock-test'
       }
     ]
   };
@@ -230,14 +252,7 @@ const MockTests = () => {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white dark:bg-dark-200 rounded-2xl overflow-hidden animate-pulse">
-                <div className="h-40 bg-gray-200 dark:bg-dark-100" />
-                <div className="p-6 space-y-4">
-                  <div className="h-4 bg-gray-200 dark:bg-dark-100 rounded w-3/4" />
-                  <div className="h-4 bg-gray-200 dark:bg-dark-100 rounded w-1/2" />
-                  <div className="h-10 bg-gray-200 dark:bg-dark-100 rounded" />
-                </div>
-              </div>
+              <MockTestCardSkeleton key={i} />
             ))}
           </div>
         ) : mockTests.length === 0 ? (
@@ -343,6 +358,20 @@ const MockTests = () => {
               </div>
             ))}
           </div>
+        )}
+
+        {!loading && mockTests.length > 0 && hasMore && (
+          <div ref={observerTarget} className="flex justify-center mt-10 min-h-[60px]">
+            {loadingMore && (
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Loading more...
+              </div>
+            )}
+          </div>
+        )}
+        {!loading && mockTests.length > 0 && !hasMore && (
+          <p className="text-center text-gray-500 dark:text-gray-400 mt-8">You've seen all mock tests</p>
         )}
 
         {/* Info Section */}

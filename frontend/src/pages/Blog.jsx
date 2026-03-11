@@ -8,6 +8,7 @@ import {
   Globe, Image, Tag, ArrowLeft
 } from 'lucide-react';
 import { blogService } from '../services/dataService';
+import { BlogCardSkeleton } from '../components/skeleton';
 import VerifiedBadge from '../components/common/VerifiedBadge';
 import toast from 'react-hot-toast';
 import SEO from '../components/seo/SEO';
@@ -193,10 +194,10 @@ const Blog = () => {
       generateBreadcrumbSchema(breadcrumbs),
       {
         '@type': 'Blog',
-        '@id': 'https://edulumix.com/blog',
+        '@id': 'https://edulumix.in/blog',
         name: 'EduLumix Tech Blog',
         description: 'Technology tutorials, career tips, programming guides, and latest tech trends',
-        url: 'https://edulumix.com/blog',
+        url: 'https://edulumix.in/blog',
         publisher: {
           '@type': 'Organization',
           name: 'EduLumix'
@@ -270,8 +271,10 @@ const Blog = () => {
           {/* Main Feed */}
           <div className="flex-1 max-w-2xl mx-auto lg:mx-0 space-y-4">
             {loading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              <div className="space-y-4">
+                {[...Array(4)].map((_, i) => (
+                  <BlogCardSkeleton key={i} />
+                ))}
               </div>
             ) : displayedBlogs.length === 0 ? (
               <div className="bg-white dark:bg-dark-200 rounded-xl p-12 text-center">
@@ -290,9 +293,11 @@ const Blog = () => {
                       {blog.author ? (
                         <>
                           {blog.author.avatar ? (
-                            <img 
-                              src={blog.author.avatar} 
-                              alt={blog.author.name} 
+                            <img
+                              src={blog.author.avatar}
+                              alt={blog.author.name}
+                              loading="lazy"
+                              decoding="async"
                               className="w-12 h-12 rounded-full object-cover shadow-lg"
                               onError={(e) => {
                                 e.target.style.display = 'none';
@@ -312,9 +317,14 @@ const Blog = () => {
                         </div>
                       )}
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="font-semibold text-gray-900 dark:text-white">{blog.author?.name || 'Deleted User'}</h3>
                           <VerifiedBadge user={blog.author} size="sm" />
+                          {blog.isSponsored && (
+                            <span className="px-2 py-0.5 bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 rounded-full text-xs font-medium">
+                              Sponsored
+                            </span>
+                          )}
                           {blog.isFeatured && (
                             <span className="flex items-center gap-1 px-2 py-0.5 bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 rounded-full text-xs font-medium">
                               <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" /> Featured
@@ -335,6 +345,22 @@ const Blog = () => {
                       <MoreHorizontal className="w-5 h-5 text-gray-500" />
                     </button>
                   </div>
+
+                  {/* Cover Image - Top of card for fetched blogs */}
+                  {blog.coverImage && (
+                    <Link to={`/blog/${blog.slug}`} className="block px-4 pb-3">
+                      <div className="relative w-full h-48 sm:h-56 bg-gray-100 dark:bg-dark-100 rounded-xl overflow-hidden">
+                        <img
+                          src={blog.coverImage}
+                          alt={blog.title}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                          onError={(e) => { e.target.parentElement.style.display = 'none'; }}
+                        />
+                      </div>
+                    </Link>
+                  )}
 
                   {/* Category Badge */}
                   <div className="px-4 pb-2">
@@ -378,21 +404,6 @@ const Blog = () => {
                         </span>
                       ))}
                     </div>
-                  )}
-
-                  {/* Cover Image */}
-                  {blog.coverImage && (
-                    <Link to={`/blog/${blog.slug}`} className="block px-4 pb-4">
-                      <div className="relative w-full h-64 bg-gray-100 dark:bg-dark-100 rounded-xl overflow-hidden">
-                        <img
-                          src={blog.coverImage}
-                          alt={blog.title}
-                          className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
-                          style={{ objectFit: 'contain' }}
-                          onError={(e) => { e.target.parentElement.style.display = 'none'; }}
-                        />
-                      </div>
-                    </Link>
                   )}
 
                   {/* Stats Bar */}

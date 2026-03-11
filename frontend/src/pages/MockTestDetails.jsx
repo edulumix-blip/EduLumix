@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { mockTestService } from '../services/dataService';
 import toast from 'react-hot-toast';
+import SEO from '../components/seo/SEO';
+import { generateMockTestSchema, generateBreadcrumbSchema } from '../utils/seoSchemas';
 import AdSlot from '../components/ads/AdSlot';
 import { AD_SLOTS } from '../config/ads';
 
@@ -185,10 +187,33 @@ const MockTestDetails = () => {
     );
   }
 
+  const breadcrumbs = [
+    { name: 'Home', path: '/' },
+    { name: 'Mock Test', path: '/mock-test' },
+    { name: test.title, path: `/mock-test/${test.slug}` }
+  ];
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      generateMockTestSchema(test),
+      generateBreadcrumbSchema(breadcrumbs)
+    ]
+  };
+  const testDesc = (test.description || '').replace(/<[^>]*>/g, '').slice(0, 160);
+  const testKeywords = `${test.title}, mock test, ${test.subject || 'exam'}, EduLumix, Edu Lumix, edulumix`;
+
   // Test Results View
   if (testSubmitted && result) {
     return (
       <div className="min-h-screen py-8 lg:py-12">
+        <SEO
+          title={`${test.title} | Mock Test | EduLumix`}
+          description={testDesc || `Take ${test.title} mock test on EduLumix. Free practice test for exam preparation.`}
+          keywords={testKeywords}
+          url={`/mock-test/${test.slug}`}
+          type="article"
+          structuredData={structuredData}
+        />
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-white dark:bg-dark-200 rounded-2xl shadow-lg border border-gray-200 dark:border-dark-100 overflow-hidden">
             {/* Result Header */}
@@ -339,6 +364,14 @@ const MockTestDetails = () => {
 
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-dark-300">
+        <SEO
+          title={`${test.title} | Mock Test | EduLumix`}
+          description={testDesc || `Take ${test.title} mock test on EduLumix. Free practice test for exam preparation.`}
+          keywords={testKeywords}
+          url={`/mock-test/${test.slug}`}
+          type="article"
+          structuredData={structuredData}
+        />
         {/* Sticky Header */}
         <div className="bg-white dark:bg-dark-200 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-20 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
@@ -511,6 +544,14 @@ const MockTestDetails = () => {
   // Test Info View (before starting)
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-300">
+      <SEO
+        title={`${test.title} | Mock Test | EduLumix`}
+        description={testDesc || `Take ${test.title} mock test on EduLumix. Free practice test for exam preparation.`}
+        keywords={testKeywords}
+        url={`/mock-test/${test.slug}`}
+        type="article"
+        structuredData={structuredData}
+      />
       {/* Back Button */}
       <div className="bg-white dark:bg-dark-200 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

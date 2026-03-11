@@ -1,9 +1,16 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Shield, Lock, Eye, Database, UserCheck } from 'lucide-react';
+import SEO from '../components/seo/SEO';
 
 const PrivacyPolicy = () => {
   return (
     <div className="min-h-screen py-12 lg:py-20">
+      <SEO
+        title="Privacy Policy | EduLumix"
+        description="EduLumix Privacy Policy - How we collect, use, store and protect your data. Your privacy matters to us."
+        keywords="EduLumix privacy policy, data protection, user privacy"
+        url="/privacy-policy"
+      />
       <div className="px-4 sm:px-6 lg:px-12 xl:px-20">
         <Link
           to="/"

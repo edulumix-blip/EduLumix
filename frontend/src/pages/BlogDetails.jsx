@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { blogService } from '../services/dataService';
 import toast from 'react-hot-toast';
+import SEO from '../components/seo/SEO';
+import { generateBlogSchema, generateBreadcrumbSchema } from '../utils/seoSchemas';
 import VerifiedBadge from '../components/common/VerifiedBadge';
 import { useAuth } from '../context/AuthContext';
 import AdSlot from '../components/ads/AdSlot';
@@ -147,8 +149,32 @@ const BlogDetails = () => {
     );
   }
 
+  const breadcrumbs = [
+    { name: 'Home', path: '/' },
+    { name: 'Blog', path: '/blog' },
+    { name: blog.title, path: `/blog/${blog.slug}` }
+  ];
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      generateBlogSchema(blog),
+      generateBreadcrumbSchema(breadcrumbs)
+    ]
+  };
+  const desc = (blog.excerpt || blog.description || '').replace(/<[^>]*>/g, '').slice(0, 160);
+  const blogKeywords = `${blog.title}, ${blog.category}, EduLumix, Edu Lumix, edulumix, tech blog`;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-300">
+      <SEO
+        title={`${blog.title} | EduLumix Blog`}
+        description={desc || `${blog.title} - Read on EduLumix tech blog. Career tips, tutorials & more.`}
+        keywords={blogKeywords}
+        url={`/blog/${blog.slug}`}
+        type="article"
+        image={blog.coverImage || blog.image}
+        structuredData={structuredData}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         {/* Back Button */}
         <Link to="/blog" className="inline-flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-6">
@@ -165,8 +191,7 @@ const BlogDetails = () => {
                 <img
                   src={blog.coverImage}
                   alt={blog.title}
-                  className="w-full h-full object-contain"
-                  style={{ objectFit: 'contain' }}
+                  className="w-full h-full object-cover"
                   onError={(e) => { e.target.parentElement.style.display = 'none'; }}
                 />
               </div>
@@ -187,11 +212,25 @@ const BlogDetails = () => {
             )}
 
           <div className="p-6 lg:p-10">
-            {/* Category & Featured Badge */}
+            {/* Category, Featured & Sponsored Badge */}
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(blog.category)}`}>
                 {blog.category}
               </span>
+              {blog.isSponsored && (
+                <span className="px-3 py-1 rounded-full text-sm font-medium bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                  Sponsored
+                  {blog.sponsorName && (
+                    blog.sponsorLink ? (
+                      <a href={blog.sponsorLink} target="_blank" rel="noopener noreferrer" className="ml-1 hover:underline">
+                        by {blog.sponsorName} ↗
+                      </a>
+                    ) : (
+                      <span className="ml-1">by {blog.sponsorName}</span>
+                    )
+                  )}
+                </span>
+              )}
               {blog.isFeatured && (
                 <span className="flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-300">
                   <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" /> Featured
@@ -209,6 +248,18 @@ const BlogDetails = () => {
               <p className="text-lg text-gray-600 dark:text-gray-400 mb-6 border-l-4 border-blue-500 pl-4 italic">
                 {blog.excerpt}
               </p>
+            )}
+
+            {/* External link - Read full article (Dev.to, Medium, HN etc) */}
+            {blog.externalLink && (
+              <a
+                href={blog.externalLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl mb-6 transition-colors"
+              >
+                Read full article ↗
+              </a>
             )}
 
             {/* Author & Meta Info */}

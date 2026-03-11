@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Search, Filter, Briefcase, MapPin, Clock, 
@@ -6,6 +6,7 @@ import {
   IndianRupee, Tag, X, ChevronRight, Loader2
 } from 'lucide-react';
 import { jobService } from '../services/dataService';
+import { JobCardSkeleton } from '../components/skeleton';
 import toast from 'react-hot-toast';
 import SEO from '../components/seo/SEO';
 import { generateBreadcrumbSchema, generateJobListSchema, generateSearchActionSchema } from '../utils/seoSchemas';
@@ -24,6 +25,7 @@ const Jobs = () => {
   const [likedJobs, setLikedJobs] = useState(new Set());
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const observerTarget = useRef(null);
 
   const categories = [
     'All', 'IT Job', 'Non IT Job', 'Walk In Drive', 
@@ -74,6 +76,20 @@ const Jobs = () => {
     fetchJobs(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only refetch when category changes; search uses handleSearch
   }, [selectedCategory]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasMore && !loadingMore && !loading) {
+          fetchJobs(page + 1, true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    const target = observerTarget.current;
+    if (target) observer.observe(target);
+    return () => { if (target) observer.unobserve(target); };
+  }, [hasMore, loadingMore, loading, page, selectedCategory, searchTerm]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -276,23 +292,7 @@ const Jobs = () => {
         {loading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white dark:bg-dark-200 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 animate-pulse">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-14 h-14 rounded-xl bg-gray-200 dark:bg-dark-100"></div>
-                  <div className="flex-1">
-                    <div className="h-5 bg-gray-200 dark:bg-dark-100 rounded mb-2"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-dark-100 rounded w-3/4"></div>
-                  </div>
-                </div>
-                <div className="space-y-2 mb-4">
-                  <div className="h-4 bg-gray-200 dark:bg-dark-100 rounded w-1/2"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-dark-100 rounded w-2/3"></div>
-                </div>
-                <div className="flex gap-2">
-                  <div className="h-8 bg-gray-200 dark:bg-dark-100 rounded w-20"></div>
-                  <div className="h-8 bg-gray-200 dark:bg-dark-100 rounded w-20"></div>
-                </div>
-              </div>
+              <JobCardSkeleton key={i} />
             ))}
           </div>
         ) : jobs.length === 0 ? (
@@ -317,6 +317,8 @@ const Jobs = () => {
                         <img 
                           src={job.companyLogo} 
                           alt={job.company}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-contain"
                           onError={(e) => {
                             e.target.style.display = 'none';
@@ -428,23 +430,15 @@ const Jobs = () => {
           </div>
         )}
 
-        {/* Load more */}
+        {/* Infinite scroll trigger + Load more fallback */}
         {!loading && jobs.length > 0 && hasMore && (
-          <div className="flex justify-center mt-10">
-            <button
-              onClick={loadMore}
-              disabled={loadingMore}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl font-medium transition-colors"
-            >
-              {loadingMore ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Loading...
-                </>
-              ) : (
-                'Load more jobs'
-              )}
-            </button>
+          <div ref={observerTarget} className="flex justify-center mt-10 min-h-[60px]">
+            {loadingMore && (
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Loading more...
+              </div>
+            )}
           </div>
         )}
         {!loading && jobs.length > 0 && !hasMore && (

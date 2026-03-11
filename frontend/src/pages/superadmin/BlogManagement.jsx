@@ -26,6 +26,9 @@ const BlogManagement = () => {
     coverImage: '',
     isPublished: true,
     isFeatured: false,
+    isSponsored: false,
+    sponsorName: '',
+    sponsorLink: '',
   });
 
   const categories = ['Tech Blog', 'Career Tips', 'Interview Guide', 'Tutorial', 'News', 'Others'];
@@ -69,7 +72,7 @@ const BlogManagement = () => {
   };
 
   const resetForm = () => {
-    setFormData({ title: '', excerpt: '', content: '', category: 'Tech Blog', tags: '', coverImage: '', isPublished: true, isFeatured: false });
+    setFormData({ title: '', excerpt: '', content: '', category: 'Tech Blog', tags: '', coverImage: '', isPublished: true, isFeatured: false, isSponsored: false, sponsorName: '', sponsorLink: '' });
     setEditingBlog(null);
   };
 
@@ -86,6 +89,9 @@ const BlogManagement = () => {
       coverImage: blog.coverImage || '',
       isPublished: blog.isPublished ?? true,
       isFeatured: blog.isFeatured ?? false,
+      isSponsored: blog.isSponsored ?? false,
+      sponsorName: blog.sponsorName || '',
+      sponsorLink: blog.sponsorLink || '',
     });
     setShowModal(true);
   };
@@ -353,6 +359,7 @@ const BlogManagement = () => {
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="font-medium text-gray-900 dark:text-white truncate max-w-[200px]">{blog.title}</p>
+                            {blog.isSponsored && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 flex-shrink-0">Sponsored</span>}
                             {blog.isFeatured && <Star className="w-4 h-4 text-yellow-500 fill-yellow-500 flex-shrink-0" />}
                           </div>
                           <p className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[200px]">{blog.excerpt}</p>
@@ -502,7 +509,7 @@ const BlogManagement = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Content *</label>
                   <textarea name="content" value={formData.content} onChange={handleInputChange} required rows={8} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 resize-none" placeholder="Full blog content (supports markdown)..." />
                 </div>
-                <div className="md:col-span-2 flex items-center gap-6">
+                <div className="md:col-span-2 flex flex-wrap items-center gap-6">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" name="isPublished" checked={formData.isPublished} onChange={handleInputChange} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
                     <span className="text-sm text-gray-700 dark:text-gray-300">Publish immediately</span>
@@ -511,7 +518,23 @@ const BlogManagement = () => {
                     <input type="checkbox" name="isFeatured" checked={formData.isFeatured} onChange={handleInputChange} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
                     <span className="text-sm text-gray-700 dark:text-gray-300">Featured post</span>
                   </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" name="isSponsored" checked={formData.isSponsored} onChange={handleInputChange} className="w-4 h-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500" />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Sponsored post</span>
+                  </label>
                 </div>
+                {formData.isSponsored && (
+                  <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                    <div>
+                      <label className="block text-sm font-medium text-amber-800 dark:text-amber-200 mb-1.5">Sponsor Name</label>
+                      <input type="text" name="sponsorName" value={formData.sponsorName} onChange={handleInputChange} className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-dark-100 border border-amber-200 dark:border-amber-700 text-gray-900 dark:text-white focus:outline-none focus:border-amber-500" placeholder="e.g. TechCorp" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-amber-800 dark:text-amber-200 mb-1.5">Sponsor Link (URL)</label>
+                      <input type="url" name="sponsorLink" value={formData.sponsorLink} onChange={handleInputChange} className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-dark-100 border border-amber-200 dark:border-amber-700 text-gray-900 dark:text-white focus:outline-none focus:border-amber-500" placeholder="https://example.com" />
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-dark-100 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors">Cancel</button>
@@ -537,8 +560,9 @@ const BlogManagement = () => {
               {showViewModal.coverImage && (
                 <img src={showViewModal.coverImage} alt={showViewModal.title} className="w-full h-48 object-cover rounded-xl mb-4" />
               )}
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
                 {getCategoryBadge(showViewModal.category)}
+                {showViewModal.isSponsored && <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300">Sponsored</span>}
                 {showViewModal.isFeatured && <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-300"><Star className="w-3 h-3 fill-yellow-500" /> Featured</span>}
                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${showViewModal.isPublished ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-500/20 text-gray-700 dark:text-gray-300'}`}>
                   {showViewModal.isPublished ? 'Published' : 'Draft'}

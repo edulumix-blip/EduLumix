@@ -1,9 +1,16 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Cookie, Shield, CheckCircle } from 'lucide-react';
+import SEO from '../components/seo/SEO';
 
 const CookiePolicy = () => {
   return (
     <div className="min-h-screen py-12 lg:py-20">
+      <SEO
+        title="Cookie Policy | EduLumix"
+        description="EduLumix Cookie Policy - How we use cookies and similar technologies on our website."
+        keywords="EduLumix cookie policy, cookies"
+        url="/cookie-policy"
+      />
       <div className="px-4 sm:px-6 lg:px-12 xl:px-20">
         <Link
           to="/"
@@ -27,7 +34,7 @@ const CookiePolicy = () => {
           <div className="prose prose-gray dark:prose-invert max-w-none">
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
               This Cookie Policy explains how EduLumix ("we", "us", or "our") uses cookies and similar 
-              technologies when you visit our website at edulumix.com. This policy provides you with 
+              technologies when you visit our website at edulumix.in. This policy provides you with 
               clear and comprehensive information about the cookies we use and the purposes for using them.
             </p>
 

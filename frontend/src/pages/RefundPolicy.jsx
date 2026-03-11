@@ -1,9 +1,16 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, RefreshCcw, CheckCircle, XCircle, Clock, CreditCard } from 'lucide-react';
+import SEO from '../components/seo/SEO';
 
 const RefundPolicy = () => {
   return (
     <div className="min-h-screen py-12 lg:py-20">
+      <SEO
+        title="Refund Policy | EduLumix"
+        description="EduLumix Refund Policy - Conditions for refunds on digital products and services. Customer satisfaction guaranteed."
+        keywords="EduLumix refund policy, refunds"
+        url="/refund-policy"
+      />
       <div className="px-4 sm:px-6 lg:px-12 xl:px-20">
         <Link
           to="/"

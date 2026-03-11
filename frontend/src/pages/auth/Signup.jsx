@@ -6,6 +6,7 @@ import {
   User, Mail, Lock, Eye, EyeOff, UserPlus, CheckSquare, Square,
   Gift, Trophy, Coins, TrendingUp, Sparkles, Wallet, Clock, Home, CheckCircle
 } from 'lucide-react';
+import SEO from '../../components/seo/SEO';
 
 // Rewards Info Component
 const RewardsSection = () => {
@@ -144,6 +145,7 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen flex">
+      <SEO title="Sign Up | EduLumix" noIndex />
       {/* Left Side - Animated Services (Hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-blue-700 relative overflow-hidden">
         {/* Background Pattern */}

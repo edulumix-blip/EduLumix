@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Search, ShoppingBag, Tag, MessageCircle, 
   TrendingUp, Star, Filter 
 } from 'lucide-react';
 import { productService } from '../services/dataService';
+import { ProductCardSkeleton } from '../components/skeleton';
 import toast from 'react-hot-toast';
 import SEO from '../components/seo/SEO';
 import { generateBreadcrumbSchema } from '../utils/seoSchemas';
@@ -14,6 +15,10 @@ const DigitalProducts = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const observerTarget = useRef(null);
 
   const categories = [
     'All',
@@ -29,34 +34,53 @@ const DigitalProducts = () => {
     'Others',
   ];
 
-  useEffect(() => {
-    fetchProducts();
-  }, [selectedCategory]);
+  const PAGE_SIZE = 12;
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async (pageNum = 1, append = false) => {
     try {
-      setLoading(true);
-      const params = {};
-      if (selectedCategory !== 'All') {
-        params.category = selectedCategory;
-      }
-      if (searchTerm) {
-        params.search = searchTerm;
-      }
+      if (pageNum === 1) setLoading(true);
+      else setLoadingMore(true);
+      const params = { limit: PAGE_SIZE, page: pageNum };
+      if (selectedCategory !== 'All') params.category = selectedCategory;
+      if (searchTerm) params.search = searchTerm;
       const response = await productService.getAll(params);
       if (response.data.success) {
-        setProducts(response.data.data);
+        const data = response.data.data || [];
+        const totalPages = response.data.totalPages ?? 1;
+        setPage(pageNum);
+        setHasMore(pageNum < totalPages);
+        if (append) setProducts((prev) => [...prev, ...data]);
+        else setProducts(data);
       }
     } catch (error) {
       toast.error('Failed to fetch products');
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  };
+  }, [selectedCategory, searchTerm]);
+
+  useEffect(() => {
+    fetchProducts(1);
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasMore && !loadingMore && !loading) {
+          fetchProducts(page + 1, true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    const target = observerTarget.current;
+    if (target) observer.observe(target);
+    return () => { if (target) observer.unobserve(target); };
+  }, [hasMore, loadingMore, loading, page, selectedCategory, searchTerm]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchProducts();
+    fetchProducts(1);
   };
 
   const calculateDiscount = (actual, offer) => {
@@ -74,10 +98,10 @@ const DigitalProducts = () => {
       generateBreadcrumbSchema(breadcrumbs),
       {
         '@type': 'Store',
-        '@id': 'https://edulumix.com/digital-products',
+        '@id': 'https://edulumix.in/digital-products',
         name: 'Digital Products Store',
         description: 'Buy digital subscriptions, software, and tools at best prices',
-        url: 'https://edulumix.com/digital-products'
+        url: 'https://edulumix.in/digital-products'
       }
     ]
   };
@@ -146,16 +170,7 @@ const DigitalProducts = () => {
         {loading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-white dark:bg-dark-200 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-pulse">
-                <div className="h-40 bg-gray-200 dark:bg-dark-100"></div>
-                <div className="p-4">
-                  <div className="h-3 bg-gray-200 dark:bg-dark-100 rounded w-1/3 mb-2"></div>
-                  <div className="h-5 bg-gray-200 dark:bg-dark-100 rounded mb-2"></div>
-                  <div className="h-3 bg-gray-200 dark:bg-dark-100 rounded w-1/2 mb-3"></div>
-                  <div className="h-6 bg-gray-200 dark:bg-dark-100 rounded w-2/3 mb-3"></div>
-                  <div className="h-9 bg-gray-200 dark:bg-dark-100 rounded"></div>
-                </div>
-              </div>
+              <ProductCardSkeleton key={i} />
             ))}
           </div>
         ) : products.length === 0 ? (
@@ -177,6 +192,8 @@ const DigitalProducts = () => {
                   <img
                     src={product.thumbnail || '/images/placeholder.png'}
                     alt={product.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-auto object-cover object-top group-hover:scale-105 transition-transform duration-300"
                     style={{ minHeight: '280px', marginTop: '-70px' }}
                   />
@@ -220,6 +237,20 @@ const DigitalProducts = () => {
               </Link>
             ))}
           </div>
+        )}
+
+        {!loading && products.length > 0 && hasMore && (
+          <div ref={observerTarget} className="flex justify-center mt-10 min-h-[60px]">
+            {loadingMore && (
+              <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Loading more...
+              </div>
+            )}
+          </div>
+        )}
+        {!loading && products.length > 0 && !hasMore && (
+          <p className="text-center text-gray-500 dark:text-gray-400 mt-8">You've seen all products</p>
         )}
       </div>
     </div>

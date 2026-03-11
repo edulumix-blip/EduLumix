@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { courseService } from '../services/dataService';
 import toast from 'react-hot-toast';
+import SEO from '../components/seo/SEO';
+import { generateCourseSchema, generateBreadcrumbSchema } from '../utils/seoSchemas';
 import AdSlot from '../components/ads/AdSlot';
 import { AD_SLOTS } from '../config/ads';
 
@@ -18,6 +20,7 @@ const CourseDetails = () => {
   const [loading, setLoading] = useState(true);
   const [expandedLessons, setExpandedLessons] = useState(new Set([0]));
   const [liked, setLiked] = useState(false);
+  const [showRawDetails, setShowRawDetails] = useState(false);
 
   useEffect(() => {
     fetchCourse();
@@ -75,8 +78,11 @@ const CourseDetails = () => {
   };
 
   const formatPrice = () => {
+    if (course.isFree && course.actualPrice > 0) {
+      return { current: 'Free with coupon', original: `₹${course.actualPrice}`, discount: '100% OFF' };
+    }
     if (course.isFree) return { current: 'Free', original: null, discount: null };
-    if (course.offerPrice && course.offerPrice < course.actualPrice) {
+    if (course.offerPrice !== undefined && course.offerPrice < course.actualPrice) {
       const discount = Math.round(((course.actualPrice - course.offerPrice) / course.actualPrice) * 100);
       return { 
         current: `₹${course.offerPrice}`, 
@@ -140,8 +146,32 @@ const CourseDetails = () => {
 
   const price = formatPrice();
 
+  const breadcrumbs = [
+    { name: 'Home', path: '/' },
+    { name: 'Courses', path: '/courses' },
+    { name: course.title, path: `/courses/${course.slug}` }
+  ];
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      generateCourseSchema(course),
+      generateBreadcrumbSchema(breadcrumbs)
+    ]
+  };
+  const desc = (course.shortDescription || course.description || '').replace(/<[^>]*>/g, '').slice(0, 160);
+  const courseKeywords = `${course.title}, ${course.category}, online course, EduLumix, Edu Lumix, edulumix`;
+
   return (
     <div className="min-h-screen py-8">
+      <SEO
+        title={`${course.title} | Online Course | EduLumix`}
+        description={desc || `Enroll in ${course.title} - ${course.level || 'All levels'} course by EduLumix. ${course.enrollments || 0}+ students enrolled.`}
+        keywords={courseKeywords}
+        url={`/courses/${course.slug}`}
+        type="article"
+        image={course.thumbnail}
+        structuredData={structuredData}
+      />
       <div className="max-w-6xl mx-auto px-4">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-6">
@@ -352,6 +382,27 @@ const CourseDetails = () => {
                     </li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {/* Raw API Details (for external/Udemy courses) */}
+            {course.rawApiData && course.source === 'udemy' && (
+              <div className="bg-white dark:bg-dark-200 rounded-2xl p-6 border border-gray-200 dark:border-dark-100">
+                <button
+                  onClick={() => setShowRawDetails(!showRawDetails)}
+                  className="w-full flex items-center justify-between text-left"
+                >
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <ExternalLink className="w-5 h-5" />
+                    Full Course Info (API)
+                  </h2>
+                  {showRawDetails ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                </button>
+                {showRawDetails && (
+                  <pre className="mt-4 p-4 bg-gray-50 dark:bg-dark-100 rounded-lg text-sm overflow-x-auto text-gray-700 dark:text-gray-300 max-h-96 overflow-y-auto">
+                    {JSON.stringify(course.rawApiData, null, 2)}
+                  </pre>
+                )}
               </div>
             )}
 

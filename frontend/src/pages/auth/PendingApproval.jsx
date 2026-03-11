@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Clock, Home, Mail } from 'lucide-react';
+import SEO from '../../components/seo/SEO';
 
 const PendingApproval = () => {
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4">
+      <SEO title="Pending Approval | EduLumix" noIndex />
       <div className="w-full max-w-md text-center">
         {/* Icon */}
         <div className="w-24 h-24 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-6">

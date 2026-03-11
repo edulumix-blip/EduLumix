@@ -417,12 +417,12 @@ const Home = () => {
       generateWebsiteSchema(),
       {
         '@type': 'WebPage',
-        '@id': 'https://edulumix.com/',
-        url: 'https://edulumix.com/',
+        '@id': 'https://edulumix.in/',
+        url: 'https://edulumix.in/',
         name: 'EduLumix - Complete Career Platform for Freshers | Jobs, Courses, Resources',
         description: 'Find fresher jobs, free resources, online courses, mock tests, and career guidance. Join 50,000+ students building successful careers with EduLumix.',
         isPartOf: {
-          '@id': 'https://edulumix.com/#website'
+          '@id': 'https://edulumix.in/#website'
         }
       }
     ]
@@ -433,7 +433,7 @@ const Home = () => {
       <SEO
         title="EduLumix - Complete Career Platform for Freshers | Jobs, Courses, Resources & More"
         description="Find latest fresher jobs, free resources, online courses, mock tests, tech blogs, and digital products. Join 50,000+ students building successful careers with EduLumix. Your one-stop platform for career growth."
-        keywords="fresher jobs, jobs for freshers, entry level jobs, graduate jobs, online courses, free resources, mock tests, interview preparation, tech blog, career guidance, digital products, job portal India, placement preparation, skill development, career platform"
+        keywords="EduLumix, Edu Lumix, edulumix, EduLumix.in, fresher jobs, jobs for freshers, entry level jobs, graduate jobs, online courses, free resources, mock tests, interview preparation, tech blog, career guidance, digital products, job portal India, placement preparation, skill development, career platform"
         url="/"
         type="website"
         structuredData={structuredData}
