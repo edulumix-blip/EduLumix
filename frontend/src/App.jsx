@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Loader from './components/common/Loader';
 import ScrollToTop from './components/common/ScrollToTop';
 import EduLumixChatbot from './components/chat/EduLumixChatbot';
@@ -37,16 +37,10 @@ const RefundPolicy = lazy(() => import('./pages/RefundPolicy'));
 const Login = lazy(() => import('./pages/auth/Login'));
 const Signup = lazy(() => import('./pages/auth/Signup'));
 const PendingApproval = lazy(() => import('./pages/auth/PendingApproval'));
-const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
-const MyPosts = lazy(() => import('./pages/dashboard/MyPosts'));
-const Profile = lazy(() => import('./pages/dashboard/Profile'));
 const CreateJob = lazy(() => import('./pages/dashboard/CreateJob'));
 const CreateResource = lazy(() => import('./pages/dashboard/CreateResource'));
 const CreateBlog = lazy(() => import('./pages/dashboard/CreateBlog'));
 const CreateProduct = lazy(() => import('./pages/dashboard/CreateProduct'));
-const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
-const ManageUsers = lazy(() => import('./pages/admin/ManageUsers'));
-const PendingApprovals = lazy(() => import('./pages/admin/PendingApprovals'));
 const SuperAdminLayout = lazy(() => import('./pages/superadmin/SuperAdminLayout'));
 const SuperAdminDashboard = lazy(() => import('./pages/superadmin/SuperAdminDashboard'));
 const ContributorManagement = lazy(() => import('./pages/superadmin/ContributorManagement'));
@@ -151,19 +145,19 @@ function App() {
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/pending-approval" element={<PendingApproval />} />
                 
-                {/* Old Dashboard Routes (for approved admins) */}
-                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/dashboard/my-posts" element={<ProtectedRoute><MyPosts /></ProtectedRoute>} />
-                <Route path="/dashboard/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                <Route path="/dashboard/create-job" element={<ProtectedRoute><CreateJob /></ProtectedRoute>} />
-                <Route path="/dashboard/create-resource" element={<ProtectedRoute><CreateResource /></ProtectedRoute>} />
-                <Route path="/dashboard/create-blog" element={<ProtectedRoute><CreateBlog /></ProtectedRoute>} />
-                <Route path="/dashboard/create-product" element={<ProtectedRoute><CreateProduct /></ProtectedRoute>} />
+                {/* Legacy dashboard routes redirected to contributor area */}
+                <Route path="/dashboard" element={<Navigate to="/contributor" replace />} />
+                <Route path="/dashboard/my-posts" element={<Navigate to="/contributor/my-posts" replace />} />
+                <Route path="/dashboard/profile" element={<Navigate to="/contributor/profile" replace />} />
+                <Route path="/dashboard/create-job" element={<Navigate to="/contributor/create-job" replace />} />
+                <Route path="/dashboard/create-resource" element={<Navigate to="/contributor/create-resource" replace />} />
+                <Route path="/dashboard/create-blog" element={<Navigate to="/contributor/create-blog" replace />} />
+                <Route path="/dashboard/create-product" element={<Navigate to="/contributor/create-product" replace />} />
                 
-                {/* Old Super Admin Routes (legacy) */}
-                <Route path="/admin" element={<SuperAdminRoute><AdminDashboard /></SuperAdminRoute>} />
-                <Route path="/admin/users" element={<SuperAdminRoute><ManageUsers /></SuperAdminRoute>} />
-                <Route path="/admin/pending" element={<SuperAdminRoute><PendingApprovals /></SuperAdminRoute>} />
+                {/* Legacy admin routes redirected to super-admin workspace */}
+                <Route path="/admin" element={<Navigate to="/super-admin" replace />} />
+                <Route path="/admin/users" element={<Navigate to="/super-admin/contributors" replace />} />
+                <Route path="/admin/pending" element={<Navigate to="/super-admin/contributors" replace />} />
                 
                 {/* 404 */}
                 <Route path="*" element={<NotFound />} />

@@ -6,6 +6,9 @@ import {
 } from 'lucide-react';
 import { mockTestService } from '../../services/dataService';
 import toast from 'react-hot-toast';
+import Pagination from '../../components/common/Pagination';
+
+const LIMIT = 30;
 
 const categories = [
   'Aptitude',
@@ -28,6 +31,9 @@ const questionDifficulties = ['Easy', 'Medium', 'Hard'];
 
 const MockTestManagement = () => {
   const [tests, setTests] = useState([]);
+  const [totalTests, setTotalTests] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [stats, setStats] = useState({
@@ -86,13 +92,17 @@ const MockTestManagement = () => {
   };
 
   useEffect(() => {
-    fetchTests();
+    setPage(1);
   }, [searchTerm, categoryFilter, difficultyFilter, statusFilter]);
+
+  useEffect(() => {
+    fetchTests();
+  }, [page, searchTerm, categoryFilter, difficultyFilter, statusFilter]);
 
   const fetchTests = async () => {
     try {
       setLoading(true);
-      const params = {};
+      const params = { limit: LIMIT, page };
       if (searchTerm) params.search = searchTerm;
       if (categoryFilter) params.category = categoryFilter;
       if (difficultyFilter) params.difficulty = difficultyFilter;
@@ -100,6 +110,8 @@ const MockTestManagement = () => {
 
       const response = await mockTestService.getAllAdmin(params);
       setTests(response.data.data || []);
+      setTotalTests(response.data.total ?? 0);
+      setTotalPages(response.data.totalPages ?? 1);
       setStats(response.data.stats || stats);
     } catch (error) {
       console.error('Error fetching tests:', error);
@@ -438,6 +450,13 @@ const MockTestManagement = () => {
           ))
         )}
       </div>
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        total={totalTests}
+        limit={LIMIT}
+        onPageChange={setPage}
+      />
 
       {/* Create/Edit Modal */}
       {(showCreateModal || showEditModal) && (

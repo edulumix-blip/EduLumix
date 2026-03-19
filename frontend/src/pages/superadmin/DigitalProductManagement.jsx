@@ -6,6 +6,9 @@ import {
 } from 'lucide-react';
 import { productService } from '../../services/dataService';
 import toast from 'react-hot-toast';
+import Pagination from '../../components/common/Pagination';
+
+const LIMIT = 30;
 
 const categories = [
   'AI Tools',
@@ -19,6 +22,9 @@ const categories = [
 
 const DigitalProductManagement = () => {
   const [products, setProducts] = useState([]);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [stats, setStats] = useState({
@@ -56,13 +62,17 @@ const DigitalProductManagement = () => {
   });
 
   useEffect(() => {
-    fetchProducts();
+    setPage(1);
   }, [searchTerm, categoryFilter, statusFilter, featuredFilter]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [page, searchTerm, categoryFilter, statusFilter, featuredFilter]);
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const params = {};
+      const params = { limit: LIMIT, page };
       if (searchTerm) params.search = searchTerm;
       if (categoryFilter) params.category = categoryFilter;
       if (statusFilter) params.isAvailable = statusFilter;
@@ -70,6 +80,8 @@ const DigitalProductManagement = () => {
 
       const response = await productService.getAllAdmin(params);
       setProducts(response.data.data || []);
+      setTotalProducts(response.data.total ?? 0);
+      setTotalPages(response.data.totalPages ?? 1);
       setStats(response.data.stats || stats);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -425,6 +437,13 @@ const DigitalProductManagement = () => {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          total={totalProducts}
+          limit={LIMIT}
+          onPageChange={setPage}
+        />
       </div>
 
       {/* Create/Edit Modal */}

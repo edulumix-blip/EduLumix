@@ -92,6 +92,20 @@ npm run dev
 
 Backend runs on `http://localhost:5000`
 
+6. Run backend tests:
+```bash
+npm test
+```
+
+### Run Full Stack Together (Auto Port Detection)
+
+From project root:
+```bash
+npm run dev:all
+```
+
+This starts backend and frontend together and automatically chooses free ports if defaults are occupied.
+
 ### Frontend Setup
 
 1. Navigate to frontend directory:
@@ -131,7 +145,7 @@ See [backend/RENDER_DEPLOYMENT.md](backend/RENDER_DEPLOYMENT.md) for detailed in
 
 ### Frontend Deployment (Netlify)
 
-See [frontend/NETLIFY_DEPLOYMENT.md](frontend/NETLIFY_DEPLOYMENT.md) for detailed instructions.
+Netlify settings are available in [frontend/netlify.toml](frontend/netlify.toml).
 
 **Quick Steps:**
 1. Push code to GitHub
@@ -152,6 +166,8 @@ JWT_SECRET=your_jwt_secret
 PORT=5000
 NODE_ENV=production
 CLIENT_URL=https://your-frontend-domain.netlify.app
+ENABLE_CRON_JOBS=true
+CORS_ALLOWED_ORIGINS=https://staging.edulumix.in,https://preview.example.com
 SUPER_ADMIN_NAME=Md Mijanur Molla
 SUPER_ADMIN_EMAIL=mdmijanur.molla@edulumix.com
 SUPER_ADMIN_PASSWORD=your_secure_password
@@ -213,7 +229,7 @@ Users earn 1 point for each contribution:
 - Post a resource: +1 point
 - Write a blog: +1 point
 
-**Conversion**: 10 points = ₹10
+**Claim milestones**: 10 points = ₹15, 25 = ₹30, 50 = ₹60, 100 = ₹120
 
 ## 🤝 Contributing
 

@@ -6,6 +6,9 @@ import {
 } from 'lucide-react';
 import { courseService } from '../../services/dataService';
 import toast from 'react-hot-toast';
+import Pagination from '../../components/common/Pagination';
+
+const LIMIT = 30;
 
 const categories = [
   'Web Development',
@@ -28,6 +31,9 @@ const languages = ['English', 'Hindi', 'Bengali', 'Tamil', 'Telugu', 'Others'];
 
 const CourseManagement = () => {
   const [courses, setCourses] = useState([]);
+  const [totalCourses, setTotalCourses] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [stats, setStats] = useState({
@@ -80,13 +86,17 @@ const CourseManagement = () => {
   const [formData, setFormData] = useState(initialFormState);
 
   useEffect(() => {
-    fetchCourses();
+    setPage(1);
   }, [searchTerm, categoryFilter, levelFilter, statusFilter]);
+
+  useEffect(() => {
+    fetchCourses();
+  }, [page, searchTerm, categoryFilter, levelFilter, statusFilter]);
 
   const fetchCourses = async () => {
     try {
       setLoading(true);
-      const params = {};
+      const params = { limit: LIMIT, page };
       if (searchTerm) params.search = searchTerm;
       if (categoryFilter) params.category = categoryFilter;
       if (levelFilter) params.level = levelFilter;
@@ -94,6 +104,8 @@ const CourseManagement = () => {
 
       const response = await courseService.getAllAdmin(params);
       setCourses(response.data.data || []);
+      setTotalCourses(response.data.total ?? 0);
+      setTotalPages(response.data.totalPages ?? 1);
       setStats(response.data.stats || stats);
     } catch (error) {
       console.error('Error fetching courses:', error);
@@ -443,6 +455,13 @@ const CourseManagement = () => {
           ))
         )}
       </div>
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        total={totalCourses}
+        limit={LIMIT}
+        onPageChange={setPage}
+      />
 
       {/* Create/Edit Modal */}
       {(showCreateModal || showEditModal) && (

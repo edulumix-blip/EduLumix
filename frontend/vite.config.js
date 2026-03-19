@@ -37,11 +37,21 @@ export default defineConfig({
   },
   server: {
     host: true,
-    port: 3045,
+    port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: process.env.VITE_API_TARGET || 'http://localhost:5000',
         changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('error', (err, req, res) => {
+            console.warn('[Vite proxy] Backend unreachable. Is the server running on', process.env.VITE_API_TARGET || 'http://localhost:5000', '?', err.message);
+          });
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            if (proxyRes.statusCode === 404 && req.url?.startsWith('/api')) {
+              console.warn('[Vite proxy] Backend returned 404 for', req.method, req.url);
+            }
+          });
+        },
       },
     },
   },

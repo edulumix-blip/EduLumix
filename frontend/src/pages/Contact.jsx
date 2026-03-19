@@ -34,7 +34,7 @@ const Contact = () => {
       icon: Mail,
       title: 'Email',
       value: 'support@edulumix.in',
-      link: 'mailto:support@edulumix.com',
+      link: 'mailto:support@edulumix.in',
     },
     {
       icon: Phone,

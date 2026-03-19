@@ -79,7 +79,6 @@ const Resources = () => {
 
   useEffect(() => {
     fetchResources(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only refetch when category changes; search uses handleSearch
   }, [selectedCategory]);
 
   useEffect(() => {

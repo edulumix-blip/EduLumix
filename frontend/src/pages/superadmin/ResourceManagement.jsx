@@ -25,9 +25,15 @@ import {
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import VerifiedBadge from '../../components/common/VerifiedBadge';
+import Pagination from '../../components/common/Pagination';
+
+const LIMIT = 30;
 
 const ResourceManagement = () => {
   const [resources, setResources] = useState([]);
+  const [totalResources, setTotalResources] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
   const [contributors, setContributors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,15 +63,27 @@ const ResourceManagement = () => {
   ];
 
   useEffect(() => {
-    fetchResources();
     fetchContributors();
   }, []);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, categoryFilter]);
+
+  useEffect(() => {
+    fetchResources();
+  }, [page, searchTerm, categoryFilter]);
 
   const fetchResources = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/resources?limit=100');
+      const params = { limit: LIMIT, page };
+      if (searchTerm) params.search = searchTerm;
+      if (categoryFilter) params.category = categoryFilter;
+      const res = await api.get('/resources', { params });
       setResources(res.data.data || []);
+      setTotalResources(res.data.total || 0);
+      setTotalPages(res.data.totalPages || 1);
     } catch (error) {
       console.error('Error fetching resources:', error);
       toast.error('Failed to fetch resources');
@@ -204,17 +222,12 @@ const ResourceManagement = () => {
     return `${day}/${month}/${year}`;
   };
 
-  const filteredResources = resources.filter(resource => {
-    const matchesSearch = resource.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         resource.subcategory?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         resource.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !categoryFilter || resource.category === categoryFilter;
-    const matchesContributor = !contributorFilter || resource.postedBy?._id === contributorFilter;
-    return matchesSearch && matchesCategory && matchesContributor;
-  });
+  const filteredResources = resources.filter(resource =>
+    !contributorFilter || resource.postedBy?._id === contributorFilter
+  );
 
   const stats = {
-    total: resources.length,
+    total: totalResources,
     videos: resources.filter(r => isVideoResource(r)).length,
     notes: resources.filter(r => !isVideoResource(r)).length,
     downloads: resources.reduce((acc, r) => acc + (r.downloads || 0), 0),
@@ -529,6 +542,13 @@ const ResourceManagement = () => {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          total={totalResources}
+          limit={LIMIT}
+          onPageChange={setPage}
+        />
       </div>
 
       {/* Create/Edit Modal */}

@@ -3,9 +3,15 @@ import { FileText, Plus, Search, Filter, Edit2, Trash2, ExternalLink, Eye, Loade
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import VerifiedBadge from '../../components/common/VerifiedBadge';
+import Pagination from '../../components/common/Pagination';
+
+const LIMIT = 30;
 
 const BlogManagement = () => {
   const [blogs, setBlogs] = useState([]);
+  const [totalBlogs, setTotalBlogs] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
   const [contributors, setContributors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -34,23 +40,33 @@ const BlogManagement = () => {
   const categories = ['Tech Blog', 'Career Tips', 'Interview Guide', 'Tutorial', 'News', 'Others'];
 
   useEffect(() => {
-    fetchBlogs();
     fetchContributors();
   }, []);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, categoryFilter, authorFilter, statusFilter]);
+
+  useEffect(() => {
+    fetchBlogs();
+  }, [page, searchTerm, categoryFilter, authorFilter, statusFilter]);
 
   const fetchBlogs = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/blogs/all');
+      const params = { limit: LIMIT, page };
+      if (authorFilter) params.author = authorFilter;
+      if (categoryFilter) params.category = categoryFilter;
+      if (statusFilter === 'published') params.isPublished = true;
+      if (statusFilter === 'draft') params.isPublished = false;
+      if (searchTerm) params.search = searchTerm;
+      const res = await api.get('/blogs/all', { params });
       setBlogs(res.data.data || []);
+      setTotalBlogs(res.data.total || 0);
+      setTotalPages(res.data.totalPages || 1);
     } catch (error) {
       console.error('Error fetching blogs:', error);
-      try {
-        const res = await api.get('/blogs?limit=100');
-        setBlogs(res.data.data || []);
-      } catch (err) {
-        toast.error('Failed to load blogs');
-      }
+      toast.error('Failed to load blogs');
     } finally {
       setLoading(false);
     }
@@ -179,16 +195,8 @@ const BlogManagement = () => {
     return (<span className={`px-2.5 py-1 rounded-full text-xs font-medium ${colors[category] || colors['Others']}`}>{category}</span>);
   };
 
-  const filteredBlogs = blogs.filter(blog => {
-    const matchesSearch = blog.title?.toLowerCase().includes(searchTerm.toLowerCase()) || blog.excerpt?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !categoryFilter || blog.category === categoryFilter;
-    const matchesAuthor = !authorFilter || blog.author?._id === authorFilter;
-    const matchesStatus = !statusFilter || (statusFilter === 'published' ? blog.isPublished : !blog.isPublished);
-    return matchesSearch && matchesCategory && matchesAuthor && matchesStatus;
-  });
-
   const stats = {
-    total: blogs.length,
+    total: totalBlogs,
     published: blogs.filter(b => b.isPublished).length,
     drafts: blogs.filter(b => !b.isPublished).length,
     featured: blogs.filter(b => b.isFeatured).length,
@@ -333,7 +341,7 @@ const BlogManagement = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-              {filteredBlogs.length === 0 ? (
+              {blogs.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="px-4 py-12 text-center">
                     <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
@@ -345,7 +353,7 @@ const BlogManagement = () => {
                   </td>
                 </tr>
               ) : (
-                filteredBlogs.map((blog) => (
+                blogs.map((blog) => (
                   <tr key={blog._id} className="hover:bg-gray-50 dark:hover:bg-dark-100 transition-colors">
                     <td className="px-4 py-4">
                       <div className="flex items-start gap-3">
@@ -460,6 +468,13 @@ const BlogManagement = () => {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          total={totalBlogs}
+          limit={LIMIT}
+          onPageChange={setPage}
+        />
       </div>
 
       {showModal && (

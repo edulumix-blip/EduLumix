@@ -11,6 +11,8 @@ export const jobService = {
   delete: (id) => api.delete(`/jobs/${id}`),
   like: (id) => api.put(`/jobs/${id}/like`),
   getMyJobs: () => api.get('/jobs/my/jobs'),
+  fetchExternal: (opts) => api.post('/jobs/fetch-external', opts || {}),
+  syncClosed: (opts) => api.post('/jobs/sync-closed', opts || {}),
 };
 
 // Resources
@@ -82,7 +84,7 @@ export const mockTestService = {
   delete: (id) => api.delete(`/mocktests/${id}`),
   togglePublish: (id) => api.put(`/mocktests/${id}/toggle-publish`),
   toggleFeatured: (id) => api.put(`/mocktests/${id}/toggle-featured`),
-  submit: (id, answers) => api.post(`/mocktests/${id}/submit`, { answers }),
+  submit: (id, score) => api.post(`/mocktests/${id}/submit`, { score }),
   getCount: () => api.get('/mocktests/count'),
 };
 

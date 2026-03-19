@@ -453,7 +453,7 @@ export const getSEOConfig = (pageType, data = {}) => {
         title: getRandomVariant(MOCKTEST_SEO_VARIANTS.titles),
         description: getRandomVariant(MOCKTEST_SEO_VARIANTS.descriptions),
         keywords: MOCKTEST_SEO_VARIANTS.keywords.join(', '),
-        url: `${BASE_URL}/mock-tests`
+        url: `${BASE_URL}/mock-test`
       };
 
     default:

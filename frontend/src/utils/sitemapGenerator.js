@@ -8,7 +8,7 @@ export const generateSitemap = (jobs = [], blogs = [], courses = [], resources =
     { url: '/resources', changefreq: 'daily', priority: '0.9' },
     { url: '/courses', changefreq: 'weekly', priority: '0.9' },
     { url: '/blog', changefreq: 'daily', priority: '0.9' },
-    { url: '/mock-tests', changefreq: 'weekly', priority: '0.85' },
+    { url: '/mock-test', changefreq: 'weekly', priority: '0.85' },
     { url: '/digital-products', changefreq: 'weekly', priority: '0.85' },
     { url: '/about', changefreq: 'monthly', priority: '0.6' },
     { url: '/contact', changefreq: 'monthly', priority: '0.6' },
@@ -73,7 +73,7 @@ export const generateSitemap = (jobs = [], blogs = [], courses = [], resources =
     const courseDate = course.updatedAt ? new Date(course.updatedAt).toISOString().split('T')[0] : today;
     xml += '  <url>\n';
     xml += `    <loc>${baseUrl}/courses/${course.slug}</loc>\n`;
-    xml += `    <lastmod>${courseDate}</lastmod>\n';
+    xml += `    <lastmod>${courseDate}</lastmod>\n`;
     xml += '    <changefreq>monthly</changefreq>\n';
     xml += '    <priority>0.85</priority>\n';
     if (course.thumbnail) {
@@ -90,7 +90,7 @@ export const generateSitemap = (jobs = [], blogs = [], courses = [], resources =
     const resourceDate = resource.updatedAt ? new Date(resource.updatedAt).toISOString().split('T')[0] : today;
     xml += '  <url>\n';
     xml += `    <loc>${baseUrl}/resources/${resource.slug}</loc>\n`;
-    xml += `    <lastmod>${resourceDate}</lastmod>\n';
+    xml += `    <lastmod>${resourceDate}</lastmod>\n`;
     xml += '    <changefreq>monthly</changefreq>\n';
     xml += '    <priority>0.75</priority>\n';
     xml += '  </url>\n';
@@ -117,7 +117,7 @@ export const generateSitemap = (jobs = [], blogs = [], courses = [], resources =
   mockTests.forEach(test => {
     const testDate = test.updatedAt ? new Date(test.updatedAt).toISOString().split('T')[0] : today;
     xml += '  <url>\n';
-    xml += `    <loc>${baseUrl}/mock-tests/${test.slug}</loc>\n`;
+    xml += `    <loc>${baseUrl}/mock-test/${test.slug}</loc>\n`;
     xml += `    <lastmod>${testDate}</lastmod>\n`;
     xml += '    <changefreq>monthly</changefreq>\n';
     xml += '    <priority>0.7</priority>\n';

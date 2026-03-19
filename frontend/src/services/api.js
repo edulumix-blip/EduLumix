@@ -1,13 +1,13 @@
 import axios from 'axios';
 
-const PRODUCTION_API = 'https://edulumix-backend.onrender.com/api';
-// In dev: use /api (Vite proxy forwards to backend) - avoids CORS
-const LOCAL_API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : 'http://localhost:5000/api');
+const ENV_API = import.meta.env.VITE_API_URL;
+const PRODUCTION_API = ENV_API || 'https://edulumix-backend.onrender.com/api';
 
 function getBaseURL() {
   if (typeof window === 'undefined') return PRODUCTION_API;
   const host = window.location?.hostname || '';
-  if (host === 'localhost' || host === '127.0.0.1') return LOCAL_API;
+  // Always use same-origin /api when on localhost (frontend+backend same port = no CORS)
+  if (host === 'localhost' || host === '127.0.0.1') return '/api';
   return PRODUCTION_API;
 }
 

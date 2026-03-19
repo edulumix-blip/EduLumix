@@ -19,15 +19,23 @@ import {
   AlertCircle,
   User,
   Mail,
-  XCircle
+  XCircle,
+  Download,
+  Lock
 } from 'lucide-react';
 import api from '../../services/api';
+import { jobService } from '../../services/dataService';
 import toast from 'react-hot-toast';
 import VerifiedBadge from '../../components/common/VerifiedBadge';
+import Pagination from '../../components/common/Pagination';
+
+const LIMIT = 30;
 
 const JobManagement = () => {
   const [jobs, setJobs] = useState([]);
   const [totalJobs, setTotalJobs] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
   const [contributors, setContributors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -37,6 +45,8 @@ const JobManagement = () => {
   const [editingJob, setEditingJob] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(null);
+  const [fetchLoading, setFetchLoading] = useState(false);
+  const [syncClosedLoading, setSyncClosedLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     company: '',
@@ -93,6 +103,37 @@ const JobManagement = () => {
       setContributors(jobContributors);
     } catch (error) {
       console.error('Error fetching contributors:', error);
+    }
+  };
+
+  const handleFetchExternalJobs = async () => {
+    try {
+      setFetchLoading(true);
+      const res = await jobService.fetchExternal();
+      const data = res.data?.data || {};
+      const created = data.created ?? 0;
+      const skipped = data.skipped ?? 0;
+      toast.success(res.data?.message ? `${res.data.message} (${created} new, ${skipped} skipped)` : `Fetched: ${created} new, ${skipped} skipped`);
+      fetchJobs();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to fetch jobs from API');
+    } finally {
+      setFetchLoading(false);
+    }
+  };
+
+  const handleSyncClosed = async () => {
+    try {
+      setSyncClosedLoading(true);
+      const res = await jobService.syncClosed();
+      const data = res.data?.data || {};
+      const closed = data.closed ?? 0;
+      toast.success(res.data?.message || (closed > 0 ? `${closed} job(s) marked as Closed` : 'No jobs to sync'));
+      fetchJobs();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to sync closed status');
+    } finally {
+      setSyncClosedLoading(false);
     }
   };
 
@@ -232,13 +273,9 @@ const JobManagement = () => {
     }
   };
 
-  const filteredJobs = jobs.filter(job => {
-    const matchesSearch = job.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.company?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !categoryFilter || job.category === categoryFilter;
-    const matchesContributor = !contributorFilter || job.postedBy?._id === contributorFilter;
-    return matchesSearch && matchesCategory && matchesContributor;
-  });
+  const filteredJobs = jobs.filter(job =>
+    !contributorFilter || job.postedBy?._id === contributorFilter
+  );
 
   if (loading) {
     return (
@@ -260,13 +297,41 @@ const JobManagement = () => {
             Manage all job postings on the platform
           </p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/25"
-        >
-          <Plus className="w-5 h-5" />
-          Create Job
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={handleFetchExternalJobs}
+            disabled={fetchLoading}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-600 hover:bg-sky-700 disabled:bg-sky-400 text-white rounded-xl font-medium transition-colors"
+            title="Fetch jobs from Adzuna + JSearch APIs"
+          >
+            {fetchLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Download className="w-5 h-5" />
+            )}
+            Fetch Jobs from API
+          </button>
+          <button
+            onClick={handleSyncClosed}
+            disabled={syncClosedLoading}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white rounded-xl font-medium transition-colors"
+            title="Mark as Closed jobs that are no longer open on Adzuna/JSearch"
+          >
+            {syncClosedLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Lock className="w-5 h-5" />
+            )}
+            Sync closed from source
+          </button>
+          <button
+            onClick={openCreateModal}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/25"
+          >
+            <Plus className="w-5 h-5" />
+            Create Job
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -550,6 +615,13 @@ const JobManagement = () => {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          total={totalJobs}
+          limit={LIMIT}
+          onPageChange={setPage}
+        />
       </div>
 
       {/* Create/Edit Modal */}
