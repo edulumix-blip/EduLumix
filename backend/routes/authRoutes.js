@@ -3,7 +3,6 @@ import rateLimit from 'express-rate-limit';
 import {
   signup,
   login,
-  firebaseLogin,
   getMe,
   updateProfile,
   changePassword,
@@ -29,7 +28,6 @@ const authLimiter = rateLimit({
 // Public routes (with rate limiting + validation)
 router.post('/signup', authLimiter, signupValidation, handleValidationErrors, signup);
 router.post('/login', authLimiter, loginValidation, handleValidationErrors, login);
-router.post('/firebase-login', authLimiter, firebaseLogin);
 
 // Protected routes
 router.get('/me', protect, getMe);

@@ -158,9 +158,8 @@ services:
 The backend is configured to accept requests from:
 - `http://localhost:5173` (local development)
 - `*.netlify.app` (Netlify deployments)
-- `*.web.app` (Firebase deployments)
-- `*.firebaseapp.com` (Firebase deployments)
-- `https://edulumix.in` (custom domain)
+- `https://edulumix.in` and `https://www.edulumix.in` (custom domain)
+- `CLIENT_URL` and `CORS_ALLOWED_ORIGINS` from environment
 
 **To add your frontend domain:**
 

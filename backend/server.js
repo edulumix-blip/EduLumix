@@ -101,7 +101,7 @@ const corsOptions = {
     if (parsedOrigin.hostname.endsWith('.netlify.app')) {
       return callback(null, true);
     }
-    // Check allowed list (production domains, CLIENT_URL, etc.)
+    // Check allowed list (production domains, CLIENT_URL, CORS_ALLOWED_ORIGINS, etc.)
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }

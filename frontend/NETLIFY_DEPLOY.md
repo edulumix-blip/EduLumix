@@ -1,6 +1,6 @@
 # Netlify — EduLumix frontend
 
-Backend stays on **Render**; only static hosting moves here.
+Backend stays on **Render**; static hosting on Netlify. Auth is **email + password** only (no Firebase).
 
 ## Git-connected deploy (recommended)
 
@@ -8,18 +8,16 @@ Backend stays on **Render**; only static hosting moves here.
 2. Build settings (repo root `netlify.toml` sets these if the file is picked up):
    - **Base directory:** `frontend`
    - **Build command:** `npm install && npm run build`
-   - **Publish directory:** `dist` (relative to base `frontend/`; same as `netlify.toml`).
+   - **Publish directory:** `dist` (relative to base `frontend/`).
 3. **Environment variables** (Site settings → Environment variables):
 
 | Variable | Example |
 |----------|---------|
-| `VITE_API_URL` | `https://YOUR-SERVICE.onrender.com/api` |
+| `VITE_API_URL` | `https://edulumix.onrender.com/api` |
 | `VITE_APP_URL` | `https://yoursite.netlify.app` (later your custom domain) |
-| `VITE_FIREBASE_*` | Same as Firebase Console (Auth still uses Firebase) |
+| `VITE_ADS_SLOT_*` | Optional AdSense slots |
 
-4. **Render CORS:** set `CLIENT_URL` to your Netlify URL (e.g. `https://edulumix.netlify.app`) or add it under `CORS_ALLOWED_ORIGINS`. The API also allows any `*.netlify.app` origin.
-
-5. **Firebase Auth:** Firebase Console → Authentication → Settings → **Authorized domains** → add your Netlify hostname (e.g. `yoursite.netlify.app` and later `edulumix.in`).
+4. **Render CORS:** set `CLIENT_URL` to your Netlify URL. The API also allows `*.netlify.app`.
 
 ## CLI (optional)
 

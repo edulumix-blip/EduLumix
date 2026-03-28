@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const ENV_API = import.meta.env.VITE_API_URL;
-const PRODUCTION_API = ENV_API || 'https://edulumix-backend.onrender.com/api';
+const PRODUCTION_API = ENV_API || 'https://edulumix.onrender.com/api';
 
 function getBaseURL() {
   if (typeof window === 'undefined') return PRODUCTION_API;

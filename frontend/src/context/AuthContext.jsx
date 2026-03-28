@@ -89,31 +89,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const loginWithFirebase = async (idToken) => {
-    try {
-      const response = await api.post('/auth/firebase-login', { idToken });
-      
-      if (response.data.success) {
-        const { token, ...userData } = response.data.data;
-        
-        localStorage.setItem('edulumix_token', token);
-        localStorage.setItem('edulumix_user', JSON.stringify(userData));
-        
-        setUser(userData);
-        setIsAuthenticated(true);
-        
-        toast.success('Login successful!');
-        return { success: true, data: userData };
-      }
-    } catch (error) {
-      const message = error.response?.data?.message || 'Firebase login failed';
-      const status = error.response?.data?.status;
-      
-      toast.error(message);
-      return { success: false, message, status };
-    }
-  };
-
   const logout = () => {
     localStorage.removeItem('edulumix_token');
     localStorage.removeItem('edulumix_user');
@@ -144,7 +119,6 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     signup,
     login,
-    loginWithFirebase,
     logout,
     updateProfile,
     isSuperAdmin: user?.role === 'super_admin',

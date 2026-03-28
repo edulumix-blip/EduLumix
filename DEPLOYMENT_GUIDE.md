@@ -125,50 +125,7 @@ edulumix-backend/
 
 ---
 
-### **Option 2: Firebase Hosting (Frontend) + Render (Backend)**
-
-#### **Backend:** Same as Option 1
-
-#### **Frontend on Firebase:**
-
-1. **Install Firebase CLI:**
-   ```bash
-   npm install -g firebase-tools
-   ```
-
-2. **Login to Firebase:**
-   ```bash
-   firebase login
-   ```
-
-3. **Initialize Firebase (if not already):**
-   ```bash
-   cd frontend
-   firebase init hosting
-   ```
-   - Select existing project or create new
-   - Public directory: `dist`
-   - Single-page app: Yes
-   - GitHub Actions: No (for now)
-
-4. **Build Frontend:**
-   ```bash
-   npm run build
-   ```
-
-5. **Deploy:**
-   ```bash
-   firebase deploy
-   ```
-
-6. **Your site will be live at:**
-   ```
-   https://your-project.web.app
-   ```
-
----
-
-### **Option 3: Vercel (Full Stack)**
+### **Option 2: Vercel (Full Stack)**
 
 #### **Deploy Full Stack to Vercel:**
 
@@ -407,9 +364,8 @@ Solution:
 
 ### **Free Tier (₹0/month):**
 - ✅ Render (Backend): Free with limitations
-- ✅ Netlify (Frontend): 100GB bandwidth free
+- ✅ Netlify (Frontend): generous free tier (bandwidth limits apply)
 - ✅ MongoDB Atlas: 512MB storage free
-- ✅ Firebase Hosting: 10GB storage, 360MB/day transfer
 
 **Total: FREE!** (with limitations)
 

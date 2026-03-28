@@ -33,7 +33,6 @@
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^8.3.0",
     "express-validator": "^7.2.0",
-    "firebase-admin": "^13.6.0",
     "groq-sdk": "^0.37.0",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
