@@ -17,12 +17,22 @@
 Fill in the following details:
 
 **Basic Settings:**
+
+**If the Git repo is the full monorepo (`EduLumix` with `backend/` folder):**
 ```
 Name: edulumix-backend
 Region: Singapore (or closest to your target audience)
 Branch: main
-Root Directory: (leave blank - already in backend folder)
+Root Directory: backend
 Runtime: Node
+Build Command: npm install
+Start Command: npm start
+```
+Important: With **Root Directory = `backend`**, you must **not** use `node backend/server.js` as the start command (Render will look for `backend/backend/server.js` and crash). Use **`npm start`** so it runs `node server.js` from inside `backend/`.
+
+**If the Git repo is backend-only** (no parent folder):
+```
+Root Directory: (leave blank)
 Build Command: npm install
 Start Command: npm start
 ```

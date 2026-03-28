@@ -1,0 +1,29 @@
+# Render Blueprint for monorepo: API lives in /backend only.
+# Start Command must be `npm start` (runs backend/package.json → node server.js).
+# Do NOT use `node backend/server.js` when Root Directory is `backend` — that doubles the path.
+
+services:
+  - type: web
+    name: edulumix-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+      - key: SUPER_ADMIN_NAME
+        sync: false
+      - key: SUPER_ADMIN_EMAIL
+        sync: false
+      - key: SUPER_ADMIN_PASSWORD
+        sync: false
