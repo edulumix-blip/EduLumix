@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Search, FileText, Calendar, Eye, ThumbsUp, 
+  Search, FileText, Eye, ThumbsUp, 
   User, Clock, Star, MessageCircle, Share2, 
-  MoreHorizontal, Bookmark, Send, Heart,
-  TrendingUp, Filter, ChevronDown, Loader2,
-  Globe, Image, Tag, ArrowLeft
+  Heart, Filter, Loader2,
+  Globe, Tag, ArrowLeft, Zap, LayoutGrid, TrendingUp,
 } from 'lucide-react';
 import { blogService } from '../services/dataService';
 import { BlogCardSkeleton } from '../components/skeleton';
@@ -13,22 +12,35 @@ import VerifiedBadge from '../components/common/VerifiedBadge';
 import toast from 'react-hot-toast';
 import SEO from '../components/seo/SEO';
 import { generateBreadcrumbSchema } from '../utils/seoSchemas';
+import ListingPageHero from '../components/listing/ListingPageHero';
 
 const PAGE_SIZE = 20;
 
 const Blog = () => {
   const [displayedBlogs, setDisplayedBlogs] = useState([]);
-  const [featuredBlogs, setFeaturedBlogs] = useState([]);
+  const [trendingBlogs, setTrendingBlogs] = useState([]);
+  const [trendingLoading, setTrendingLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [expandedPosts, setExpandedPosts] = useState({});
   const [likedPosts, setLikedPosts] = useState({});
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [totalPages, setTotalPages] = useState(1);
+  const [listTotal, setListTotal] = useState(0);
+  const [showFilters, setShowFilters] = useState(false);
   const observerTarget = useRef(null);
+  const listingsRef = useRef(null);
+
+  const scrollToListings = () => {
+    listingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const selectCategory = (cat) => {
+    setSelectedCategory(cat);
+    setShowFilters(false);
+    setTimeout(scrollToListings, 120);
+  };
 
   const categories = [
     'All',
@@ -42,26 +54,26 @@ const Blog = () => {
 
   useEffect(() => {
     fetchBlogs(1);
-    fetchFeaturedBlogs();
   }, [selectedCategory]);
 
-  const fetchBlogs = async (pageNum = 1, append = false) => {
+  const fetchBlogs = async (pageNum = 1, append = false, opts = {}) => {
     try {
       if (pageNum === 1) setLoading(true);
       else setLoadingMore(true);
+
+      const effectiveSearch = opts.search !== undefined ? opts.search : searchTerm;
 
       const params = { limit: PAGE_SIZE, page: pageNum };
       if (selectedCategory !== 'All') {
         params.category = selectedCategory;
       }
-      if (searchTerm) {
-        params.search = searchTerm;
+      if (effectiveSearch) {
+        params.search = effectiveSearch;
       }
       const response = await blogService.getAll(params);
       if (response.data.success) {
         const data = response.data.data || [];
         const pages = response.data.totalPages ?? 1;
-        setTotalPages(pages);
         setPage(pageNum);
         setHasMore(pageNum < pages);
 
@@ -69,6 +81,7 @@ const Blog = () => {
           setDisplayedBlogs(prev => [...prev, ...data]);
         } else {
           setDisplayedBlogs(data);
+          setListTotal(response.data.total ?? data.length);
         }
       }
     } catch (error) {
@@ -79,16 +92,28 @@ const Blog = () => {
     }
   };
 
-  const fetchFeaturedBlogs = async () => {
+  const fetchTrendingBlogs = async () => {
     try {
-      const response = await blogService.getFeatured();
+      setTrendingLoading(true);
+      const response = await blogService.getAll({
+        limit: 20,
+        page: 1,
+        sort: 'trending',
+      });
       if (response.data.success) {
-        setFeaturedBlogs(response.data.data || []);
+        setTrendingBlogs(response.data.data || []);
       }
     } catch (error) {
-      console.error('Failed to fetch featured blogs');
+      console.error('Failed to fetch trending blogs');
+      setTrendingBlogs([]);
+    } finally {
+      setTrendingLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchTrendingBlogs();
+  }, []);
 
   const loadMoreBlogs = useCallback(() => {
     if (loadingMore || !hasMore) return;
@@ -98,7 +123,7 @@ const Blog = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
-        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && !loading) {
           loadMoreBlogs();
         }
       },
@@ -115,7 +140,7 @@ const Blog = () => {
         observer.unobserve(currentTarget);
       }
     };
-  }, [loadMoreBlogs, hasMore, loadingMore]);
+  }, [loadMoreBlogs, hasMore, loadingMore, loading]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -133,10 +158,6 @@ const Blog = () => {
     } catch (error) {
       console.error('Failed to like blog');
     }
-  };
-
-  const toggleExpand = (id) => {
-    setExpandedPosts({ ...expandedPosts, [id]: !expandedPosts[id] });
   };
 
   const formatDate = (dateString) => {
@@ -207,7 +228,7 @@ const Blog = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-dark-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-300 py-8 lg:py-12">
       <SEO
         title="Tech Blog - Programming Tutorials, Career Tips & Technology Guides | EduLumix"
         description="Read latest tech blogs, programming tutorials, interview tips, career guidance, web development guides, and technology trends. Learn from industry experts and enhance your technical skills."
@@ -215,61 +236,121 @@ const Blog = () => {
         url="/blog"
         structuredData={structuredData}
       />
-      
-      {/* Header */}
-      <div className="bg-white dark:bg-dark-200 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
-                Tech Blog
-              </h1>
-              <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-                Discover insights, tutorials, and the latest in technology
-              </p>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ListingPageHero
+          imageUrl="https://images.unsplash.com/photo-1456324504439-367cee3b3c32?auto=format&fit=crop&w=2000&q=85"
+          objectPositionClass="object-[center_40%] sm:object-center"
+          eyebrow={
+            <p className="inline-flex items-center gap-2 text-white/95 text-sm font-medium mb-4 drop-shadow-md [text-shadow:0_1px_12px_rgba(0,0,0,0.5)]">
+              <Zap className="w-4 h-4 text-amber-300 shrink-0 drop-shadow-md" />
+              Tutorials, career & tech — from the community
+            </p>
+          }
+          title="Tech blog that reads with you"
+          description="Deep dives, interview prep, tutorials, and news. Filter by category, search any keyword, then like and share what helps."
+          stat={{
+            label: 'Posts in this list',
+            value: listTotal.toLocaleString('en-IN'),
+            Icon: FileText,
+          }}
+          statLoading={loading && displayedBlogs.length === 0}
+        />
+
+        <div className="mb-8" ref={listingsRef}>
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 mb-5">
+            <div className="flex-1 relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search posts by title or keywords..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white dark:bg-dark-200 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-colors shadow-sm"
+              />
             </div>
-            
-            {/* Search */}
-            <form onSubmit={handleSearch} className="flex gap-2 w-full lg:w-auto">
-              <div className="relative flex-1 lg:w-80">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search posts..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-full bg-gray-100 dark:bg-dark-100 border-0 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <button type="submit" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition-colors">
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                className="flex-1 sm:flex-none px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold transition-colors shadow-lg shadow-blue-600/25"
+              >
                 Search
               </button>
-            </form>
+              <button
+                type="button"
+                onClick={() => setShowFilters(!showFilters)}
+                className="lg:hidden px-4 py-3.5 bg-gray-100 dark:bg-dark-200 border border-gray-200 dark:border-gray-700 rounded-2xl"
+                aria-expanded={showFilters}
+              >
+                <Filter className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              </button>
+            </div>
+          </form>
+
+          <div className="mb-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {loading && displayedBlogs.length === 0 ? (
+                'Loading posts…'
+              ) : (
+                <>
+                  Showing{' '}
+                  <span className="font-semibold text-gray-800 dark:text-gray-200">
+                    {displayedBlogs.length.toLocaleString('en-IN')}
+                  </span>
+                  {(selectedCategory !== 'All' || searchTerm) && (
+                    <>
+                      {' '}
+                      of{' '}
+                      <span className="font-semibold text-gray-800 dark:text-gray-200">
+                        {listTotal.toLocaleString('en-IN')}
+                      </span>
+                    </>
+                  )}
+                  {selectedCategory !== 'All' && (
+                    <span className="text-gray-400 dark:text-gray-500">
+                      {' '}
+                      · <span className="text-blue-600 dark:text-blue-400">{selectedCategory}</span>
+                    </span>
+                  )}
+                  {searchTerm && (
+                    <span className="text-gray-400 dark:text-gray-500">
+                      {' '}
+                      · search: <span className="text-blue-600 dark:text-blue-400">&quot;{searchTerm}&quot;</span>
+                    </span>
+                  )}
+                </>
+              )}
+            </p>
           </div>
 
-          {/* Category Pills */}
-          <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide">
+          <div
+            className={`flex flex-wrap gap-2 ${showFilters ? 'flex' : 'hidden lg:flex'}`}
+            role="tablist"
+            aria-label="Blog category"
+          >
             {categories.map((category) => (
               <button
                 key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                type="button"
+                role="tab"
+                aria-selected={selectedCategory === category}
+                onClick={() => selectCategory(category)}
+                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   selectedCategory === category
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 dark:bg-dark-100 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-300'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
+                    : 'bg-white dark:bg-dark-200 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'
                 }`}
               >
+                {category === 'All' && <LayoutGrid className="w-3.5 h-3.5 opacity-80" />}
                 {category}
               </button>
             ))}
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
           {/* Main Feed */}
-          <div className="flex-1 max-w-2xl mx-auto lg:mx-0 space-y-4">
+          <div className="flex-1 min-w-0 max-w-2xl mx-auto lg:mx-0 space-y-4 lg:max-w-none lg:pr-2">
             {loading ? (
               <div className="space-y-4">
                 {[...Array(4)].map((_, i) => (
@@ -288,8 +369,8 @@ const Blog = () => {
               displayedBlogs.map((blog) => (
                 <article key={blog._id} className="bg-white dark:bg-dark-200 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
                   {/* Post Header */}
-                  <div className="p-4 flex items-start justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className="p-4 flex items-start">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
                       {blog.author ? (
                         <>
                           {blog.author.avatar ? (
@@ -341,9 +422,6 @@ const Blog = () => {
                         </div>
                       </div>
                     </div>
-                    <button className="p-2 hover:bg-gray-100 dark:hover:bg-dark-100 rounded-full transition-colors">
-                      <MoreHorizontal className="w-5 h-5 text-gray-500" />
-                    </button>
                   </div>
 
                   {/* Cover Image - Top of card for fetched blogs */}
@@ -399,9 +477,14 @@ const Blog = () => {
                   {blog.tags && blog.tags.length > 0 && (
                     <div className="px-4 pb-3 flex flex-wrap gap-2">
                       {blog.tags.slice(0, 5).map((tag, idx) => (
-                        <span key={idx} className="text-blue-600 dark:text-blue-400 text-sm hover:underline cursor-pointer">
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleTagSearch(tag)}
+                          className="text-blue-600 dark:text-blue-400 text-sm hover:underline text-left"
+                        >
                           #{tag}
-                        </span>
+                        </button>
                       ))}
                     </div>
                   )}
@@ -484,78 +567,82 @@ const Blog = () => {
             )}
           </div>
 
-          {/* Sidebar */}
-          <div className="lg:w-80 space-y-4">
-            {/* Trending/Featured */}
-            {featuredBlogs.length > 0 && (
-              <div className="bg-white dark:bg-dark-200 rounded-xl p-4 border border-gray-200 dark:border-gray-800 sticky top-32">
-                <div className="flex items-center gap-2 mb-4">
-                  <TrendingUp className="w-5 h-5 text-blue-600" />
-                  <h3 className="font-bold text-gray-900 dark:text-white">Trending Posts</h3>
+          {/* Desktop only: sticky top 20 trending */}
+          <aside className="hidden lg:block w-80 flex-shrink-0" aria-label="Trending blog posts">
+            <div className="sticky top-28 space-y-4">
+              <div className="bg-white dark:bg-dark-200 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50/80 dark:bg-dark-100/80">
+                  <TrendingUp className="w-5 h-5 text-orange-500" aria-hidden />
+                  <h3 className="font-bold text-gray-900 dark:text-white">Top 20 trending</h3>
                 </div>
-                <div className="space-y-4">
-                  {featuredBlogs.slice(0, 5).map((blog, index) => (
-                    <Link key={blog._id} to={`/blog/${blog.slug}`} className="flex gap-3 group">
-                      <span className="text-2xl font-bold text-gray-300 dark:text-gray-600 group-hover:text-blue-600 transition-colors">
-                        {String(index + 1).padStart(2, '0')}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-sm">
-                          {blog.title}
-                        </h4>
-                        <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          <span className="flex items-center gap-1">
-                            {blog.author?.name || 'Anonymous'}
-                            <VerifiedBadge user={blog.author} size="xs" />
-                          </span>
-                          <span>•</span>
-                          <span>{formatDate(blog.createdAt)}</span>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Categories Stats */}
-            <div className="bg-white dark:bg-dark-200 rounded-xl p-4 border border-gray-200 dark:border-gray-800">
-              <h3 className="font-bold text-gray-900 dark:text-white mb-4">Explore Topics</h3>
-              <div className="space-y-2">
-                {categories.slice(1).map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
-                      selectedCategory === cat
-                        ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                        : 'hover:bg-gray-100 dark:hover:bg-dark-100 text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${getCategoryColor(cat)}`}></span>
-                      {cat}
+                <div className="p-3">
+                  {trendingLoading ? (
+                    <div className="flex items-center justify-center py-12 text-gray-500 dark:text-gray-400 text-sm">
+                      <Loader2 className="w-6 h-6 animate-spin text-blue-600 mr-2" />
+                      Loading…
                     </div>
-                    <ChevronDown className="w-4 h-4 -rotate-90" />
-                  </button>
-                ))}
+                  ) : trendingBlogs.length === 0 ? (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">No trending posts yet</p>
+                  ) : (
+                    <ol className="space-y-1">
+                      {trendingBlogs.map((blog, index) => (
+                        <li key={blog._id}>
+                          <Link
+                            to={`/blog/${blog.slug}`}
+                            className="flex gap-3 rounded-lg p-2 -mx-2 hover:bg-gray-50 dark:hover:bg-dark-100 transition-colors group"
+                          >
+                            <span className="text-lg font-bold text-gray-300 dark:text-gray-600 tabular-nums w-7 shrink-0 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                              {index + 1}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-gray-900 dark:text-white text-sm leading-snug line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                {blog.title}
+                              </h4>
+                              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                <span className="flex items-center gap-0.5">
+                                  <Eye className="w-3.5 h-3.5" />
+                                  {(blog.views ?? 0).toLocaleString('en-IN')}
+                                </span>
+                                <span>·</span>
+                                <span className="truncate max-w-[140px]">{blog.author?.name || 'Anonymous'}</span>
+                              </div>
+                            </div>
+                          </Link>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* Footer Links */}
-            <div className="text-xs text-gray-500 dark:text-gray-400 px-4">
-              <div className="flex flex-wrap gap-2">
-                <Link to="/about" className="hover:underline">About</Link>
-                <span>•</span>
-                <Link to="/contact" className="hover:underline">Contact</Link>
-                <span>•</span>
-                <Link to="/privacy-policy" className="hover:underline">Privacy</Link>
-                <span>•</span>
-                <Link to="/terms-of-service" className="hover:underline">Terms</Link>
+              <div className="text-xs text-gray-500 dark:text-gray-400 px-1">
+                <div className="flex flex-wrap gap-2">
+                  <Link to="/about" className="hover:underline">About</Link>
+                  <span>•</span>
+                  <Link to="/contact" className="hover:underline">Contact</Link>
+                  <span>•</span>
+                  <Link to="/privacy-policy" className="hover:underline">Privacy</Link>
+                  <span>•</span>
+                  <Link to="/terms-of-service" className="hover:underline">Terms</Link>
+                </div>
+                <p className="mt-2">© 2026 EduLumix. All rights reserved.</p>
               </div>
-              <p className="mt-2">© 2026 EduLumix. All rights reserved.</p>
             </div>
+          </aside>
+        </div>
+
+        {/* Mobile footer (sidebar is desktop-only) */}
+        <div className="lg:hidden mt-10 text-xs text-gray-500 dark:text-gray-400 px-1">
+          <div className="flex flex-wrap gap-2 justify-center">
+            <Link to="/about" className="hover:underline">About</Link>
+            <span>•</span>
+            <Link to="/contact" className="hover:underline">Contact</Link>
+            <span>•</span>
+            <Link to="/privacy-policy" className="hover:underline">Privacy</Link>
+            <span>•</span>
+            <Link to="/terms-of-service" className="hover:underline">Terms</Link>
           </div>
+          <p className="mt-2 text-center">© 2026 EduLumix. All rights reserved.</p>
         </div>
       </div>
     </div>

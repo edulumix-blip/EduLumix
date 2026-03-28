@@ -1,22 +1,31 @@
 import { useEffect, useRef } from 'react';
 import { AD_CLIENT } from '../../config/ads';
+import { waitForAdsenseScript } from '../../utils/loadAdsense';
 
 /**
  * Google AdSense ad slot component.
- * Renders nothing when slotId is empty (Auto Ads will still work via index.html script).
- * When slotId is set, renders a display ad unit.
+ * Renders nothing when slotId is empty.
+ * Script loads after window load + idle (see scheduleAdsenseLoad in App).
  */
 const AdSlot = ({ slotId, format = 'auto', className = '', style = {} }) => {
   const adRef = useRef(null);
 
   useEffect(() => {
     if (!slotId || !AD_CLIENT) return;
+    let cancelled = false;
 
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch (e) {
-      console.warn('AdSense push error:', e);
-    }
+    waitForAdsenseScript().then((ok) => {
+      if (cancelled || !ok) return;
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (e) {
+        console.warn('AdSense push error:', e);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [slotId]);
 
   if (!slotId) return null;

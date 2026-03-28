@@ -1,11 +1,25 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  // .env / .env.local must be read here — process.env alone often misses VITE_* for proxy
+  const env = loadEnv(mode, process.cwd(), '');
+  const apiTarget = env.VITE_API_TARGET || 'http://localhost:5000';
+
+  return {
   plugins: [
+    {
+      name: 'edulumix-log-api-proxy',
+      configureServer() {
+        console.log(`[EduLumix] Vite /api proxy → ${apiTarget}`);
+      },
+    },
     react(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -23,11 +37,21 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Lighter first install: don't precache every hashed JS chunk (was ~100+ files).
+        globPatterns: ['**/*.{css,html,ico,png,svg,woff2,webmanifest}'],
         runtimeCaching: [
-          { urlPattern: /^https:\/\/api\./i, handler: 'NetworkFirst', options: { cacheName: 'api-cache', networkTimeoutSeconds: 10 } }
-        ]
-      }
+          {
+            urlPattern: ({ request }) =>
+              request.destination === 'script' || request.destination === 'style',
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'static-assets',
+              expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 7 },
+            },
+          },
+          { urlPattern: /^https:\/\/api\./i, handler: 'NetworkFirst', options: { cacheName: 'api-cache', networkTimeoutSeconds: 10 } },
+        ],
+      },
     })
   ],
   resolve: {
@@ -40,11 +64,11 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: process.env.VITE_API_TARGET || 'http://localhost:5000',
+        target: apiTarget,
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on('error', (err, req, res) => {
-            console.warn('[Vite proxy] Backend unreachable. Is the server running on', process.env.VITE_API_TARGET || 'http://localhost:5000', '?', err.message);
+            console.warn('[Vite proxy] Backend unreachable. Is the server running on', apiTarget, '?', err.message);
           });
           proxy.on('proxyRes', (proxyRes, req, res) => {
             if (proxyRes.statusCode === 404 && req.url?.startsWith('/api')) {
@@ -66,4 +90,5 @@ export default defineConfig({
       },
     },
   },
+  };
 });

@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import Loader from '../../components/common/Loader';
+import CompanyAvatar from '../../components/common/CompanyAvatar';
 import { 
   Briefcase, FolderOpen, FileText, ShoppingBag, 
   Search, Filter, Eye, Edit2, Trash2, ExternalLink,
@@ -35,7 +36,7 @@ const ContributorMyPosts = () => {
   ].filter(tab => tab.visible);
 
   const jobCategories = [
-    'IT Job', 'Non IT Job', 'Walk In Drive', 'Govt Job', 
+    'IT Job', 'Non IT Job', 'Walk In Drive', 'Govt Job',
     'Internship', 'Part Time Job', 'Remote Job', 'Others'
   ];
 
@@ -415,19 +416,21 @@ const ContributorMyPosts = () => {
                     <tr key={post._id} className="hover:bg-gray-50 dark:hover:bg-dark-100 transition-colors">
                       <td className="px-4 py-4">
                         <div className="flex items-start gap-3">
-                          <div className={`w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0 flex items-center justify-center ${(post.type === 'jobs' && post.companyLogo) || (post.type === 'resources' && resourceThumbnail) || (post.type === 'blogs' && blogCoverImage) ? 'bg-white dark:bg-dark-100' : getTypeColor(post.type)}`}>
-                            {post.type === 'jobs' && post.companyLogo ? (
-                              <img src={post.companyLogo} alt={post.company} className="w-full h-full object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
-                            ) : post.type === 'resources' && resourceThumbnail ? (
-                              <img src={resourceThumbnail} alt={postTitle} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
-                            ) : post.type === 'blogs' && blogCoverImage ? (
-                              <img src={blogCoverImage} alt={postTitle} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
-                            ) : post.type === 'resources' ? (
-                              isYouTubeUrl(post.link) ? <Play className="w-5 h-5" /> : <FolderOpen className="w-5 h-5" />
-                            ) : (
-                              <TypeIcon className="w-5 h-5" />
-                            )}
-                          </div>
+                          {post.type === 'jobs' ? (
+                            <CompanyAvatar company={post.company} logoUrl={post.companyLogo} size="table" rounded="lg" />
+                          ) : (
+                            <div className={`w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0 flex items-center justify-center ${(post.type === 'resources' && resourceThumbnail) || (post.type === 'blogs' && blogCoverImage) ? 'bg-white dark:bg-dark-100' : getTypeColor(post.type)}`}>
+                              {post.type === 'resources' && resourceThumbnail ? (
+                                <img src={resourceThumbnail} alt={postTitle} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                              ) : post.type === 'blogs' && blogCoverImage ? (
+                                <img src={blogCoverImage} alt={postTitle} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                              ) : post.type === 'resources' ? (
+                                isYouTubeUrl(post.link) ? <Play className="w-5 h-5" /> : <FolderOpen className="w-5 h-5" />
+                              ) : (
+                                <TypeIcon className="w-5 h-5" />
+                              )}
+                            </div>
+                          )}
                           <div className="min-w-0">
                             <p className="font-medium text-gray-900 dark:text-white truncate max-w-xs">{postTitle}</p>
                             <div className="flex items-center gap-3 mt-1 text-sm text-gray-500 dark:text-gray-400">

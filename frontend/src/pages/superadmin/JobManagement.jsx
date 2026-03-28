@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Briefcase, 
   Plus, 
@@ -27,6 +27,7 @@ import api from '../../services/api';
 import { jobService } from '../../services/dataService';
 import toast from 'react-hot-toast';
 import VerifiedBadge from '../../components/common/VerifiedBadge';
+import CompanyAvatar from '../../components/common/CompanyAvatar';
 import Pagination from '../../components/common/Pagination';
 
 const LIMIT = 30;
@@ -46,7 +47,7 @@ const JobManagement = () => {
   const [actionLoading, setActionLoading] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(null);
   const [fetchLoading, setFetchLoading] = useState(false);
-  const [syncClosedLoading, setSyncClosedLoading] = useState(false);
+  const [dashboardStats, setDashboardStats] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     company: '',
@@ -60,6 +61,7 @@ const JobManagement = () => {
     companyLogo: '',
   });
   const [logoError, setLogoError] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   const categories = [
     'IT Job',
@@ -75,23 +77,54 @@ const JobManagement = () => {
   const experienceLevels = ['Fresher', '0-1 Years', '1-2 Years', '2-3 Years', '3+ Years'];
   const statusOptions = ['Open', 'Closed'];
 
-  useEffect(() => {
-    fetchJobs();
-    fetchContributors();
+  const refreshDashboardStats = useCallback(async () => {
+    try {
+      const res = await api.get('/jobs/stats');
+      if (res.data?.success && res.data?.data) setDashboardStats(res.data.data);
+    } catch {
+      /* non-fatal */
+    }
   }, []);
 
-  const fetchJobs = async () => {
+  useEffect(() => {
+    fetchContributors();
+    refreshDashboardStats();
+  }, [refreshDashboardStats]);
+
+  useEffect(() => {
+    const trimmed = searchTerm.trim();
+    const delay = trimmed === '' ? 0 : 350;
+    const id = setTimeout(() => {
+      setDebouncedSearch(trimmed);
+      setPage(1);
+    }, delay);
+    return () => clearTimeout(id);
+  }, [searchTerm]);
+
+  const fetchJobs = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await api.get('/jobs?limit=100');
+      const params = new URLSearchParams();
+      params.set('limit', String(LIMIT));
+      params.set('page', String(page));
+      if (debouncedSearch) params.set('search', debouncedSearch);
+      if (categoryFilter) params.set('category', categoryFilter);
+      if (contributorFilter) params.set('postedBy', contributorFilter);
+      const res = await api.get(`/jobs?${params.toString()}`);
       setJobs(res.data.data || []);
-      setTotalJobs(res.data.total || 0);
+      setTotalJobs(res.data.total ?? 0);
+      setTotalPages(res.data.totalPages ?? 1);
     } catch (error) {
       console.error('Error fetching jobs:', error);
+      toast.error('Failed to load jobs');
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, debouncedSearch, categoryFilter, contributorFilter]);
+
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
 
   const fetchContributors = async () => {
     try {
@@ -106,7 +139,7 @@ const JobManagement = () => {
     }
   };
 
-  const handleFetchExternalJobs = async () => {
+  const handleFetchExternalJobs = useCallback(async () => {
     try {
       setFetchLoading(true);
       const res = await jobService.fetchExternal();
@@ -114,28 +147,14 @@ const JobManagement = () => {
       const created = data.created ?? 0;
       const skipped = data.skipped ?? 0;
       toast.success(res.data?.message ? `${res.data.message} (${created} new, ${skipped} skipped)` : `Fetched: ${created} new, ${skipped} skipped`);
-      fetchJobs();
+      await fetchJobs();
+      await refreshDashboardStats();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to fetch jobs from API');
     } finally {
       setFetchLoading(false);
     }
-  };
-
-  const handleSyncClosed = async () => {
-    try {
-      setSyncClosedLoading(true);
-      const res = await jobService.syncClosed();
-      const data = res.data?.data || {};
-      const closed = data.closed ?? 0;
-      toast.success(res.data?.message || (closed > 0 ? `${closed} job(s) marked as Closed` : 'No jobs to sync'));
-      fetchJobs();
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to sync closed status');
-    } finally {
-      setSyncClosedLoading(false);
-    }
-  };
+  }, [fetchJobs, refreshDashboardStats]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -194,6 +213,7 @@ const JobManagement = () => {
       }
       
       await fetchJobs();
+      await refreshDashboardStats();
       setShowModal(false);
       resetForm();
     } catch (error) {
@@ -209,6 +229,7 @@ const JobManagement = () => {
       setActionLoading(jobId);
       await api.delete(`/jobs/${jobId}`);
       await fetchJobs();
+      await refreshDashboardStats();
       setShowDeleteModal(null);
     } catch (error) {
       console.error('Error deleting job:', error);
@@ -230,7 +251,7 @@ const JobManagement = () => {
       'Others': 'bg-gray-100 dark:bg-gray-500/20 text-gray-700 dark:text-gray-300',
     };
     return (
-      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${colors[category] || colors['Others']}`}>
+      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${colors[category] || colors['Non IT Job']}`}>
         {category}
       </span>
     );
@@ -265,6 +286,7 @@ const JobManagement = () => {
       await api.put(`/jobs/${job._id}`, { ...job, status: newStatus });
       toast.success(`Job status changed to ${newStatus}`);
       await fetchJobs();
+      await refreshDashboardStats();
     } catch (error) {
       console.error('Error updating status:', error);
       toast.error('Failed to update status');
@@ -272,10 +294,6 @@ const JobManagement = () => {
       setActionLoading(null);
     }
   };
-
-  const filteredJobs = jobs.filter(job =>
-    !contributorFilter || job.postedBy?._id === contributorFilter
-  );
 
   if (loading) {
     return (
@@ -312,19 +330,6 @@ const JobManagement = () => {
             Fetch Jobs from API
           </button>
           <button
-            onClick={handleSyncClosed}
-            disabled={syncClosedLoading}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white rounded-xl font-medium transition-colors"
-            title="Mark as Closed jobs that are no longer open on Adzuna/JSearch"
-          >
-            {syncClosedLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Lock className="w-5 h-5" />
-            )}
-            Sync closed from source
-          </button>
-          <button
             onClick={openCreateModal}
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/25"
           >
@@ -342,7 +347,9 @@ const JobManagement = () => {
               <Briefcase className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalJobs}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                {(dashboardStats?.total ?? totalJobs).toLocaleString('en-IN')}
+              </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">Total Jobs</p>
             </div>
           </div>
@@ -354,7 +361,7 @@ const JobManagement = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {jobs.filter(j => j.status === 'Open').length}
+                {(dashboardStats?.open ?? jobs.filter((j) => j.status === 'Open').length).toLocaleString('en-IN')}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">Open Jobs</p>
             </div>
@@ -367,7 +374,7 @@ const JobManagement = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {jobs.filter(j => j.status === 'Closed').length}
+                {(dashboardStats?.closed ?? jobs.filter((j) => j.status === 'Closed').length).toLocaleString('en-IN')}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">Closed Jobs</p>
             </div>
@@ -380,7 +387,9 @@ const JobManagement = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {jobs.reduce((acc, j) => acc + (j.views || 0), 0)}
+                {dashboardStats?.totalViews != null
+                  ? dashboardStats.totalViews.toLocaleString('en-IN')
+                  : jobs.reduce((acc, j) => acc + (j.views || 0), 0).toLocaleString('en-IN')}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">Total Views</p>
             </div>
@@ -406,7 +415,10 @@ const JobManagement = () => {
             <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <select
               value={contributorFilter}
-              onChange={(e) => setContributorFilter(e.target.value)}
+              onChange={(e) => {
+                setContributorFilter(e.target.value);
+                setPage(1);
+              }}
               className="pl-9 pr-8 py-2.5 rounded-xl bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 appearance-none cursor-pointer min-w-[180px]"
             >
               <option value="">All Contributors</option>
@@ -420,7 +432,10 @@ const JobManagement = () => {
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <select
               value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
+              onChange={(e) => {
+                setCategoryFilter(e.target.value);
+                setPage(1);
+              }}
               className="pl-9 pr-8 py-2.5 rounded-xl bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 appearance-none cursor-pointer"
             >
               <option value="">All Categories</option>
@@ -458,35 +473,29 @@ const JobManagement = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-              {filteredJobs.length === 0 ? (
+              {jobs.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="px-4 py-12 text-center">
                     <Briefcase className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
-                    <p className="text-gray-500 dark:text-gray-400">No jobs found</p>
+                    <p className="text-gray-500 dark:text-gray-400">
+                      {debouncedSearch || categoryFilter || contributorFilter
+                        ? 'No jobs match your filters'
+                        : 'No jobs found'}
+                    </p>
                   </td>
                 </tr>
               ) : (
-                filteredJobs.map((job) => (
+                jobs.map((job) => (
                   <tr key={job._id} className="hover:bg-gray-50 dark:hover:bg-dark-100 transition-colors">
                     <td className="px-4 py-4">
                       <div className="flex items-start gap-3">
                         {/* Company Logo */}
-                        <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                          {job.companyLogo ? (
-                            <img
-                              src={job.companyLogo}
-                              alt={job.company}
-                              className="w-full h-full object-contain"
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                                e.target.nextSibling.style.display = 'flex';
-                              }}
-                            />
-                          ) : null}
-                          <div className={`w-full h-full flex items-center justify-center ${job.companyLogo ? 'hidden' : ''}`}>
-                            <Building2 className="w-5 h-5 text-gray-400" />
-                          </div>
-                        </div>
+                        <CompanyAvatar
+                          company={job.company}
+                          logoUrl={job.companyLogo}
+                          size="table"
+                          rounded="lg"
+                        />
                         <div className="min-w-0">
                           <p className="font-medium text-gray-900 dark:text-white truncate max-w-xs">{job.title}</p>
                           <div className="flex items-center gap-3 mt-1 text-sm text-gray-500 dark:text-gray-400">

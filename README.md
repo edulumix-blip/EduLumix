@@ -85,14 +85,19 @@ npm install
 npm run seed
 ```
 
-5. Start development server:
+5. **(One-time, after removing job category "Others")** If your database still has jobs with `category: "Others"`, merge them into Non-IT:
+```bash
+npm run migrate:jobs-others
+```
+
+6. Start development server:
 ```bash
 npm run dev
 ```
 
 Backend runs on `http://localhost:5000`
 
-6. Run backend tests:
+7. Run backend tests:
 ```bash
 npm test
 ```

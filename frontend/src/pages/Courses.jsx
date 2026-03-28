@@ -1,15 +1,39 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Search, Filter, GraduationCap, Clock, Users, Star,
-  Play, BookOpen, Globe, IndianRupee, X, ChevronRight,
-  Award, Video, CheckCircle, Loader2
+  Play, ChevronRight,
+  Award, Video, Loader2, Zap,
 } from 'lucide-react';
 import { courseService } from '../services/dataService';
 import { CourseCardSkeleton } from '../components/skeleton';
 import toast from 'react-hot-toast';
 import SEO from '../components/seo/SEO';
 import { generateBreadcrumbSchema } from '../utils/seoSchemas';
+import ListingPageHero from '../components/listing/ListingPageHero';
+import CategoryExplorer from '../components/listing/CategoryExplorer';
+import { COURSE_HUB_CATEGORIES } from '../config/listingHubConfigs';
+import ListingAdvancedFilters from '../components/listing/ListingAdvancedFilters';
+
+const DEFAULT_COURSE_CATEGORIES = [
+  'All',
+  'Web Development',
+  'Mobile Development',
+  'Data Science',
+  'Machine Learning',
+  'DevOps',
+  'Cybersecurity',
+  'Cloud Computing',
+  'UI/UX Design',
+  'Digital Marketing',
+  'Interview Prep',
+  'DSA',
+  'Programming Languages',
+  'Others',
+];
+
+const DEFAULT_LEVELS = ['All', 'Beginner', 'Intermediate', 'Advanced', 'All Levels'];
+const DEFAULT_LANGUAGES = ['All', 'English', 'Hindi', 'Bengali', 'Tamil', 'Telugu', 'Others'];
 
 const Courses = () => {
   const navigate = useNavigate();
@@ -18,20 +42,93 @@ const Courses = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedLevel, setSelectedLevel] = useState('All');
+  const [filterLanguage, setFilterLanguage] = useState('All');
+  const [filterFree, setFilterFree] = useState('All');
+  const [filterFeatured, setFilterFeatured] = useState('All');
+  const [filterOptions, setFilterOptions] = useState({
+    categories: [],
+    levels: [],
+    languages: [],
+  });
+  const [optionsLoading, setOptionsLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [listTotal, setListTotal] = useState(0);
   const observerTarget = useRef(null);
+  const listingsRef = useRef(null);
+  const searchTermRef = useRef(searchTerm);
+  searchTermRef.current = searchTerm;
 
-  const categories = [
-    'All', 'Web Development', 'Mobile Development', 'Data Science',
-    'Machine Learning', 'DevOps', 'Cybersecurity', 'Cloud Computing',
-    'UI/UX Design', 'Digital Marketing', 'Interview Prep', 'DSA',
-    'Programming Languages', 'Others'
-  ];
+  const scrollToListings = () => {
+    listingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
-  const levels = ['All', 'Beginner', 'Intermediate', 'Advanced', 'All Levels'];
+  const selectCategory = (cat) => {
+    setSelectedCategory(cat);
+    setTimeout(scrollToListings, 120);
+  };
+
+  const categorySelectList = useMemo(() => {
+    const fromApi = filterOptions.categories || [];
+    if (fromApi.length === 0) return DEFAULT_COURSE_CATEGORIES;
+    return ['All', ...fromApi.filter((c) => c && c !== 'All')];
+  }, [filterOptions.categories]);
+
+  const levelSelectList = useMemo(() => {
+    const fromApi = filterOptions.levels || [];
+    if (fromApi.length === 0) return DEFAULT_LEVELS;
+    return ['All', ...fromApi.filter((l) => l && l !== 'All')];
+  }, [filterOptions.levels]);
+
+  const languageSelectList = useMemo(() => {
+    const fromApi = filterOptions.languages || [];
+    if (fromApi.length === 0) return DEFAULT_LANGUAGES;
+    return ['All', ...fromApi.filter((l) => l && l !== 'All')];
+  }, [filterOptions.languages]);
+
+  const activeFilterCount = useMemo(() => {
+    let n = 0;
+    if (selectedCategory !== 'All') n += 1;
+    if (selectedLevel !== 'All') n += 1;
+    if (filterLanguage !== 'All') n += 1;
+    if (filterFree !== 'All') n += 1;
+    if (filterFeatured !== 'All') n += 1;
+    return n;
+  }, [selectedCategory, selectedLevel, filterLanguage, filterFree, filterFeatured]);
+
+  const resetListingFilters = () => {
+    setSelectedCategory('All');
+    setSelectedLevel('All');
+    setFilterLanguage('All');
+    setFilterFree('All');
+    setFilterFeatured('All');
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setOptionsLoading(true);
+        const res = await courseService.getFilterOptions();
+        if (!cancelled && res.data?.success && res.data?.data) {
+          setFilterOptions({
+            categories: res.data.data.categories || [],
+            levels: res.data.data.levels || [],
+            languages: res.data.data.languages || [],
+          });
+        }
+      } catch {
+        if (!cancelled) setFilterOptions({ categories: [], levels: [], languages: [] });
+      } finally {
+        if (!cancelled) setOptionsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const PAGE_SIZE = 12;
 
@@ -42,7 +139,12 @@ const Courses = () => {
       const params = { limit: PAGE_SIZE, page: pageNum };
       if (selectedCategory !== 'All') params.category = selectedCategory;
       if (selectedLevel !== 'All') params.level = selectedLevel;
-      if (searchTerm) params.search = searchTerm;
+      if (filterLanguage !== 'All') params.language = filterLanguage;
+      if (filterFree === 'true') params.isFree = 'true';
+      if (filterFree === 'false') params.isFree = 'false';
+      if (filterFeatured === 'true') params.isFeatured = 'true';
+      const q = searchTermRef.current?.trim();
+      if (q) params.search = q;
       const response = await courseService.getAll(params);
       if (response.data.success) {
         const data = response.data.data || [];
@@ -50,7 +152,10 @@ const Courses = () => {
         setPage(pageNum);
         setHasMore(pageNum < totalPages);
         if (append) setCourses((prev) => [...prev, ...data]);
-        else setCourses(data);
+        else {
+          setCourses(data);
+          setListTotal(response.data.total ?? data.length);
+        }
       }
     } catch (error) {
       toast.error('Failed to fetch courses');
@@ -58,11 +163,17 @@ const Courses = () => {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [selectedCategory, selectedLevel, searchTerm]);
+  }, [
+    selectedCategory,
+    selectedLevel,
+    filterLanguage,
+    filterFree,
+    filterFeatured,
+  ]);
 
   useEffect(() => {
     fetchCourses(1);
-  }, [selectedCategory, selectedLevel]);
+  }, [fetchCourses]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -76,7 +187,7 @@ const Courses = () => {
     const target = observerTarget.current;
     if (target) observer.observe(target);
     return () => { if (target) observer.unobserve(target); };
-  }, [hasMore, loadingMore, loading, page, selectedCategory, selectedLevel, searchTerm]);
+  }, [hasMore, loadingMore, loading, page, fetchCourses]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -152,6 +263,75 @@ const Courses = () => {
     return gradients[category] || 'from-gray-500 to-gray-600';
   };
 
+  const courseFilterFields = useMemo(
+    () => [
+      {
+        id: 'course-filter-category',
+        label: 'Category',
+        value: selectedCategory,
+        onChange: (v) => {
+          setSelectedCategory(v);
+          setTimeout(scrollToListings, 120);
+        },
+        options: categorySelectList.map((c) => ({
+          value: c,
+          label: c === 'All' ? 'All categories' : c,
+        })),
+      },
+      {
+        id: 'course-filter-level',
+        label: 'Level',
+        value: selectedLevel,
+        onChange: setSelectedLevel,
+        options: levelSelectList.map((l) => ({
+          value: l,
+          label: l === 'All' ? 'All levels' : l,
+        })),
+      },
+      {
+        id: 'course-filter-language',
+        label: 'Language',
+        value: filterLanguage,
+        onChange: setFilterLanguage,
+        options: languageSelectList.map((l) => ({
+          value: l,
+          label: l === 'All' ? 'All languages' : l,
+        })),
+      },
+      {
+        id: 'course-filter-price',
+        label: 'Price',
+        value: filterFree,
+        onChange: setFilterFree,
+        options: [
+          { value: 'All', label: 'Free & paid' },
+          { value: 'true', label: 'Free only' },
+          { value: 'false', label: 'Paid only' },
+        ],
+      },
+      {
+        id: 'course-filter-featured',
+        label: 'Featured',
+        value: filterFeatured,
+        onChange: setFilterFeatured,
+        options: [
+          { value: 'All', label: 'All courses' },
+          { value: 'true', label: 'Featured only' },
+        ],
+      },
+    ],
+    [
+      selectedCategory,
+      selectedLevel,
+      filterLanguage,
+      filterFree,
+      filterFeatured,
+      categorySelectList,
+      levelSelectList,
+      languageSelectList,
+    ]
+  );
+
   const breadcrumbs = [
     { name: 'Home', path: '/' },
     { name: 'Courses', path: '/courses' }
@@ -191,119 +371,114 @@ const Courses = () => {
       />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Top Courses</span>
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            Elevate your skills with our handpicked selection of industry-leading courses! 
-            Learn from the best instructors, gain practical knowledge, and unlock new career opportunities. 
-            From beginner to advanced levels, find the perfect course to achieve your goals.
-          </p>
-        </div>
+        <ListingPageHero
+          imageUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=2000&q=85"
+          objectPositionClass="object-[center_40%] sm:object-center"
+          eyebrow={
+            <p className="inline-flex items-center gap-2 text-white/95 text-sm font-medium mb-4 drop-shadow-md [text-shadow:0_1px_12px_rgba(0,0,0,0.5)]">
+              <Zap className="w-4 h-4 text-amber-300 shrink-0 drop-shadow-md" />
+              From basics to job-ready — one place to learn
+            </p>
+          }
+          title="Courses picked for real careers"
+          description="Web, mobile, data, cloud, interviews, DSA — filter by category and level, then dive in. Free and paid options, clear structure, no endless scrolling without a map."
+          stat={{
+            label: 'Courses in this list',
+            value: listTotal.toLocaleString('en-IN'),
+            Icon: GraduationCap,
+          }}
+          statLoading={loading && courses.length === 0}
+        />
 
-        {/* Search and Filters */}
-        <div className="bg-white dark:bg-dark-200 rounded-2xl shadow-sm border border-gray-200 dark:border-dark-100 p-6 mb-8">
-          <form onSubmit={handleSearch} className="flex flex-col lg:flex-row gap-4">
+        <CategoryExplorer
+          id="course-categories-heading"
+          title="Explore by category"
+          subtitle="Choose a track — then fine-tune with search and level"
+          categories={COURSE_HUB_CATEGORIES}
+          selectedKey={selectedCategory === 'All' ? null : selectedCategory}
+          onSelect={selectCategory}
+          onViewAll={() => selectCategory('All')}
+          viewAllLabel="View all courses"
+        />
+
+        <div className="mb-8" ref={listingsRef}>
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 mb-5">
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search courses..."
-                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 dark:border-dark-100 bg-gray-50 dark:bg-dark-300 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Search courses by title, topic, or instructor..."
+                className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white dark:bg-dark-200 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-colors shadow-sm"
               />
             </div>
-            <button
-              type="button"
-              onClick={() => setShowFilters(!showFilters)}
-              className="lg:hidden flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-gray-200 dark:border-dark-100 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-100"
-            >
-              <Filter className="w-5 h-5" />
-              Filters
-            </button>
-            <button
-              type="submit"
-              className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-medium hover:shadow-lg transition-all"
-            >
-              Search
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                className="flex-1 sm:flex-none px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold transition-colors shadow-lg shadow-blue-600/25"
+              >
+                Search
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowFilters((o) => !o)}
+                className="lg:hidden px-4 py-3.5 bg-gray-100 dark:bg-dark-200 border border-gray-200 dark:border-gray-700 rounded-2xl text-gray-600 dark:text-gray-400"
+                aria-expanded={showFilters}
+                aria-controls="course-advanced-filters"
+                title={showFilters ? 'Hide filters' : 'Show filters'}
+              >
+                <Filter className="w-5 h-5" aria-hidden />
+              </button>
+            </div>
           </form>
 
-          {/* Desktop Filters */}
-          <div className="hidden lg:flex flex-wrap gap-4 mt-6">
-            <div className="flex flex-wrap gap-2">
-              {categories.slice(0, 8).map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    selectedCategory === cat
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 dark:bg-dark-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-50'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {loading && courses.length === 0 ? (
+                'Loading listings…'
+              ) : (
+                <>
+                  Showing{' '}
+                  <span className="font-semibold text-gray-800 dark:text-gray-200">
+                    {courses.length.toLocaleString('en-IN')}
+                  </span>
+                  {(activeFilterCount > 0 || searchTerm.trim()) && (
+                    <>
+                      {' '}
+                      of{' '}
+                      <span className="font-semibold text-gray-800 dark:text-gray-200">
+                        {listTotal.toLocaleString('en-IN')}
+                      </span>
+                      {activeFilterCount > 0 && (
+                        <span className="text-gray-400 dark:text-gray-500">
+                          {' '}
+                          ·{' '}
+                          <span className="text-blue-600 dark:text-blue-400">
+                            {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} active
+                          </span>
+                        </span>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+            </p>
           </div>
 
-          {/* Mobile Filters */}
-          {showFilters && (
-            <div className="lg:hidden mt-6 pt-6 border-t border-gray-200 dark:border-dark-100">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-gray-900 dark:text-white">Filters</h3>
-                <button onClick={() => setShowFilters(false)}>
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-gray-200 dark:border-dark-100 bg-gray-50 dark:bg-dark-300 text-gray-900 dark:text-white"
-                  >
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Level</label>
-                  <select
-                    value={selectedLevel}
-                    onChange={(e) => setSelectedLevel(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-gray-200 dark:border-dark-100 bg-gray-50 dark:bg-dark-300 text-gray-900 dark:text-white"
-                  >
-                    {levels.map((level) => (
-                      <option key={level} value={level}>{level}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Results Count */}
-        <div className="flex items-center justify-between mb-6">
-          <p className="text-gray-600 dark:text-gray-400">
-            Found <span className="font-semibold text-gray-900 dark:text-white">{courses.length}</span> courses
-          </p>
-          <select
-            value={selectedLevel}
-            onChange={(e) => setSelectedLevel(e.target.value)}
-            className="hidden lg:block px-4 py-2 rounded-lg border border-gray-200 dark:border-dark-100 bg-white dark:bg-dark-200 text-gray-700 dark:text-gray-300"
+          <div
+            id="course-advanced-filters"
+            className={showFilters ? 'mt-5 block' : 'mt-5 hidden lg:block'}
           >
-            {levels.map((level) => (
-              <option key={level} value={level}>{level === 'All' ? 'All Levels' : level}</option>
-            ))}
-          </select>
+            <ListingAdvancedFilters
+              title="Advanced filters"
+              subtitle="Category, level, language, price, and featured picks"
+              fields={courseFilterFields}
+              optionsLoading={optionsLoading}
+              onReset={resetListingFilters}
+              activeFilterCount={activeFilterCount}
+            />
+          </div>
         </div>
 
         {/* Loading State */}
@@ -319,16 +494,15 @@ const Courses = () => {
             <GraduationCap className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No courses found</h3>
             <p className="text-gray-500 dark:text-gray-400 mb-6">
-              {searchTerm || selectedCategory !== 'All' 
+              {searchTerm || activeFilterCount > 0
                 ? 'Try adjusting your search or filters'
                 : 'Check back soon for new courses'}
             </p>
-            {(searchTerm || selectedCategory !== 'All') && (
+            {(searchTerm || activeFilterCount > 0) && (
               <button
                 onClick={() => {
                   setSearchTerm('');
-                  setSelectedCategory('All');
-                  setSelectedLevel('All');
+                  resetListingFilters();
                 }}
                 className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors"
               >

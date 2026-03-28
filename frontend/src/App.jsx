@@ -1,4 +1,5 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
+import { scheduleAdsenseLoad } from './utils/loadAdsense';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Loader from './components/common/Loader';
 import ScrollToTop from './components/common/ScrollToTop';
@@ -67,6 +68,10 @@ const PageLoader = () => (
 );
 
 function App() {
+  useEffect(() => {
+    scheduleAdsenseLoad();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-300 flex flex-col">
       <ScrollToTop />

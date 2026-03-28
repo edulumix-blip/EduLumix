@@ -11,9 +11,11 @@ import toast from 'react-hot-toast';
 import VerifiedBadge from '../components/common/VerifiedBadge';
 import FormattedJobDescription from '../components/job/FormattedJobDescription';
 import SEO from '../components/seo/SEO';
+import CompanyAvatar from '../components/common/CompanyAvatar';
 import AdSlot from '../components/ads/AdSlot';
 import { AD_SLOTS } from '../config/ads';
 import { generateJobPostingSchema, generateBreadcrumbSchema } from '../utils/seoSchemas';
+import { JOB_CATEGORIES } from '../config/jobCategories';
 
 const JobDetails = () => {
   const { id } = useParams();
@@ -21,8 +23,10 @@ const JobDetails = () => {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
+  const [heroImageFailed, setHeroImageFailed] = useState(false);
 
   useEffect(() => {
+    setHeroImageFailed(false);
     fetchJob();
     // Check if user has liked this job
     const savedLikes = localStorage.getItem('likedJobs');
@@ -119,21 +123,6 @@ const JobDetails = () => {
     return emailRegex.test(text);
   };
 
-  // Get category color
-  const getCategoryColor = (category) => {
-    const colors = {
-      'IT Job': 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300',
-      'Non IT Job': 'bg-blue-200 dark:bg-blue-600/20 text-blue-800 dark:text-blue-200',
-      'Walk In Drive': 'bg-blue-50 dark:bg-blue-400/20 text-blue-600 dark:text-blue-400',
-      'Govt Job': 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300',
-      'Internship': 'bg-blue-50 dark:bg-blue-400/20 text-blue-600 dark:text-blue-400',
-      'Part Time Job': 'bg-blue-200 dark:bg-blue-600/20 text-blue-800 dark:text-blue-200',
-      'Remote Job': 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300',
-      'Others': 'bg-blue-50 dark:bg-blue-400/20 text-blue-600 dark:text-blue-400',
-    };
-    return colors[category] || colors['Others'];
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen py-12 flex items-center justify-center">
@@ -177,6 +166,11 @@ const JobDetails = () => {
   const jobUrl = `/jobs/${id}`;
   const description = job.description?.slice(0, 160) || `${job.title} position at ${job.company}. ${job.location}. ${job.salary ? `Salary: ₹${job.salary}` : ''} Apply now on EduLumix.`;
 
+  const categoryVisual =
+    JOB_CATEGORIES.find((c) => c.key === job.category) ||
+    JOB_CATEGORIES[JOB_CATEGORIES.length - 1];
+  const heroImageUrl = categoryVisual?.image;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-300">
       <SEO
@@ -204,71 +198,83 @@ const JobDetails = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Main Card */}
         <div className="bg-white dark:bg-dark-200 border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
-          {/* Header Section */}
-          <div className="p-6 lg:p-8 border-b border-gray-200 dark:border-gray-800">
-            <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-              {/* Company Logo */}
-              <div className="w-20 h-20 rounded-2xl bg-gray-100 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                {job.companyLogo ? (
-                  <img 
-                    src={job.companyLogo} 
-                    alt={job.company}
-                    className="w-full h-full object-contain"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
-                    }}
-                  />
-                ) : null}
-                <div className={`w-full h-full flex items-center justify-center ${job.companyLogo ? 'hidden' : ''}`}>
-                  <Building className="w-10 h-10 text-gray-400" />
-                </div>
-              </div>
-              
-              {/* Title & Company Info */}
-              <div className="flex-1">
-                <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(job.category)}`}>
-                    <Tag className="w-3 h-3" />
-                    {job.category}
-                  </span>
-                  {/* Application Status Badge */}
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    job.status === 'Closed' 
-                      ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300'
-                      : 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300'
-                  }`}>
-                    {job.status === 'Closed' ? 'Application Closed' : 'Application Open'}
-                  </span>
-                </div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                  {job.title}
-                </h1>
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-lg">
-                  <Building className="w-5 h-5" />
-                  <span>{job.company}</span>
-                </div>
-              </div>
+          {/* Header — category hero image + dark scrim (readable content) */}
+          <div className="relative overflow-hidden border-b border-gray-200 dark:border-gray-800 min-h-[220px]">
+            {!heroImageFailed && heroImageUrl ? (
+              <img
+                src={heroImageUrl}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+                loading="eager"
+                decoding="async"
+                onError={() => setHeroImageFailed(true)}
+              />
+            ) : (
+              <div
+                className={`absolute inset-0 bg-gradient-to-br ${categoryVisual.gradient}`}
+                aria-hidden
+              />
+            )}
+            <div
+              className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/55 to-black/35 pointer-events-none"
+              aria-hidden
+            />
+            <div className="relative z-10 p-6 lg:p-8">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                <CompanyAvatar
+                  company={job.company}
+                  logoUrl={job.companyLogo}
+                  size="xl"
+                  rounded="2xl"
+                  className="flex-shrink-0 ring-2 ring-white/30 shadow-lg shadow-black/20"
+                />
 
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2 sm:flex-col lg:flex-row">
-                <button
-                  onClick={handleLike}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all ${
-                    liked
-                      ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400'
-                      : 'bg-gray-100 dark:bg-dark-100 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-dark-300'
-                  }`}
-                >
-                  <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
-                  <span>{job.likesCount || 0}</span>
-                </button>
-                <button
-                  onClick={handleShare}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-dark-100 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors"
-                >
-                  <Share2 className="w-5 h-5" />
-                </button>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/15 text-white border border-white/25 backdrop-blur-sm">
+                      <Tag className="w-3 h-3 shrink-0 opacity-90" />
+                      {job.category}
+                    </span>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm border ${
+                        job.status === 'Closed'
+                          ? 'bg-red-500/35 text-red-50 border-red-400/35'
+                          : 'bg-emerald-500/35 text-emerald-50 border-emerald-400/35'
+                      }`}
+                    >
+                      {job.status === 'Closed' ? 'Application Closed' : 'Application Open'}
+                    </span>
+                  </div>
+                  <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2 [text-shadow:0_2px_20px_rgba(0,0,0,0.45)]">
+                    {job.title}
+                  </h1>
+                  <div className="flex items-center gap-2 text-lg text-white/90">
+                    <Building className="w-5 h-5 shrink-0 text-white/80" />
+                    <span className="truncate">{job.company}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 sm:flex-col lg:flex-row shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleLike}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all border ${
+                      liked
+                        ? 'bg-blue-500/90 text-white border-blue-400/50 shadow-lg shadow-black/20'
+                        : 'bg-white/10 text-white border-white/25 hover:bg-white/20 backdrop-blur-sm'
+                    }`}
+                  >
+                    <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
+                    <span>{job.likesCount || 0}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleShare}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium bg-white/10 text-white border border-white/25 hover:bg-white/20 backdrop-blur-sm transition-colors"
+                  >
+                    <Share2 className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -475,7 +481,7 @@ const SuggestedJobs = ({ currentJobId, category }) => {
       'Remote Job': 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300',
       'Others': 'bg-blue-50 dark:bg-blue-400/20 text-blue-600 dark:text-blue-400',
     };
-    return colors[category] || colors['Others'];
+    return colors[category] || colors['Non IT Job'];
   };
 
   if (loading || suggestedJobs.length === 0) return null;
@@ -504,22 +510,13 @@ const SuggestedJobs = ({ currentJobId, category }) => {
             <div className="p-5">
               <div className="flex items-start gap-4 mb-4">
                 {/* Company Logo */}
-                <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0 flex items-center justify-center p-2">
-                  {job.companyLogo ? (
-                    <img 
-                      src={job.companyLogo} 
-                      alt={job.company}
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'flex';
-                      }}
-                    />
-                  ) : null}
-                  <div className={`w-full h-full flex items-center justify-center ${job.companyLogo ? 'hidden' : ''}`}>
-                    <Building className="w-6 h-6 text-gray-400" />
-                  </div>
-                </div>
+                <CompanyAvatar
+                  company={job.company}
+                  logoUrl={job.companyLogo}
+                  size="lg"
+                  rounded="xl"
+                  className="flex-shrink-0"
+                />
                 
                 {/* Title & Company */}
                 <div className="flex-1 min-w-0">

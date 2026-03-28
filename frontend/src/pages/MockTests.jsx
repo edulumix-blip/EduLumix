@@ -1,15 +1,38 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
-  Search, Filter,   ClipboardList, Clock, Users, Star,
-  Award, BookOpen, Target, X, ChevronRight, Trophy,
-  CheckCircle, AlertCircle, Timer, Brain, Loader2
+  Search, Filter, ClipboardList, Users, Star,
+  Target, ChevronRight, Trophy,
+  CheckCircle, Timer, Brain, Loader2, Zap,
 } from 'lucide-react';
 import { mockTestService } from '../services/dataService';
 import { MockTestCardSkeleton } from '../components/skeleton';
 import toast from 'react-hot-toast';
 import SEO from '../components/seo/SEO';
 import { generateBreadcrumbSchema } from '../utils/seoSchemas';
+import ListingPageHero from '../components/listing/ListingPageHero';
+import CategoryExplorer from '../components/listing/CategoryExplorer';
+import { MOCK_TEST_HUB_CATEGORIES } from '../config/listingHubConfigs';
+import ListingAdvancedFilters from '../components/listing/ListingAdvancedFilters';
+
+const DEFAULT_MOCK_CATEGORIES = [
+  'All',
+  'Aptitude',
+  'Logical Reasoning',
+  'Verbal Ability',
+  'Technical - Programming',
+  'Technical - DSA',
+  'Technical - DBMS',
+  'Technical - OS',
+  'Technical - CN',
+  'Technical - Web Dev',
+  'Company Specific',
+  'Gate',
+  'Government Exams',
+  'Others',
+];
+
+const DEFAULT_DIFFICULTIES = ['All', 'Easy', 'Medium', 'Hard', 'Mixed'];
 
 const MockTests = () => {
   const navigate = useNavigate();
@@ -18,19 +41,87 @@ const MockTests = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
+  const [filterCompany, setFilterCompany] = useState('All');
+  const [filterFree, setFilterFree] = useState('All');
+  const [filterFeatured, setFilterFeatured] = useState('All');
+  const [filterOptions, setFilterOptions] = useState({
+    categories: [],
+    difficulties: [],
+    companies: [],
+  });
+  const [optionsLoading, setOptionsLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [listTotal, setListTotal] = useState(0);
   const observerTarget = useRef(null);
+  const listingsRef = useRef(null);
+  const searchTermRef = useRef(searchTerm);
+  searchTermRef.current = searchTerm;
 
-  const categories = [
-    'All', 'Aptitude', 'Logical Reasoning', 'Verbal Ability',
-    'Technical', 'Company Specific', 'Placement Prep',
-    'Gate', 'Competitive Exams', 'Others'
-  ];
+  const scrollToListings = () => {
+    listingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
-  const difficulties = ['All', 'Easy', 'Medium', 'Hard'];
+  const selectCategory = (cat) => {
+    setSelectedCategory(cat);
+    setTimeout(scrollToListings, 120);
+  };
+
+  const categorySelectList = useMemo(() => {
+    const fromApi = filterOptions.categories || [];
+    if (fromApi.length === 0) return DEFAULT_MOCK_CATEGORIES;
+    return ['All', ...fromApi.filter((c) => c && c !== 'All')];
+  }, [filterOptions.categories]);
+
+  const difficultySelectList = useMemo(() => {
+    const fromApi = filterOptions.difficulties || [];
+    if (fromApi.length === 0) return DEFAULT_DIFFICULTIES;
+    return ['All', ...fromApi.filter((d) => d && d !== 'All')];
+  }, [filterOptions.difficulties]);
+
+  const activeFilterCount = useMemo(() => {
+    let n = 0;
+    if (selectedCategory !== 'All') n += 1;
+    if (selectedDifficulty !== 'All') n += 1;
+    if (filterCompany !== 'All') n += 1;
+    if (filterFree !== 'All') n += 1;
+    if (filterFeatured !== 'All') n += 1;
+    return n;
+  }, [selectedCategory, selectedDifficulty, filterCompany, filterFree, filterFeatured]);
+
+  const resetListingFilters = () => {
+    setSelectedCategory('All');
+    setSelectedDifficulty('All');
+    setFilterCompany('All');
+    setFilterFree('All');
+    setFilterFeatured('All');
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setOptionsLoading(true);
+        const res = await mockTestService.getFilterOptions();
+        if (!cancelled && res.data?.success && res.data?.data) {
+          setFilterOptions({
+            categories: res.data.data.categories || [],
+            difficulties: res.data.data.difficulties || [],
+            companies: res.data.data.companies || [],
+          });
+        }
+      } catch {
+        if (!cancelled) setFilterOptions({ categories: [], difficulties: [], companies: [] });
+      } finally {
+        if (!cancelled) setOptionsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const PAGE_SIZE = 12;
 
@@ -41,7 +132,12 @@ const MockTests = () => {
       const params = { limit: PAGE_SIZE, page: pageNum };
       if (selectedCategory !== 'All') params.category = selectedCategory;
       if (selectedDifficulty !== 'All') params.difficulty = selectedDifficulty;
-      if (searchTerm) params.search = searchTerm;
+      if (filterCompany !== 'All') params.company = filterCompany;
+      if (filterFree === 'true') params.isFree = 'true';
+      if (filterFree === 'false') params.isFree = 'false';
+      if (filterFeatured === 'true') params.isFeatured = 'true';
+      const q = searchTermRef.current?.trim();
+      if (q) params.search = q;
       const response = await mockTestService.getAll(params);
       if (response.data.success) {
         const data = response.data.data || [];
@@ -49,7 +145,10 @@ const MockTests = () => {
         setPage(pageNum);
         setHasMore(pageNum < totalPages);
         if (append) setMockTests((prev) => [...prev, ...data]);
-        else setMockTests(data);
+        else {
+          setMockTests(data);
+          setListTotal(response.data.total ?? data.length);
+        }
       }
     } catch (error) {
       toast.error('Failed to fetch mock tests');
@@ -92,6 +191,7 @@ const MockTests = () => {
       'Easy': 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300',
       'Medium': 'bg-sky-100 dark:bg-sky-500/20 text-sky-700 dark:text-sky-300',
       'Hard': 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300',
+      'Mixed': 'bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-300',
     };
     return colors[difficulty] || 'bg-gray-100 dark:bg-gray-500/20 text-gray-700 dark:text-gray-300';
   };
@@ -102,6 +202,75 @@ const MockTests = () => {
     const mins = minutes % 60;
     return mins > 0 ? `${hrs}h ${mins}m` : `${hrs} hour${hrs > 1 ? 's' : ''}`;
   };
+
+  const mockTestFilterFields = useMemo(
+    () => [
+      {
+        id: 'mock-filter-category',
+        label: 'Category',
+        value: selectedCategory,
+        onChange: (v) => {
+          setSelectedCategory(v);
+          setTimeout(scrollToListings, 120);
+        },
+        options: categorySelectList.map((c) => ({
+          value: c,
+          label: c === 'All' ? 'All categories' : c,
+        })),
+      },
+      {
+        id: 'mock-filter-difficulty',
+        label: 'Difficulty',
+        value: selectedDifficulty,
+        onChange: setSelectedDifficulty,
+        options: difficultySelectList.map((d) => ({
+          value: d,
+          label: d === 'All' ? 'All difficulties' : d,
+        })),
+      },
+      {
+        id: 'mock-filter-company',
+        label: 'Company / exam',
+        value: filterCompany,
+        onChange: setFilterCompany,
+        options: [
+          { value: 'All', label: 'All companies' },
+          ...filterOptions.companies.map((co) => ({ value: co, label: co })),
+        ],
+      },
+      {
+        id: 'mock-filter-free',
+        label: 'Access',
+        value: filterFree,
+        onChange: setFilterFree,
+        options: [
+          { value: 'All', label: 'Free & paid' },
+          { value: 'true', label: 'Free only' },
+          { value: 'false', label: 'Paid only' },
+        ],
+      },
+      {
+        id: 'mock-filter-featured',
+        label: 'Featured',
+        value: filterFeatured,
+        onChange: setFilterFeatured,
+        options: [
+          { value: 'All', label: 'All tests' },
+          { value: 'true', label: 'Featured only' },
+        ],
+      },
+    ],
+    [
+      selectedCategory,
+      selectedDifficulty,
+      filterCompany,
+      filterFree,
+      filterFeatured,
+      categorySelectList,
+      difficultySelectList,
+      filterOptions.companies,
+    ]
+  );
 
   const breadcrumbs = [
     { name: 'Home', path: '/' },
@@ -133,119 +302,114 @@ const MockTests = () => {
       />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            <span className="bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent">Mock Test</span>
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            Sharpen your skills and boost your confidence with our comprehensive mock tests! 
-            Designed to simulate real exam patterns across aptitude, reasoning, technical domains, and more. 
-            Practice smart, perform better, and ace your interviews and competitive exams.
-          </p>
-        </div>
+        <ListingPageHero
+          imageUrl="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=2000&q=85"
+          objectPositionClass="object-[center_35%] sm:object-center"
+          eyebrow={
+            <p className="inline-flex items-center gap-2 text-white/95 text-sm font-medium mb-4 drop-shadow-md [text-shadow:0_1px_12px_rgba(0,0,0,0.5)]">
+              <Zap className="w-4 h-4 text-amber-300 shrink-0 drop-shadow-md" />
+              Practice like it&apos;s the real paper
+            </p>
+          }
+          title="Mock tests built for placement & exams"
+          description="Aptitude, reasoning, verbal, technical, company-specific, GATE and more — timed sets with clear difficulty. Choose a track, tighten filters, and start a run."
+          stat={{
+            label: 'Tests in this list',
+            value: listTotal.toLocaleString('en-IN'),
+            Icon: ClipboardList,
+          }}
+          statLoading={loading && mockTests.length === 0}
+        />
 
-        {/* Search and Filters */}
-        <div className="bg-white dark:bg-dark-200 rounded-2xl shadow-sm border border-gray-200 dark:border-dark-100 p-6 mb-8">
-          <form onSubmit={handleSearch} className="flex flex-col lg:flex-row gap-4">
+        <CategoryExplorer
+          id="mock-test-categories-heading"
+          title="Explore by paper type"
+          subtitle="Pick what you’re preparing for — filters and search sit just below"
+          categories={MOCK_TEST_HUB_CATEGORIES}
+          selectedKey={selectedCategory === 'All' ? null : selectedCategory}
+          onSelect={selectCategory}
+          onViewAll={() => selectCategory('All')}
+          viewAllLabel="View all mock tests"
+        />
+
+        <div className="mb-8" ref={listingsRef}>
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 mb-5">
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search mock tests..."
-                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 dark:border-dark-100 bg-gray-50 dark:bg-dark-300 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Search mock tests by title or topic..."
+                className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white dark:bg-dark-200 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-colors shadow-sm"
               />
             </div>
-            <button
-              type="button"
-              onClick={() => setShowFilters(!showFilters)}
-              className="lg:hidden flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-gray-200 dark:border-dark-100 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-100"
-            >
-              <Filter className="w-5 h-5" />
-              Filters
-            </button>
-            <button
-              type="submit"
-              className="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium hover:shadow-lg transition-all"
-            >
-              Search
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                className="flex-1 sm:flex-none px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold transition-colors shadow-lg shadow-blue-600/25"
+              >
+                Search
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowFilters((o) => !o)}
+                className="lg:hidden px-4 py-3.5 bg-gray-100 dark:bg-dark-200 border border-gray-200 dark:border-gray-700 rounded-2xl text-gray-600 dark:text-gray-400"
+                aria-expanded={showFilters}
+                aria-controls="mock-advanced-filters"
+                title={showFilters ? 'Hide filters' : 'Show filters'}
+              >
+                <Filter className="w-5 h-5" aria-hidden />
+              </button>
+            </div>
           </form>
 
-          {/* Desktop Filters */}
-          <div className="hidden lg:flex flex-wrap gap-4 mt-6">
-            <div className="flex flex-wrap gap-2">
-              {categories.slice(0, 8).map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    selectedCategory === cat
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 dark:bg-dark-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-50'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {loading && mockTests.length === 0 ? (
+                'Loading listings…'
+              ) : (
+                <>
+                  Showing{' '}
+                  <span className="font-semibold text-gray-800 dark:text-gray-200">
+                    {mockTests.length.toLocaleString('en-IN')}
+                  </span>
+                  {(activeFilterCount > 0 || searchTerm.trim()) && (
+                    <>
+                      {' '}
+                      of{' '}
+                      <span className="font-semibold text-gray-800 dark:text-gray-200">
+                        {listTotal.toLocaleString('en-IN')}
+                      </span>
+                      {activeFilterCount > 0 && (
+                        <span className="text-gray-400 dark:text-gray-500">
+                          {' '}
+                          ·{' '}
+                          <span className="text-blue-600 dark:text-blue-400">
+                            {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} active
+                          </span>
+                        </span>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+            </p>
           </div>
 
-          {/* Mobile Filters */}
-          {showFilters && (
-            <div className="lg:hidden mt-6 pt-6 border-t border-gray-200 dark:border-dark-100">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-gray-900 dark:text-white">Filters</h3>
-                <button onClick={() => setShowFilters(false)}>
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-gray-200 dark:border-dark-100 bg-gray-50 dark:bg-dark-300 text-gray-900 dark:text-white"
-                  >
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Difficulty</label>
-                  <select
-                    value={selectedDifficulty}
-                    onChange={(e) => setSelectedDifficulty(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-gray-200 dark:border-dark-100 bg-gray-50 dark:bg-dark-300 text-gray-900 dark:text-white"
-                  >
-                    {difficulties.map((diff) => (
-                      <option key={diff} value={diff}>{diff}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Results Count */}
-        <div className="flex items-center justify-between mb-6">
-          <p className="text-gray-600 dark:text-gray-400">
-            Found <span className="font-semibold text-gray-900 dark:text-white">{mockTests.length}</span> mock tests
-          </p>
-          <select
-            value={selectedDifficulty}
-            onChange={(e) => setSelectedDifficulty(e.target.value)}
-            className="hidden lg:block px-4 py-2 rounded-lg border border-gray-200 dark:border-dark-100 bg-white dark:bg-dark-200 text-gray-700 dark:text-gray-300"
+          <div
+            id="mock-advanced-filters"
+            className={showFilters ? 'mt-5 block' : 'mt-5 hidden lg:block'}
           >
-            {difficulties.map((diff) => (
-              <option key={diff} value={diff}>{diff === 'All' ? 'All Difficulties' : diff}</option>
-            ))}
-          </select>
+            <ListingAdvancedFilters
+              title="Advanced filters"
+              subtitle="Paper type, difficulty, company, access, and featured sets"
+              fields={mockTestFilterFields}
+              optionsLoading={optionsLoading}
+              onReset={resetListingFilters}
+              activeFilterCount={activeFilterCount}
+            />
+          </div>
         </div>
 
         {/* Loading State */}
@@ -261,16 +425,15 @@ const MockTests = () => {
             <ClipboardList className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No mock tests found</h3>
             <p className="text-gray-500 dark:text-gray-400 mb-6">
-              {searchTerm || selectedCategory !== 'All' 
+              {searchTerm || activeFilterCount > 0
                 ? 'Try adjusting your search or filters'
                 : 'Check back soon for new mock tests'}
             </p>
-            {(searchTerm || selectedCategory !== 'All') && (
+            {(searchTerm || activeFilterCount > 0) && (
               <button
                 onClick={() => {
                   setSearchTerm('');
-                  setSelectedCategory('All');
-                  setSelectedDifficulty('All');
+                  resetListingFilters();
                 }}
                 className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors"
               >

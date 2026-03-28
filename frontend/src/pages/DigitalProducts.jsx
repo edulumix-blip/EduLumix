@@ -1,14 +1,28 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Search, ShoppingBag, Tag, MessageCircle, 
-  TrendingUp, Star, Filter 
+  Search, ShoppingBag, Star, Loader2, Zap, Filter,
 } from 'lucide-react';
 import { productService } from '../services/dataService';
 import { ProductCardSkeleton } from '../components/skeleton';
 import toast from 'react-hot-toast';
 import SEO from '../components/seo/SEO';
 import { generateBreadcrumbSchema } from '../utils/seoSchemas';
+import ListingPageHero from '../components/listing/ListingPageHero';
+import CategoryExplorer from '../components/listing/CategoryExplorer';
+import { DIGITAL_PRODUCT_HUB_CATEGORIES } from '../config/listingHubConfigs';
+import ListingAdvancedFilters from '../components/listing/ListingAdvancedFilters';
+
+const DEFAULT_PRODUCT_CATEGORIES = [
+  'All',
+  'AI Tools',
+  'Design & Creative',
+  'Entertainment & Streaming',
+  'Productivity & Office',
+  'Security & Utility',
+  'Education & Learning',
+  'Others',
+];
 
 const DigitalProducts = () => {
   const [products, setProducts] = useState([]);
@@ -18,21 +32,71 @@ const DigitalProducts = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [listTotal, setListTotal] = useState(0);
+  const [filterSubcategory, setFilterSubcategory] = useState('All');
+  const [filterFeatured, setFilterFeatured] = useState('All');
+  const [filterOptions, setFilterOptions] = useState({
+    categories: [],
+    subcategories: [],
+  });
+  const [optionsLoading, setOptionsLoading] = useState(true);
   const observerTarget = useRef(null);
+  const listingsRef = useRef(null);
+  const searchTermRef = useRef(searchTerm);
+  searchTermRef.current = searchTerm;
 
-  const categories = [
-    'All',
-    'OTT Subscriptions',
-    'Education Subscription',
-    'Hosting',
-    'VPN',
-    'Cloud Storage',
-    'AI Tools',
-    'Productivity Tools',
-    'Marketing Tools',
-    'Design Tools',
-    'Others',
-  ];
+  const scrollToListings = () => {
+    listingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const selectCategory = (cat) => {
+    setSelectedCategory(cat);
+    setTimeout(scrollToListings, 120);
+  };
+
+  const categorySelectList = useMemo(() => {
+    const fromApi = filterOptions.categories || [];
+    if (fromApi.length === 0) return DEFAULT_PRODUCT_CATEGORIES;
+    return ['All', ...fromApi.filter((c) => c && c !== 'All')];
+  }, [filterOptions.categories]);
+
+  const activeFilterCount = useMemo(() => {
+    let n = 0;
+    if (selectedCategory !== 'All') n += 1;
+    if (filterSubcategory !== 'All') n += 1;
+    if (filterFeatured !== 'All') n += 1;
+    return n;
+  }, [selectedCategory, filterSubcategory, filterFeatured]);
+
+  const resetListingFilters = () => {
+    setSelectedCategory('All');
+    setFilterSubcategory('All');
+    setFilterFeatured('All');
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setOptionsLoading(true);
+        const res = await productService.getFilterOptions();
+        if (!cancelled && res.data?.success && res.data?.data) {
+          setFilterOptions({
+            categories: res.data.data.categories || [],
+            subcategories: res.data.data.subcategories || [],
+          });
+        }
+      } catch {
+        if (!cancelled) setFilterOptions({ categories: [], subcategories: [] });
+      } finally {
+        if (!cancelled) setOptionsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const PAGE_SIZE = 12;
 
@@ -42,7 +106,10 @@ const DigitalProducts = () => {
       else setLoadingMore(true);
       const params = { limit: PAGE_SIZE, page: pageNum };
       if (selectedCategory !== 'All') params.category = selectedCategory;
-      if (searchTerm) params.search = searchTerm;
+      if (filterSubcategory !== 'All') params.subcategory = filterSubcategory;
+      if (filterFeatured === 'true') params.isFeatured = 'true';
+      const q = searchTermRef.current?.trim();
+      if (q) params.search = q;
       const response = await productService.getAll(params);
       if (response.data.success) {
         const data = response.data.data || [];
@@ -50,7 +117,10 @@ const DigitalProducts = () => {
         setPage(pageNum);
         setHasMore(pageNum < totalPages);
         if (append) setProducts((prev) => [...prev, ...data]);
-        else setProducts(data);
+        else {
+          setProducts(data);
+          setListTotal(response.data.total ?? data.length);
+        }
       }
     } catch (error) {
       toast.error('Failed to fetch products');
@@ -58,11 +128,11 @@ const DigitalProducts = () => {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [selectedCategory, searchTerm]);
+  }, [selectedCategory, filterSubcategory, filterFeatured]);
 
   useEffect(() => {
     fetchProducts(1);
-  }, [selectedCategory]);
+  }, [fetchProducts]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -76,7 +146,7 @@ const DigitalProducts = () => {
     const target = observerTarget.current;
     if (target) observer.observe(target);
     return () => { if (target) observer.unobserve(target); };
-  }, [hasMore, loadingMore, loading, page, selectedCategory, searchTerm]);
+  }, [hasMore, loadingMore, loading, page, fetchProducts]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -91,6 +161,51 @@ const DigitalProducts = () => {
     { name: 'Home', path: '/' },
     { name: 'Digital Products', path: '/digital-products' }
   ];
+
+  const productFilterFields = useMemo(
+    () => [
+      {
+        id: 'product-filter-category',
+        label: 'Category',
+        value: selectedCategory,
+        onChange: (v) => {
+          setSelectedCategory(v);
+          setTimeout(scrollToListings, 120);
+        },
+        options: categorySelectList.map((c) => ({
+          value: c,
+          label: c === 'All' ? 'All categories' : c,
+        })),
+      },
+      {
+        id: 'product-filter-subcategory',
+        label: 'Type / subcategory',
+        value: filterSubcategory,
+        onChange: setFilterSubcategory,
+        options: [
+          { value: 'All', label: 'All types' },
+          ...filterOptions.subcategories.map((s) => ({ value: s, label: s })),
+        ],
+      },
+      {
+        id: 'product-filter-featured',
+        label: 'Featured',
+        value: filterFeatured,
+        onChange: setFilterFeatured,
+        options: [
+          { value: 'All', label: 'All products' },
+          { value: 'true', label: 'Featured only' },
+        ],
+      },
+    ],
+    [
+      selectedCategory,
+      filterSubcategory,
+      filterFeatured,
+      categorySelectList,
+      filterOptions.subcategories,
+    ]
+  );
 
   const structuredData = {
     '@context': 'https://schema.org',
@@ -117,52 +232,113 @@ const DigitalProducts = () => {
       />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Digital Products</span>
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            Get premium digital subscriptions and tools at incredible prices! 
-            From OTT platforms to productivity software, cloud storage to AI tools - 
-            everything you need for work and entertainment, all at unbeatable rates. 
-            Shop smart, save big!
-          </p>
-        </div>
+        <ListingPageHero
+          imageUrl="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=2000&q=85"
+          objectPositionClass="object-[center_30%] sm:object-right"
+          eyebrow={
+            <p className="inline-flex items-center gap-2 text-white/95 text-sm font-medium mb-4 drop-shadow-md [text-shadow:0_1px_12px_rgba(0,0,0,0.5)]">
+              <Zap className="w-4 h-4 text-amber-300 shrink-0 drop-shadow-md" />
+              Subscriptions & tools — sharp pricing
+            </p>
+          }
+          title="Digital products that pay for themselves"
+          description="OTT, learning platforms, hosting, VPN, AI and productivity — browse by category, compare prices, and grab what you need without the noise."
+          stat={{
+            label: 'Products in this list',
+            value: listTotal.toLocaleString('en-IN'),
+            Icon: ShoppingBag,
+          }}
+          statLoading={loading && products.length === 0}
+        />
 
-        {/* Search and Filters */}
-        <div className="mb-8">
-          <form onSubmit={handleSearch} className="flex gap-4 mb-6">
+        <CategoryExplorer
+          id="digital-product-categories-heading"
+          title="Shop by category"
+          subtitle="Pick a bucket — offers and subscriptions grouped for quick scanning"
+          categories={DIGITAL_PRODUCT_HUB_CATEGORIES}
+          selectedKey={selectedCategory === 'All' ? null : selectedCategory}
+          onSelect={selectCategory}
+          onViewAll={() => selectCategory('All')}
+          viewAllLabel="View all products"
+        />
+
+        <div className="mb-8" ref={listingsRef}>
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 mb-5">
             <div className="flex-1 relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search products..."
+                placeholder="Search products by name or keyword..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="input pl-12"
+                className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white dark:bg-dark-200 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-colors shadow-sm"
               />
             </div>
-            <button type="submit" className="btn-primary">
-              Search
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                className="flex-1 sm:flex-none px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold transition-colors shadow-lg shadow-blue-600/25"
+              >
+                Search
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowFilters((o) => !o)}
+                className="lg:hidden px-4 py-3.5 bg-gray-100 dark:bg-dark-200 border border-gray-200 dark:border-gray-700 rounded-2xl text-gray-600 dark:text-gray-400"
+                aria-expanded={showFilters}
+                aria-controls="product-advanced-filters"
+                title={showFilters ? 'Hide filters' : 'Show filters'}
+              >
+                <Filter className="w-5 h-5" aria-hidden />
+              </button>
+            </div>
           </form>
 
-          {/* Category Filters */}
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                  selectedCategory === category
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
-                    : 'bg-white dark:bg-dark-200 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-dark-100'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
+          <div className="mb-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {loading && products.length === 0 ? (
+                'Loading listings…'
+              ) : (
+                <>
+                  Showing{' '}
+                  <span className="font-semibold text-gray-800 dark:text-gray-200">
+                    {products.length.toLocaleString('en-IN')}
+                  </span>
+                  {(activeFilterCount > 0 || searchTerm.trim()) && (
+                    <>
+                      {' '}
+                      of{' '}
+                      <span className="font-semibold text-gray-800 dark:text-gray-200">
+                        {listTotal.toLocaleString('en-IN')}
+                      </span>
+                      {activeFilterCount > 0 && (
+                        <span className="text-gray-400 dark:text-gray-500">
+                          {' '}
+                          ·{' '}
+                          <span className="text-blue-600 dark:text-blue-400">
+                            {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} active
+                          </span>
+                        </span>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+            </p>
+          </div>
+
+          <div
+            id="product-advanced-filters"
+            className={showFilters ? 'mt-5 block' : 'mt-5 hidden lg:block'}
+          >
+            <ListingAdvancedFilters
+              title="Advanced filters"
+              subtitle="Category, product type, and staff picks"
+              fields={productFilterFields}
+              optionsLoading={optionsLoading}
+              onReset={resetListingFilters}
+              activeFilterCount={activeFilterCount}
+            />
           </div>
         </div>
 

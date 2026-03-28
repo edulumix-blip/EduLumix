@@ -274,6 +274,9 @@ const Home = () => {
       icon: Briefcase,
       path: '/jobs',
       gradient: 'from-blue-600 to-blue-400',
+      image:
+        'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1200&q=80',
+      imageAlt: 'Professionals discussing career opportunities',
     },
     {
       title: 'Free Resources',
@@ -281,6 +284,9 @@ const Home = () => {
       icon: FolderOpen,
       path: '/resources',
       gradient: 'from-blue-500 to-blue-400',
+      image:
+        'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1200&q=80',
+      imageAlt: 'Books and study materials for learning',
     },
     {
       title: 'Courses',
@@ -288,6 +294,9 @@ const Home = () => {
       icon: GraduationCap,
       path: '/courses',
       gradient: 'from-blue-600 to-blue-500',
+      image:
+        'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80',
+      imageAlt: 'Students learning together online',
     },
     {
       title: 'Tech Blog',
@@ -295,6 +304,9 @@ const Home = () => {
       icon: FileText,
       path: '/blog',
       gradient: 'from-blue-500 to-blue-600',
+      image:
+        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
+      imageAlt: 'Developer workspace with laptop and code',
     },
     {
       title: 'Digital Products',
@@ -302,6 +314,9 @@ const Home = () => {
       icon: ShoppingBag,
       path: '/digital-products',
       gradient: 'from-blue-600 to-blue-400',
+      image:
+        'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=1200&q=80',
+      imageAlt: 'Digital shopping and online products',
     },
     {
       title: 'Mock Tests',
@@ -309,6 +324,9 @@ const Home = () => {
       icon: ClipboardList,
       path: '/mock-test',
       gradient: 'from-blue-500 to-blue-400',
+      image:
+        'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1200&q=80',
+      imageAlt: 'Exam preparation and practice tests',
     },
   ];
 
@@ -440,39 +458,59 @@ const Home = () => {
       />
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 lg:py-28">
-        {/* Background Effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-transparent to-blue-600/5 dark:from-blue-600/10 dark:to-blue-600/10"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-3xl"></div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden py-20 lg:py-28 min-h-[520px] lg:min-h-[580px] flex items-center">
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=2400&q=85"
+            alt=""
+            className="h-full w-full object-cover object-[center_35%] scale-105"
+            decoding="async"
+            fetchPriority="high"
+          />
+          {/* Dark scrim so white hero copy reads like Jobs / Resources hubs */}
+          <div
+            className="absolute inset-0 bg-black/40 dark:bg-black/50 pointer-events-none"
+            aria-hidden
+          />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                'radial-gradient(ellipse 100% 80% at 50% 45%, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.25) 55%, rgba(0,0,0,0.45) 100%)',
+            }}
+            aria-hidden
+          />
+          <div className="absolute inset-0 ring-1 ring-inset ring-white/10" aria-hidden />
+        </div>
+
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 mb-6">
-              <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              <span className="text-sm font-medium text-blue-600 dark:text-blue-400">Your Complete Career Platform</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/35 backdrop-blur-md border border-white/20 shadow-md mb-6">
+              <Sparkles className="w-4 h-4 text-blue-400 shrink-0" />
+              <span className="text-sm font-medium text-white">Your Complete Career Platform</span>
             </div>
-            
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-display mb-6 text-gray-900 dark:text-white leading-tight">
+
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-display mb-6 text-white leading-tight [text-shadow:0_2px_24px_rgba(0,0,0,0.45)]">
               Unlock Your Potential with{' '}
-              <span className="text-blue-600 dark:text-blue-400">EduLumix</span>
+              <span className="text-blue-400 [text-shadow:0_2px_20px_rgba(37,99,235,0.35)]">EduLumix</span>
             </h1>
-            
-            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-10 leading-relaxed">
-              Your ultimate destination for fresher jobs, free resources, courses, and career guidance. 
+
+            <p className="text-lg md:text-xl text-white/95 max-w-3xl mx-auto mb-10 leading-relaxed [text-shadow:0_1px_12px_rgba(0,0,0,0.4)]">
+              Your ultimate destination for fresher jobs, free resources, courses, and career guidance.
               Join thousands of successful professionals who started their journey with us.
             </p>
-            
+
             <div className="flex flex-wrap justify-center gap-4">
-              <Link 
-                to="/jobs" 
-                className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-lg shadow-blue-500/25"
+              <Link
+                to="/jobs"
+                className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition-all shadow-lg shadow-black/30"
               >
                 Explore Jobs
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Link>
-              <Link 
-                to="/resources" 
-                className="inline-flex items-center px-6 py-3 text-base font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-dark-100 hover:bg-gray-200 dark:hover:bg-dark-200 rounded-xl transition-all"
+              <Link
+                to="/resources"
+                className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/35 rounded-xl transition-all shadow-lg shadow-black/20"
               >
                 Browse Resources
               </Link>
@@ -776,23 +814,37 @@ const Home = () => {
               <Link
                 key={index}
                 to={portal.path}
-                className="group bg-white dark:bg-dark-100 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 hover:border-blue-500 dark:hover:border-blue-500 transition-all hover:shadow-xl hover:shadow-blue-500/10"
+                className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-dark-100 shadow-sm hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300"
               >
-                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${portal.gradient} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}>
-                  <portal.icon className="w-7 h-7 text-white" />
+                <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100 dark:bg-dark-200">
+                  <img
+                    src={portal.image}
+                    alt={portal.imageAlt}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                  />
+                  <div
+                    className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent"
+                    aria-hidden
+                  />
+                  <div
+                    className={`absolute bottom-4 left-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${portal.gradient} shadow-lg ring-2 ring-white/30`}
+                  >
+                    <portal.icon className="w-6 h-6 text-white" />
+                  </div>
                 </div>
-                
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                  {portal.title}
-                </h3>
-                
-                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-4">
-                  {portal.description}
-                </p>
-                
-                <div className="flex items-center text-blue-600 dark:text-blue-400 font-medium text-sm">
-                  Explore Now
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform" />
+                <div className="flex flex-1 flex-col p-6">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    {portal.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-4 flex-1">
+                    {portal.description}
+                  </p>
+                  <div className="flex items-center text-blue-600 dark:text-blue-400 font-medium text-sm">
+                    Explore Now
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform" />
+                  </div>
                 </div>
               </Link>
             ))}

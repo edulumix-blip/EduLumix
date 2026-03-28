@@ -49,13 +49,14 @@ export default function EduLumixChatbot() {
       const reply = res.data?.data?.message || 'Sorry, I could not respond.';
       setMessages((m) => [...m, { role: 'assistant', content: reply }]);
     } catch (err) {
-      setMessages((m) => [
-        ...m,
-        {
-          role: 'assistant',
-          content: 'Something went wrong. Please try again later.',
-        },
-      ]);
+      const apiMsg = err.response?.data?.message;
+      const isNetwork = err.code === 'ERR_NETWORK' || err.message === 'Network Error';
+      const fallback = isNetwork
+        ? 'Cannot reach the server. Start the backend and check Vite proxy (VITE_API_TARGET) matches your API port.'
+        : 'Something went wrong. Please try again later.';
+      const content =
+        typeof apiMsg === 'string' && apiMsg.trim() ? apiMsg : fallback;
+      setMessages((m) => [...m, { role: 'assistant', content }]);
     } finally {
       setLoading(false);
     }

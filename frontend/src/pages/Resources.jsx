@@ -1,16 +1,30 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Search, FolderOpen, FileText, Video, Download, 
-  Heart, ExternalLink, Play, Loader2
+  Search, FolderOpen, Video, Download, 
+  Heart, ExternalLink, Play, Loader2, Zap, Filter,
 } from 'lucide-react';
 import { resourceService } from '../services/dataService';
 import { ResourceCardSkeleton } from '../components/skeleton';
 import toast from 'react-hot-toast';
 import SEO from '../components/seo/SEO';
 import { generateBreadcrumbSchema } from '../utils/seoSchemas';
+import ListingPageHero from '../components/listing/ListingPageHero';
+import CategoryExplorer from '../components/listing/CategoryExplorer';
+import { RESOURCE_HUB_CATEGORIES } from '../config/listingHubConfigs';
+import ListingAdvancedFilters from '../components/listing/ListingAdvancedFilters';
 
 const PAGE_SIZE = 12;
+
+const SOURCE_LABELS = {
+  manual: 'Manual / curated',
+  devto: 'Dev.to',
+  freecodecamp: 'freeCodeCamp',
+  hashnode: 'Hashnode',
+  youtube: 'YouTube',
+  medium: 'Medium',
+  hackernews: 'Hacker News',
+};
 
 const Resources = () => {
   const [resources, setResources] = useState([]);
@@ -20,7 +34,45 @@ const Resources = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+  const [listTotal, setListTotal] = useState(0);
+  const [filterSubcategory, setFilterSubcategory] = useState('All');
+  const [filterSource, setFilterSource] = useState('All');
+  const [filterVideo, setFilterVideo] = useState('All');
+  const [filterOptions, setFilterOptions] = useState({
+    subcategories: [],
+    sources: [],
+  });
+  const [optionsLoading, setOptionsLoading] = useState(true);
   const observerTarget = useRef(null);
+  const listingsRef = useRef(null);
+  const searchTermRef = useRef(searchTerm);
+  searchTermRef.current = searchTerm;
+
+  const scrollToListings = () => {
+    listingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const selectCategory = (cat) => {
+    setSelectedCategory(cat);
+    setTimeout(scrollToListings, 120);
+  };
+
+  const activeFilterCount = useMemo(() => {
+    let n = 0;
+    if (selectedCategory !== 'All') n += 1;
+    if (filterSubcategory !== 'All') n += 1;
+    if (filterSource !== 'All') n += 1;
+    if (filterVideo !== 'All') n += 1;
+    return n;
+  }, [selectedCategory, filterSubcategory, filterSource, filterVideo]);
+
+  const resetListingFilters = () => {
+    setSelectedCategory('All');
+    setFilterSubcategory('All');
+    setFilterSource('All');
+    setFilterVideo('All');
+  };
 
   const categories = [
     'All',
@@ -32,6 +84,29 @@ const Resources = () => {
     'Software Project',
     'Hardware Project',
   ];
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setOptionsLoading(true);
+        const res = await resourceService.getFilterOptions();
+        if (!cancelled && res.data?.success && res.data?.data) {
+          setFilterOptions({
+            subcategories: res.data.data.subcategories || [],
+            sources: res.data.data.sources || [],
+          });
+        }
+      } catch {
+        if (!cancelled) setFilterOptions({ subcategories: [], sources: [] });
+      } finally {
+        if (!cancelled) setOptionsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Category colors for fallback thumbnails
   const categoryColors = {
@@ -53,9 +128,12 @@ const Resources = () => {
       if (selectedCategory !== 'All') {
         params.category = selectedCategory;
       }
-      if (searchTerm) {
-        params.search = searchTerm;
-      }
+      const q = searchTermRef.current?.trim();
+      if (q) params.search = q;
+      if (filterSubcategory !== 'All') params.subcategory = filterSubcategory;
+      if (filterSource !== 'All') params.source = filterSource;
+      if (filterVideo === 'true') params.isVideo = 'true';
+      if (filterVideo === 'false') params.isVideo = 'false';
       const response = await resourceService.getAll(params);
       if (response.data.success) {
         const data = response.data.data || [];
@@ -67,6 +145,7 @@ const Resources = () => {
           setResources(prev => [...prev, ...data]);
         } else {
           setResources(data);
+          setListTotal(response.data.total ?? data.length);
         }
       }
     } catch (error) {
@@ -75,11 +154,11 @@ const Resources = () => {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [selectedCategory, searchTerm]);
+  }, [selectedCategory, filterSubcategory, filterSource, filterVideo]);
 
   useEffect(() => {
     fetchResources(1);
-  }, [selectedCategory]);
+  }, [fetchResources]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -93,7 +172,7 @@ const Resources = () => {
     const target = observerTarget.current;
     if (target) observer.observe(target);
     return () => { if (target) observer.unobserve(target); };
-  }, [hasMore, loadingMore, loading, page, selectedCategory, searchTerm]);
+  }, [hasMore, loadingMore, loading, page, fetchResources]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -135,6 +214,67 @@ const Resources = () => {
     return match ? match[1] : null;
   };
 
+  const resourceFilterFields = useMemo(
+    () => [
+      {
+        id: 'res-filter-category',
+        label: 'Category',
+        value: selectedCategory,
+        onChange: (v) => {
+          setSelectedCategory(v);
+          setTimeout(scrollToListings, 120);
+        },
+        options: categories.map((c) => ({
+          value: c,
+          label: c === 'All' ? 'All types' : c,
+        })),
+      },
+      {
+        id: 'res-filter-subcategory',
+        label: 'Tag / subcategory',
+        value: filterSubcategory,
+        onChange: setFilterSubcategory,
+        options: [
+          { value: 'All', label: 'All tags' },
+          ...filterOptions.subcategories.map((s) => ({ value: s, label: s })),
+        ],
+      },
+      {
+        id: 'res-filter-source',
+        label: 'Source',
+        value: filterSource,
+        onChange: setFilterSource,
+        options: [
+          { value: 'All', label: 'All sources' },
+          ...filterOptions.sources.map((s) => ({
+            value: s,
+            label: SOURCE_LABELS[s] || s,
+          })),
+        ],
+      },
+      {
+        id: 'res-filter-video',
+        label: 'Format',
+        value: filterVideo,
+        onChange: setFilterVideo,
+        options: [
+          { value: 'All', label: 'Any format' },
+          { value: 'true', label: 'Video only' },
+          { value: 'false', label: 'Notes & links' },
+        ],
+      },
+    ],
+    [
+      selectedCategory,
+      filterSubcategory,
+      filterSource,
+      filterVideo,
+      filterOptions.subcategories,
+      filterOptions.sources,
+      categories,
+    ]
+  );
+
   const breadcrumbs = [
     { name: 'Home', path: '/' },
     { name: 'Resources', path: '/resources' }
@@ -165,51 +305,114 @@ const Resources = () => {
       />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            <span className="bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">Free Resource</span>
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            Unlock your potential with our comprehensive collection of free learning resources! 
-            Access curated notes, video tutorials, software projects, and cutting-edge materials 
-            across various technologies. Everything you need to excel in your career, absolutely free.
-          </p>
-        </div>
+        <ListingPageHero
+          imageUrl="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=2000&q=85"
+          objectPositionClass="object-[center_35%] sm:object-center"
+          eyebrow={
+            <p className="inline-flex items-center gap-2 text-white/95 text-sm font-medium mb-4 drop-shadow-md [text-shadow:0_1px_12px_rgba(0,0,0,0.5)]">
+              <Zap className="w-4 h-4 text-amber-300 shrink-0 drop-shadow-md" />
+              Notes, videos & projects — 100% free
+            </p>
+          }
+          title="Free resources that actually help you level up"
+          description="Curated notes, interview prep, video walkthroughs, and hands-on projects across software and hardware. Pick a lane below, search when you know what you need — no paywall."
+          stat={{
+            label: 'Resources in this list',
+            value: listTotal.toLocaleString('en-IN'),
+            Icon: FolderOpen,
+          }}
+          statLoading={loading && resources.length === 0}
+        />
 
-        {/* Search and Filters */}
-        <div className="mb-8">
-          <form onSubmit={handleSearch} className="flex gap-4 mb-6">
+        <CategoryExplorer
+          id="resource-categories-heading"
+          title="Explore by type"
+          subtitle="Jump straight into notes, videos, projects, or trending topics"
+          categories={RESOURCE_HUB_CATEGORIES}
+          selectedKey={selectedCategory === 'All' ? null : selectedCategory}
+          onSelect={selectCategory}
+          onViewAll={() => selectCategory('All')}
+          viewAllLabel="View all resources"
+        />
+
+        {/* Search + quick chips */}
+        <div className="mb-8" ref={listingsRef}>
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 mb-5">
             <div className="flex-1 relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search resources..."
+                placeholder="Search resources by title or keywords..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="input pl-12"
+                className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white dark:bg-dark-200 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-colors shadow-sm"
               />
             </div>
-            <button type="submit" className="btn-primary">
-              Search
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                className="flex-1 sm:flex-none px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold transition-colors shadow-lg shadow-blue-600/25"
+              >
+                Search
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowFilters((o) => !o)}
+                className="lg:hidden px-4 py-3.5 bg-gray-100 dark:bg-dark-200 border border-gray-200 dark:border-gray-700 rounded-2xl text-gray-600 dark:text-gray-400"
+                aria-expanded={showFilters}
+                aria-controls="resource-advanced-filters"
+                title={showFilters ? 'Hide filters' : 'Show filters'}
+              >
+                <Filter className="w-5 h-5" aria-hidden />
+              </button>
+            </div>
           </form>
 
-          {/* Category Tabs */}
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                  selectedCategory === category
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
-                    : 'bg-white dark:bg-dark-200 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-dark-100'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {loading && resources.length === 0 ? (
+                'Loading listings…'
+              ) : (
+                <>
+                  Showing{' '}
+                  <span className="font-semibold text-gray-800 dark:text-gray-200">
+                    {resources.length.toLocaleString('en-IN')}
+                  </span>
+                  {(activeFilterCount > 0 || searchTerm.trim()) && (
+                    <>
+                      {' '}
+                      of{' '}
+                      <span className="font-semibold text-gray-800 dark:text-gray-200">
+                        {listTotal.toLocaleString('en-IN')}
+                      </span>
+                      {activeFilterCount > 0 && (
+                        <span className="text-gray-400 dark:text-gray-500">
+                          {' '}
+                          ·{' '}
+                          <span className="text-blue-600 dark:text-blue-400">
+                            {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} active
+                          </span>
+                        </span>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+            </p>
+          </div>
+
+          <div
+            id="resource-advanced-filters"
+            className={showFilters ? 'mt-5 block' : 'mt-5 hidden lg:block'}
+          >
+            <ListingAdvancedFilters
+              title="Advanced filters"
+              subtitle="Category, tags, source, and video vs notes"
+              fields={resourceFilterFields}
+              optionsLoading={optionsLoading}
+              onReset={resetListingFilters}
+              activeFilterCount={activeFilterCount}
+            />
           </div>
         </div>
 

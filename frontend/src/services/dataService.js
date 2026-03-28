@@ -3,6 +3,8 @@ import api from './api';
 // Jobs
 export const jobService = {
   getAll: (params) => api.get('/jobs', { params }),
+  getStats: () => api.get('/jobs/stats'),
+  getFilterOptions: () => api.get('/jobs/filter-options'),
   getGrouped: () => api.get('/jobs/grouped'),
   getById: (id) => api.get(`/jobs/${id}`),
   getBySlug: (slug) => api.get(`/jobs/slug/${slug}`),
@@ -12,12 +14,12 @@ export const jobService = {
   like: (id) => api.put(`/jobs/${id}/like`),
   getMyJobs: () => api.get('/jobs/my/jobs'),
   fetchExternal: (opts) => api.post('/jobs/fetch-external', opts || {}),
-  syncClosed: (opts) => api.post('/jobs/sync-closed', opts || {}),
 };
 
 // Resources
 export const resourceService = {
   getAll: (params) => api.get('/resources', { params }),
+  getFilterOptions: () => api.get('/resources/filter-options'),
   getGrouped: () => api.get('/resources/grouped'),
   getById: (id) => api.get(`/resources/${id}`),
   create: (data) => api.post('/resources', data),
@@ -44,6 +46,7 @@ export const blogService = {
 // Products
 export const productService = {
   getAll: (params) => api.get('/products', { params }),
+  getFilterOptions: () => api.get('/products/filter-options'),
   getAllAdmin: (params) => api.get('/products/all', { params }),
   getFeatured: () => api.get('/products/featured'),
   getByCategory: (category) => api.get(`/products/category/${category}`),
@@ -60,6 +63,7 @@ export const productService = {
 // Courses
 export const courseService = {
   getAll: (params) => api.get('/courses', { params }),
+  getFilterOptions: () => api.get('/courses/filter-options'),
   getAllAdmin: (params) => api.get('/courses/all', { params }),
   getFeatured: () => api.get('/courses/featured'),
   getBySlug: (slug) => api.get(`/courses/${slug}`),
@@ -75,6 +79,7 @@ export const courseService = {
 // Mock Tests
 export const mockTestService = {
   getAll: (params) => api.get('/mocktests', { params }),
+  getFilterOptions: () => api.get('/mocktests/filter-options'),
   getAllAdmin: (params) => api.get('/mocktests/all', { params }),
   getFeatured: () => api.get('/mocktests/featured'),
   getBySlug: (slug) => api.get(`/mocktests/${slug}`),

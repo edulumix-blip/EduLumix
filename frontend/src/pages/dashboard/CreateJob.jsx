@@ -7,11 +7,11 @@ import {
 } from 'lucide-react';
 import { jobService } from '../../services/dataService';
 import toast from 'react-hot-toast';
+import CompanyAvatar from '../../components/common/CompanyAvatar';
 
 const CreateJob = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [logoPreviewError, setLogoPreviewError] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -38,11 +38,6 @@ const CreateJob = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    
-    // Reset logo preview error when URL changes
-    if (name === 'companyLogo') {
-      setLogoPreviewError(false);
-    }
   };
 
   // Check if applyLink is email or URL
@@ -370,22 +365,15 @@ const CreateJob = () => {
                     className="flex-1 px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
                     placeholder="https://example.com/logo.png"
                   />
-                  {/* Logo Preview */}
-                  {formData.companyLogo && (
-                    <div className="w-12 h-12 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0 bg-white dark:bg-dark-100 flex items-center justify-center">
-                      {logoPreviewError ? (
-                        <AlertCircle className="w-5 h-5 text-blue-400" />
-                      ) : (
-                        <img
-                          src={formData.companyLogo}
-                          alt="Logo Preview"
-                          className="w-full h-full object-contain"
-                          onError={() => setLogoPreviewError(true)}
-                          onLoad={() => setLogoPreviewError(false)}
-                        />
-                      )}
-                    </div>
-                  )}
+                  {(formData.company?.trim() || formData.companyLogo?.trim()) ? (
+                    <CompanyAvatar
+                      company={formData.company || ' '}
+                      logoUrl={formData.companyLogo}
+                      size="md"
+                      rounded="xl"
+                      className="flex-shrink-0"
+                    />
+                  ) : null}
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Paste any image URL from the internet
