@@ -40,6 +40,9 @@ edulumix-backend-temp/
 firebase-debug.log
 .firebase/
 
+# Netlify local CLI state
+.netlify/
+
 # Migration scripts
 scripts/
 config/digikaptan-service-account.json

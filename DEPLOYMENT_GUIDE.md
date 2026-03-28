@@ -32,9 +32,9 @@ edulumix-backend/
 │   │   ├── services/      # API services
 │   │   └── utils/         # Helper functions
 │   ├── package.json       # Frontend dependencies
-│   ├── firebase.json      # Firebase hosting config
-│   └── netlify.toml       # Netlify deployment config
+│   └── public/_redirects   # Netlify SPA fallback → dist
 │
+├── netlify.toml           # Netlify build (monorepo: base frontend)
 ├── SEO_IMPLEMENTATION_GUIDE.md  # Complete SEO documentation
 └── README.md              # Project documentation
 ```
@@ -54,7 +54,8 @@ edulumix-backend/
 2. **Create New Web Service:**
    - Click "New +" → "Web Service"
    - Connect GitHub account
-   - Select repository: `edulumix-blip/edulumix-backend`
+   - Select repository: `edulumix-blip/EduLumix` (root contains `backend/`) or `edulumix-blip/edulumix-backend` if you use the backend-only repo
+   - Set **Root Directory** to `backend` when using the full monorepo
    - Click "Connect"
 
 3. **Configure Service:**
@@ -95,14 +96,14 @@ edulumix-backend/
 2. **Create New Site:**
    - Click "Add new site" → "Import an existing project"
    - Choose GitHub
-   - Select repository: `edulumix-blip/edulumix-backend`
+   - Select repository: `edulumix-blip/EduLumix`
    - Click "Authorize Netlify"
 
-3. **Configure Build Settings:**
+3. **Configure Build Settings** (or rely on root `netlify.toml`):
    ```
    Base directory: frontend
-   Build command: npm run build
-   Publish directory: frontend/dist
+   Build command: npm install && npm run build
+   Publish directory: dist
    ```
 
 4. **Add Environment Variables:**

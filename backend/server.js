@@ -97,7 +97,11 @@ const corsOptions = {
     } catch (error) {
       return callback(new Error('Invalid Origin header'));
     }
-    // Check allowed list (Firebase, production domains)
+    // Netlify deploy previews and *.netlify.app production URLs
+    if (parsedOrigin.hostname.endsWith('.netlify.app')) {
+      return callback(null, true);
+    }
+    // Check allowed list (production domains, CLIENT_URL, etc.)
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }

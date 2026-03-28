@@ -1,0 +1,22 @@
+# EduLumix frontend on Netlify (backend stays on Render).
+# Dashboard: Site settings → Build & deploy → set same values if not using this file.
+
+[build]
+  base = "frontend"
+  command = "npm install && npm run build"
+  # Relative to `base` (frontend/) after build → frontend/dist on disk
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Long cache for hashed Vite chunks only (not root registerSW / workbox)
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
