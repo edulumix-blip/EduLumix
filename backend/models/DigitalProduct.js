@@ -44,6 +44,10 @@ const digitalProductSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'Offer price is required'],
       min: [0, 'Price cannot be negative'],
+      validate: {
+        validator: function (v) { return v <= this.actualPrice; },
+        message: 'Offer price cannot be greater than actual price',
+      },
     },
     whatsappNumber: {
       type: String,
@@ -78,6 +82,8 @@ const digitalProductSchema = new mongoose.Schema(
 );
 
 digitalProductSchema.index({ externalId: 1 }, { sparse: true });
+digitalProductSchema.index({ isAvailable: 1, createdAt: -1 });
+digitalProductSchema.index({ postedBy: 1, createdAt: -1 });
 
 // Virtual for discount percentage
 digitalProductSchema.virtual('discountPercentage').get(function () {

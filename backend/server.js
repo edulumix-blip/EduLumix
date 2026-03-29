@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import mongoose from 'mongoose';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import { startDailyJobFetchCron } from './cron/dailyJobFetch.js';
@@ -88,14 +89,15 @@ const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (same-origin, Postman, curl, etc.)
     if (!origin) return callback(null, true);
-    // Allow localhost / 127.0.0.1 hosts for local dev only
+    let parsedOrigin;
     try {
-      const parsedOrigin = new URL(origin);
-      if (parsedOrigin.hostname === 'localhost' || parsedOrigin.hostname === '127.0.0.1') {
-        return callback(null, true);
-      }
+      parsedOrigin = new URL(origin);
     } catch (error) {
       return callback(new Error('Invalid Origin header'));
+    }
+    // Allow localhost / 127.0.0.1 hosts for local dev only
+    if (parsedOrigin.hostname === 'localhost' || parsedOrigin.hostname === '127.0.0.1') {
+      return callback(null, true);
     }
     // Netlify deploy previews and *.netlify.app production URLs
     if (parsedOrigin.hostname.endsWith('.netlify.app')) {
@@ -163,11 +165,15 @@ app.use('/api/mocktests', mockTestRoutes);
 app.use('/api/claims', claimRoutes);
 app.use('/api/chat', chatRoutes);
 
-// Health check route
+// Health check route — includes DB connectivity
 app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    success: true,
+  const dbStateMap = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
+  const dbState = mongoose.connection.readyState;
+  const isHealthy = dbState === 1;
+  res.status(isHealthy ? 200 : 503).json({
+    success: isHealthy,
     message: 'EduLumix API is running',
+    db: dbStateMap[dbState] || 'unknown',
     timestamp: new Date().toISOString(),
   });
 });
@@ -193,7 +199,7 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`
 ╔════════════════════════════════════════════════════════════╗
 ║                                                            ║
@@ -216,9 +222,12 @@ app.listen(PORT, () => {
   `);
 });
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err, promise) => {
-  console.log(`Error: ${err.message}`);
-  // Close server & exit process
-  process.exit(1);
+// Handle unhandled promise rejections — graceful shutdown
+process.on('unhandledRejection', (err) => {
+  console.error(`Unhandled Rejection: ${err.message}`);
+  server.close(() => {
+    process.exit(1);
+  });
+  // Force exit after 10s if server.close() hangs
+  setTimeout(() => process.exit(1), 10000).unref();
 });

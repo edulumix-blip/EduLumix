@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Loader from './components/common/Loader';
 import ScrollToTop from './components/common/ScrollToTop';
 import EduLumixChatbot from './components/chat/EduLumixChatbot';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 // Layout Components (needed for first paint)
 import Navbar from './components/layout/Navbar';
@@ -76,6 +77,7 @@ function App() {
     <div className="min-h-screen bg-gray-50 dark:bg-dark-300 flex flex-col">
       <ScrollToTop />
       <EduLumixChatbot />
+      <ErrorBoundary>
       <Suspense fallback={
         <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-dark-300">
           <Loader size="lg" text="" />
@@ -173,6 +175,7 @@ function App() {
         } />
       </Routes>
       </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }

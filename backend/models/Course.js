@@ -95,6 +95,10 @@ const courseSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'Offer price is required'],
       min: [0, 'Price cannot be negative'],
+      validate: {
+        validator: function (v) { return v <= this.actualPrice; },
+        message: 'Offer price cannot be greater than actual price',
+      },
     },
     isFree: {
       type: Boolean,
@@ -198,6 +202,8 @@ const courseSchema = new mongoose.Schema(
 );
 
 courseSchema.index({ source: 1, externalId: 1 }, { sparse: true });
+courseSchema.index({ isPublished: 1, createdAt: -1 });
+courseSchema.index({ postedBy: 1, createdAt: -1 });
 
 // Generate slug before saving
 courseSchema.pre('save', function (next) {

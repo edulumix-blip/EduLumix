@@ -151,6 +151,8 @@ const mockTestSchema = new mongoose.Schema(
 );
 
 mockTestSchema.index({ externalId: 1 }, { sparse: true });
+mockTestSchema.index({ isPublished: 1, createdAt: -1 });
+mockTestSchema.index({ postedBy: 1, createdAt: -1 });
 
 // Generate slug before saving
 mockTestSchema.pre('save', function (next) {

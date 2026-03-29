@@ -176,15 +176,28 @@ export const getAllCourses = async (req, res) => {
 
     const total = await Course.countDocuments(query);
 
-    // Stats
+    // Stats — single aggregation instead of 7 separate queries
+    const [statsResult] = await Course.aggregate([
+      {
+        $facet: {
+          total: [{ $count: 'count' }],
+          published: [{ $match: { isPublished: true } }, { $count: 'count' }],
+          drafts: [{ $match: { isPublished: false } }, { $count: 'count' }],
+          featured: [{ $match: { isFeatured: true } }, { $count: 'count' }],
+          free: [{ $match: { isFree: true } }, { $count: 'count' }],
+          totalViews: [{ $group: { _id: null, total: { $sum: '$views' } } }],
+          totalEnrollments: [{ $group: { _id: null, total: { $sum: '$enrollments' } } }],
+        },
+      },
+    ]);
     const stats = {
-      total: await Course.countDocuments(),
-      published: await Course.countDocuments({ isPublished: true }),
-      drafts: await Course.countDocuments({ isPublished: false }),
-      featured: await Course.countDocuments({ isFeatured: true }),
-      free: await Course.countDocuments({ isFree: true }),
-      totalViews: await Course.aggregate([{ $group: { _id: null, total: { $sum: '$views' } } }]).then(r => r[0]?.total || 0),
-      totalEnrollments: await Course.aggregate([{ $group: { _id: null, total: { $sum: '$enrollments' } } }]).then(r => r[0]?.total || 0),
+      total: statsResult.total[0]?.count || 0,
+      published: statsResult.published[0]?.count || 0,
+      drafts: statsResult.drafts[0]?.count || 0,
+      featured: statsResult.featured[0]?.count || 0,
+      free: statsResult.free[0]?.count || 0,
+      totalViews: statsResult.totalViews[0]?.total || 0,
+      totalEnrollments: statsResult.totalEnrollments[0]?.total || 0,
     };
 
     res.status(200).json({

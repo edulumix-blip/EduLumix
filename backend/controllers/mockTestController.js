@@ -156,16 +156,30 @@ export const getAllMockTests = async (req, res) => {
 
     const total = await MockTest.countDocuments(query);
 
-    // Stats
+    // Stats — single aggregation instead of 8 separate queries
+    const [statsResult] = await MockTest.aggregate([
+      {
+        $facet: {
+          total: [{ $count: 'count' }],
+          published: [{ $match: { isPublished: true } }, { $count: 'count' }],
+          drafts: [{ $match: { isPublished: false } }, { $count: 'count' }],
+          featured: [{ $match: { isFeatured: true } }, { $count: 'count' }],
+          free: [{ $match: { isFree: true } }, { $count: 'count' }],
+          totalViews: [{ $group: { _id: null, total: { $sum: '$views' } } }],
+          totalAttempts: [{ $group: { _id: null, total: { $sum: '$attempts' } } }],
+          totalQuestions: [{ $group: { _id: null, total: { $sum: '$totalQuestions' } } }],
+        },
+      },
+    ]);
     const stats = {
-      total: await MockTest.countDocuments(),
-      published: await MockTest.countDocuments({ isPublished: true }),
-      drafts: await MockTest.countDocuments({ isPublished: false }),
-      featured: await MockTest.countDocuments({ isFeatured: true }),
-      free: await MockTest.countDocuments({ isFree: true }),
-      totalViews: await MockTest.aggregate([{ $group: { _id: null, total: { $sum: '$views' } } }]).then(r => r[0]?.total || 0),
-      totalAttempts: await MockTest.aggregate([{ $group: { _id: null, total: { $sum: '$attempts' } } }]).then(r => r[0]?.total || 0),
-      totalQuestions: await MockTest.aggregate([{ $group: { _id: null, total: { $sum: '$totalQuestions' } } }]).then(r => r[0]?.total || 0),
+      total: statsResult.total[0]?.count || 0,
+      published: statsResult.published[0]?.count || 0,
+      drafts: statsResult.drafts[0]?.count || 0,
+      featured: statsResult.featured[0]?.count || 0,
+      free: statsResult.free[0]?.count || 0,
+      totalViews: statsResult.totalViews[0]?.total || 0,
+      totalAttempts: statsResult.totalAttempts[0]?.total || 0,
+      totalQuestions: statsResult.totalQuestions[0]?.total || 0,
     };
 
     res.status(200).json({

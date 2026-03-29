@@ -135,13 +135,24 @@ export const getAllProducts = async (req, res) => {
 
     const total = await DigitalProduct.countDocuments(query);
 
-    // Stats
+    // Stats — single aggregation instead of 5 separate queries
+    const [statsResult] = await DigitalProduct.aggregate([
+      {
+        $facet: {
+          total: [{ $count: 'count' }],
+          available: [{ $match: { isAvailable: true } }, { $count: 'count' }],
+          unavailable: [{ $match: { isAvailable: false } }, { $count: 'count' }],
+          featured: [{ $match: { isFeatured: true } }, { $count: 'count' }],
+          totalViews: [{ $group: { _id: null, total: { $sum: '$views' } } }],
+        },
+      },
+    ]);
     const stats = {
-      total: await DigitalProduct.countDocuments(),
-      available: await DigitalProduct.countDocuments({ isAvailable: true }),
-      unavailable: await DigitalProduct.countDocuments({ isAvailable: false }),
-      featured: await DigitalProduct.countDocuments({ isFeatured: true }),
-      totalViews: await DigitalProduct.aggregate([{ $group: { _id: null, total: { $sum: '$views' } } }]).then(r => r[0]?.total || 0),
+      total: statsResult.total[0]?.count || 0,
+      available: statsResult.available[0]?.count || 0,
+      unavailable: statsResult.unavailable[0]?.count || 0,
+      featured: statsResult.featured[0]?.count || 0,
+      totalViews: statsResult.totalViews[0]?.total || 0,
     };
 
     res.status(200).json({

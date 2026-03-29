@@ -50,7 +50,7 @@ export const createClaim = async (req, res) => {
       });
     }
 
-    // Create claim
+    // Create claim first
     const claim = await Claim.create({
       user: req.user.id,
       points,
@@ -59,13 +59,18 @@ export const createClaim = async (req, res) => {
       paymentDetails,
     });
 
-    // Deduct points from user and mark milestone as claimed
-    user.points -= points;
-    if (!user.claimedMilestones) {
-      user.claimedMilestones = [];
+    // Deduct points and mark milestone — rollback claim if user save fails
+    try {
+      user.points -= points;
+      if (!user.claimedMilestones) {
+        user.claimedMilestones = [];
+      }
+      user.claimedMilestones.push(points);
+      await user.save();
+    } catch (saveError) {
+      await Claim.findByIdAndDelete(claim._id);
+      throw saveError;
     }
-    user.claimedMilestones.push(points);
-    await user.save();
 
     const populatedClaim = await Claim.findById(claim._id).populate('user', 'name email avatar');
 
