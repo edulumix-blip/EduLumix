@@ -103,7 +103,14 @@ const corsOptions = {
     if (parsedOrigin.hostname.endsWith('.netlify.app')) {
       return callback(null, true);
     }
-    // Check allowed list (production domains, CLIENT_URL, CORS_ALLOWED_ORIGINS, etc.)
+    // EduLumix production custom domain — always allow
+    if (
+      parsedOrigin.hostname === 'edulumix.in' ||
+      parsedOrigin.hostname === 'www.edulumix.in'
+    ) {
+      return callback(null, true);
+    }
+    // Check allowed list (CLIENT_URL, CORS_ALLOWED_ORIGINS env vars, etc.)
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
