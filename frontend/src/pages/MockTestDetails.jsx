@@ -161,7 +161,7 @@ const MockTestDetails = () => {
   if (loading) {
     return (
       <div className="min-h-screen py-8">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="w-full px-8 lg:px-12">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 dark:bg-dark-100 rounded w-1/4 mb-4" />
             <div className="h-64 bg-gray-200 dark:bg-dark-100 rounded-2xl mb-8" />
@@ -214,7 +214,7 @@ const MockTestDetails = () => {
           type="article"
           structuredData={structuredData}
         />
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="w-full px-8 lg:px-12">
           <div className="bg-white dark:bg-dark-200 rounded-2xl shadow-lg border border-gray-200 dark:border-dark-100 overflow-hidden">
             {/* Result Header */}
             <div className={`p-8 text-center ${result.passed ? 'bg-gradient-to-r from-blue-500 to-blue-600' : 'bg-gradient-to-r from-gray-500 to-gray-600'}`}>
@@ -374,7 +374,7 @@ const MockTestDetails = () => {
         />
         {/* Sticky Header */}
         <div className="bg-white dark:bg-dark-200 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-20 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
+          <div className="w-full px-8 lg:px-12 py-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Brain className="w-5 h-5 text-blue-500 flex-shrink-0" />
@@ -392,7 +392,7 @@ const MockTestDetails = () => {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="w-full px-8 lg:px-12 py-4">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             {/* Question Panel */}
             <div className="lg:col-span-3">
@@ -554,7 +554,7 @@ const MockTestDetails = () => {
       />
       {/* Back Button */}
       <div className="bg-white dark:bg-dark-200 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="w-full px-8 lg:px-12 py-4">
           <Link
             to="/mock-test"
             className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors"
@@ -565,7 +565,7 @@ const MockTestDetails = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full px-8 lg:px-12 py-8">
 
         {/* Hero */}
         <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl p-6 lg:p-8 mb-6 text-white">

@@ -14,6 +14,129 @@ const RESOURCE_CATEGORY_KEYS = [
   'Hardware Project',
 ];
 
+// Helper: Extract Medium article full HTML via live RSS fetch
+async function fetchMediumBodyHtmlLive(articleLink) {
+  try {
+    const url = new URL(articleLink);
+    let feedUrl;
+    if (url.hostname !== 'medium.com' && url.hostname.endsWith('.medium.com')) {
+      feedUrl = `https://${url.hostname}/feed`;
+    } else {
+      const parts = url.pathname.replace(/^\//, '').split('/');
+      if (!parts[0]) return null;
+      feedUrl = `https://medium.com/feed/${parts[0]}`;
+    }
+    const res = await fetch(feedUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; EduLumix/1.0 RSS reader)' },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return null;
+    const xml = await res.text();
+    const normalLink = articleLink.split('?')[0].replace(/\/$/, '');
+    const slug = normalLink.split('/').pop();
+    const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+    let match;
+    while ((match = itemRegex.exec(xml)) !== null) {
+      const item = match[1];
+      if (!item.includes(slug)) continue;
+      const contentMatch = item.match(/<content:encoded>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/content:encoded>/);
+      if (contentMatch) return contentMatch[1].trim();
+    }
+    return null;
+  } catch (_) {
+    return null;
+  }
+}
+
+// @desc    Get full article content from source (Dev.to / Medium proxy)
+// @route   GET /api/resources/:id/full-content
+// @access  Public
+export const getFullContent = async (req, res) => {
+  try {
+    const resource = await Resource.findById(req.params.id).lean();
+    if (!resource) return res.status(404).json({ success: false, message: 'Resource not found' });
+    if (resource.isDeleted) return res.status(404).json({ success: false, message: 'Resource not found' });
+
+    // Dev.to — fetch full article HTML live via externalId (always fresh)
+    if (resource.source === 'devto' && resource.externalId) {
+      const apiKey = process.env.DEVTO_API_KEY;
+      const headers = { 'Accept': 'application/vnd.forem.api-v1+json' };
+      if (apiKey) headers['api-key'] = apiKey;
+
+      const r = await fetch(`https://dev.to/api/articles/${resource.externalId}`, { headers });
+      if (!r.ok) throw new Error(`Dev.to API error: ${r.status}`);
+      const article = await r.json();
+
+      return res.json({
+        success: true,
+        data: {
+          bodyHtml: article.body_html || '',
+          readingTimeMinutes: article.reading_time_minutes || null,
+          tags: article.tag_list || [],
+          reactions: article.positive_reactions_count || 0,
+          commentsCount: article.comments_count || 0,
+          publishedAt: article.published_at || null,
+          author: {
+            name: article.user?.name || '',
+            username: article.user?.username || '',
+            avatar: article.user?.profile_image || '',
+          },
+        },
+      });
+    }
+
+    // Medium — always try live RSS fetch from author's feed for full content
+    // (tag-feed RSS only stores a truncated preview, author-feed usually has more)
+    if (resource.source === 'medium') {
+      const liveHtml = await fetchMediumBodyHtmlLive(resource.link);
+
+      if (liveHtml) {
+        // If live content is better than what's stored, update DB in background
+        if (!resource.bodyHtml || liveHtml.length > resource.bodyHtml.length) {
+          Resource.updateOne({ _id: resource._id }, { $set: { bodyHtml: liveHtml } }).catch(() => {});
+        }
+        return res.json({
+          success: true,
+          data: {
+            bodyHtml: liveHtml,
+            readingTimeMinutes: null,
+            tags: resource.tags || [],
+            reactions: 0,
+            commentsCount: 0,
+            publishedAt: resource.createdAt || null,
+            author: null,
+          },
+        });
+      }
+
+      // Live fetch failed — fall back to whatever is stored in DB
+      if (resource.bodyHtml) {
+        return res.json({
+          success: true,
+          data: {
+            bodyHtml: resource.bodyHtml,
+            readingTimeMinutes: null,
+            tags: resource.tags || [],
+            reactions: 0,
+            commentsCount: 0,
+            publishedAt: resource.createdAt || null,
+            author: null,
+          },
+        });
+      }
+
+      // Nothing available — return null so frontend shows description + Read on Medium CTA
+      return res.json({ success: true, data: null });
+    }
+
+    // manual / other — no full content available
+    return res.json({ success: true, data: null });
+  } catch (error) {
+    console.error('getFullContent error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Fetch resources from Dev.to, freeCodeCamp, Hashnode, YouTube (Super Admin only)
 // @route   POST /api/resources/fetch-external
 // @access  Private (super_admin only)
@@ -48,6 +171,7 @@ export const getResources = async (req, res) => {
       limit = 12,
       source,
       isVideo,
+      postedBy,
     } = req.query;
 
     const query = {};
@@ -62,6 +186,7 @@ export const getResources = async (req, res) => {
     const subTrim = subcategory && String(subcategory).trim();
     if (subTrim && subTrim !== 'All') query.subcategory = subTrim;
     if (source && source !== 'All') query.source = source;
+    if (postedBy && req.user?.role === 'super_admin') query.postedBy = postedBy;
     if (isVideo === 'true') query.isVideo = true;
     if (isVideo === 'false') query.isVideo = false;
 
@@ -195,15 +320,14 @@ export const getResourcesGrouped = async (req, res) => {
 export const getResource = async (req, res) => {
   try {
     const resource = await Resource.findById(req.params.id).populate('postedBy', 'name email avatar role');
-    if (resource.isDeleted && (!req.user || req.user.role !== 'super_admin')) {
+    if (!resource) {
       return res.status(404).json({
         success: false,
         message: 'Resource not found',
       });
     }
 
-
-    if (!resource) {
+    if (resource.isDeleted && (!req.user || req.user.role !== 'super_admin')) {
       return res.status(404).json({
         success: false,
         message: 'Resource not found',
@@ -215,6 +339,10 @@ export const getResource = async (req, res) => {
       data: resource,
     });
   } catch (error) {
+    // Handle invalid MongoDB ObjectId format
+    if (error.name === 'CastError' && error.kind === 'ObjectId') {
+      return res.status(404).json({ success: false, message: 'Resource not found' });
+    }
     res.status(500).json({
       success: false,
       message: error.message,

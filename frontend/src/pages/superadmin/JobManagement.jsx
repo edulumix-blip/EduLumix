@@ -38,10 +38,12 @@ const JobManagement = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const [contributors, setContributors] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [tableLoading, setTableLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [contributorFilter, setContributorFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
@@ -74,7 +76,7 @@ const JobManagement = () => {
     'Others',
   ];
 
-  const experienceLevels = ['Fresher', '0-1 Years', '1-2 Years', '2-3 Years', '3+ Years'];
+  const experienceLevels = ['Fresher', '1 Year', '2 Years', '3 Years', '4 Years', '5+ Years'];
   const statusOptions = ['Open', 'Closed'];
 
   const refreshDashboardStats = useCallback(async () => {
@@ -103,13 +105,14 @@ const JobManagement = () => {
 
   const fetchJobs = useCallback(async () => {
     try {
-      setLoading(true);
+      setTableLoading(true);
       const params = new URLSearchParams();
       params.set('limit', String(LIMIT));
       params.set('page', String(page));
       if (debouncedSearch) params.set('search', debouncedSearch);
       if (categoryFilter) params.set('category', categoryFilter);
       if (contributorFilter) params.set('postedBy', contributorFilter);
+      if (statusFilter) params.set('status', statusFilter);
       const res = await api.get(`/jobs?${params.toString()}`);
       setJobs(res.data.data || []);
       setTotalJobs(res.data.total ?? 0);
@@ -118,9 +121,10 @@ const JobManagement = () => {
       console.error('Error fetching jobs:', error);
       toast.error('Failed to load jobs');
     } finally {
-      setLoading(false);
+      setTableLoading(false);
+      setInitialLoading(false);
     }
-  }, [page, debouncedSearch, categoryFilter, contributorFilter]);
+  }, [page, debouncedSearch, categoryFilter, contributorFilter, statusFilter]);
 
   useEffect(() => {
     fetchJobs();
@@ -295,7 +299,7 @@ const JobManagement = () => {
     }
   };
 
-  if (loading) {
+  if (initialLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
@@ -445,6 +449,22 @@ const JobManagement = () => {
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
+          <div className="relative">
+            <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="pl-9 pr-8 py-2.5 rounded-xl bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 appearance-none cursor-pointer min-w-[170px]"
+            >
+              <option value="">All Status</option>
+              <option value="Open">Active Jobs</option>
+              <option value="Closed">Closed Jobs</option>
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          </div>
         </div>
 
         {/* Table */}
@@ -478,7 +498,7 @@ const JobManagement = () => {
                   <td colSpan="6" className="px-4 py-12 text-center">
                     <Briefcase className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
                     <p className="text-gray-500 dark:text-gray-400">
-                      {debouncedSearch || categoryFilter || contributorFilter
+                      {debouncedSearch || categoryFilter || contributorFilter || statusFilter
                         ? 'No jobs match your filters'
                         : 'No jobs found'}
                     </p>
@@ -591,17 +611,13 @@ const JobManagement = () => {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-end gap-1">
-                        {job.applyLink && (
-                          <a
-                            href={job.applyLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors"
-                            title="View Apply Link"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </a>
-                        )}
+                        <a
+                          href={`/jobs/${job.slug || job._id}`}
+                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors"
+                          title="Open Job Details"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
                         <button
                           onClick={() => openEditModal(job)}
                           className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors"
@@ -623,6 +639,14 @@ const JobManagement = () => {
               )}
             </tbody>
           </table>
+          {tableLoading && (
+            <div className="py-3 border-t border-gray-200 dark:border-gray-800 text-center">
+              <span className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Updating results...
+              </span>
+            </div>
+          )}
         </div>
         <Pagination
           currentPage={page}

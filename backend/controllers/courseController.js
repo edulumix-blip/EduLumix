@@ -375,10 +375,8 @@ export const updateCourse = async (req, res) => {
       updateData.totalDuration = updateData.lessons.reduce((acc, lesson) => acc + (lesson.duration || 0), 0);
     }
 
-    course = await Course.findByIdAndUpdate(req.params.id, updateData, {
-      new: true,
-      runValidators: true,
-    });
+    Object.assign(course, updateData);
+    await course.save();
 
     res.status(200).json({
       success: true,

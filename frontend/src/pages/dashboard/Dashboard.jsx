@@ -50,7 +50,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen py-8 lg:py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-8 lg:px-12">
         {/* Welcome Section */}
         <div className="card p-6 lg:p-8 mb-8 bg-gradient-to-br from-blue-600/20 to-blue-400/20">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

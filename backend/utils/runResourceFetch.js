@@ -22,44 +22,53 @@ export async function runExternalResourceFetch(opts = {}) {
 
   const all = [
     ...results.devto,
-    ...results.freecodecamp,
-    ...results.hashnode,
-    ...results.youtube,
+    ...results.myDevto,
     ...results.medium,
-    ...results.hackernews,
   ];
 
+  const syncErrors = [...(results.errors || [])];
+
   for (const raw of all) {
-    const exists = await Resource.findOne({
-      source: raw.source,
-      externalId: raw.externalId,
-    });
-    if (exists) {
-      skipped++;
-      continue;
+    try {
+      const { externalId, source, ...data } = raw;
+      if (!data.link || !data.title) continue;
+
+      // external records: match by source+externalId; manual/no-id: match by link
+      const dupQuery = externalId
+        ? { source, externalId }
+        : { link: data.link };
+
+      const exists = await Resource.findOne(dupQuery);
+      if (exists) {
+        // Backfill bodyHtml for existing records that were fetched before this field existed
+        if (data.bodyHtml && !exists.bodyHtml) {
+          await Resource.updateOne({ _id: exists._id }, { $set: { bodyHtml: data.bodyHtml } });
+        }
+        skipped++;
+        continue;
+      }
+
+      await Resource.create({
+        ...data,
+        postedBy: superAdmin._id,
+        source,
+        externalId,
+      });
+      created++;
+    } catch (error) {
+      syncErrors.push({
+        source: raw?.source || 'unknown',
+        message: error.message,
+        externalId: raw?.externalId || null,
+      });
     }
-
-    const { externalId, source, ...data } = raw;
-    if (!data.link || !data.title) continue;
-
-    await Resource.create({
-      ...data,
-      postedBy: superAdmin._id,
-      source,
-      externalId,
-    });
-    created++;
   }
 
   return {
     created,
     skipped,
     devtoFetched: results.devto.length,
-    freecodecampFetched: results.freecodecamp.length,
-    hashnodeFetched: results.hashnode.length,
-    youtubeFetched: results.youtube.length,
     mediumFetched: results.medium.length,
-    hackernewsFetched: results.hackernews.length,
-    errors: results.errors,
+    errors: syncErrors,
   };
 }

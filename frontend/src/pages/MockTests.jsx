@@ -292,7 +292,7 @@ const MockTests = () => {
   };
 
   return (
-    <div className="min-h-screen py-8 lg:py-12">
+    <div className="min-h-screen">
       <SEO
         title="Mock Tests - Practice Tests for Interview & Exam Preparation | EduLumix"
         description="Take free mock tests for aptitude, reasoning, technical skills, and competitive exams. Practice with real exam patterns and boost your interview preparation. Assess your skills now!"
@@ -301,8 +301,7 @@ const MockTests = () => {
         structuredData={structuredData}
       />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ListingPageHero
+      <ListingPageHero
           imageUrl="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=2000&q=85"
           objectPositionClass="object-[center_35%] sm:object-center"
           eyebrow={
@@ -321,6 +320,7 @@ const MockTests = () => {
           statLoading={loading && mockTests.length === 0}
         />
 
+      <div className="w-full px-8 lg:px-12 py-8 lg:py-12">
         <CategoryExplorer
           id="mock-test-categories-heading"
           title="Explore by paper type"

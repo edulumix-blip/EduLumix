@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Search, Filter, Briefcase, MapPin, Clock, 
-  Heart, Eye, Share2,
-  IndianRupee, Tag, ChevronRight, Loader2,
+  Heart, Eye,
+  Tag, Loader2,
   Zap, ArrowRight, LayoutGrid,
 } from 'lucide-react';
 import { jobService } from '../services/dataService';
@@ -232,71 +232,11 @@ const Jobs = () => {
     }
   };
 
-  const handleShare = async (job, e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const jobUrl = `${window.location.origin}/jobs/${createSlug(job)}`;
-    try {
-      await navigator.share({
-        title: job.title,
-        text: `Check out this job: ${job.title} at ${job.company}`,
-        url: jobUrl,
-      });
-    } catch (error) {
-      navigator.clipboard.writeText(jobUrl);
-      toast.success('Link copied to clipboard!');
-    }
-  };
-
   // Create URL-friendly slug
   const createSlug = (job) => {
     const titleSlug = job.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const companySlug = job.company.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     return `${titleSlug}-${companySlug}-${job._id}`;
-  };
-
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
-  };
-
-  const formatJobFreshness = (date) => {
-    if (!date) return null;
-    try {
-      const d = new Date(date);
-      const diffMs = Date.now() - d.getTime();
-      const diffDays = Math.floor(diffMs / 86400000);
-      const diffH = Math.floor(diffMs / 3600000);
-      if (diffDays < 0) return formatDate(date);
-      if (diffDays === 0) {
-        if (diffH < 1) return 'Just now';
-        return diffH < 24 ? `${diffH}h ago` : 'Today';
-      }
-      if (diffDays === 1) return 'Yesterday';
-      if (diffDays < 7) return `${diffDays}d ago`;
-      if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
-      if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`;
-      return formatDate(date);
-    } catch {
-      return null;
-    }
-  };
-
-  const getCategoryAccent = (category) => {
-    const map = {
-      'IT Job': 'from-blue-500 to-indigo-600',
-      'Non IT Job': 'from-slate-500 to-slate-700',
-      'Walk In Drive': 'from-amber-500 to-orange-600',
-      'Govt Job': 'from-emerald-500 to-teal-700',
-      'Internship': 'from-sky-400 to-blue-600',
-      'Part Time Job': 'from-violet-500 to-purple-600',
-      'Remote Job': 'from-cyan-500 to-blue-600',
-      'Others': 'from-gray-500 to-gray-700',
-    };
-    return map[category] || map['Non IT Job'];
   };
 
   // Get category color
@@ -351,7 +291,7 @@ const Jobs = () => {
   };
 
   return (
-    <div className="min-h-screen py-8 lg:py-12">
+    <div className="min-h-screen">
       <SEO
         title={seoConfig.title}
         description={seoConfig.description}
@@ -362,9 +302,8 @@ const Jobs = () => {
         structuredData={structuredData}
       />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Hero + live stats */}
-        <section className="relative min-h-[320px] sm:min-h-[380px] overflow-hidden rounded-3xl border border-gray-200/80 dark:border-gray-800 mb-10 shadow-xl shadow-blue-900/5">
+      {/* Hero + live stats */}
+        <section className="relative min-h-[320px] sm:min-h-[380px] overflow-hidden mb-10">
           <div className="absolute inset-0">
             <img
               src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=2000&q=85"
@@ -412,6 +351,7 @@ const Jobs = () => {
           </div>
         </section>
 
+      <div className="w-full px-8 lg:px-12 py-8 lg:py-12">
         {/* Category explorer */}
         <section className="mb-10" aria-labelledby="job-categories-heading">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
@@ -597,126 +537,73 @@ const Jobs = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {jobs.map((job) => {
               const jobPath = `/jobs/${createSlug(job)}`;
-              const likes = job.likesCount || 0;
-              const views = job.views || 0;
-              const freshness = formatJobFreshness(job.createdAt);
               return (
                 <div
                   key={job._id}
-                  className="group/card flex flex-col bg-white dark:bg-dark-200 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-black/30 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300"
+                  onClick={() => window.location.href = jobPath}
+                  className="bg-white dark:bg-dark-200 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-black/20 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300 cursor-pointer group"
                 >
-                  <div className={`h-1 w-full shrink-0 bg-gradient-to-r ${getCategoryAccent(job.category)}`} aria-hidden />
-
-                  <Link
-                    to={jobPath}
-                    className="block flex-1 p-5 min-w-0 min-h-0 hover:bg-gray-50/70 dark:hover:bg-white/[0.03] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset"
-                  >
-                    <h3 className="text-base sm:text-lg font-bold text-blue-600 dark:text-blue-400 group-hover/card:text-blue-700 dark:group-hover/card:text-blue-300 transition-colors truncate min-w-0 leading-snug tracking-tight mb-3">
-                      {job.title}
-                    </h3>
-
-                    <div className="flex items-center gap-3 min-w-0 mb-3">
-                      <CompanyAvatar company={job.company} logoUrl={job.companyLogo} size="md" rounded="full" />
-                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate min-w-0">
-                        {job.company}
-                      </p>
+                  <div className="p-5">
+                    <div className="flex items-start gap-4 mb-4">
+                      <CompanyAvatar
+                        company={job.company}
+                        logoUrl={job.companyLogo}
+                        size="lg"
+                        rounded="xl"
+                        className="flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 leading-tight mb-1">
+                          {job.title}
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                          {job.company}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600 dark:text-gray-400 mb-3 min-w-0">
-                      <span className="inline-flex items-center gap-1.5 min-w-0 max-w-[55%] sm:max-w-none">
-                        <MapPin className="w-3.5 h-3.5 text-blue-500/85 dark:text-blue-400/90 shrink-0" aria-hidden />
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                        <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
                         <span className="truncate">{job.location}</span>
-                      </span>
-                      <span className="text-gray-300 dark:text-gray-600 select-none shrink-0" aria-hidden>
-                        ·
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 shrink-0 min-w-0">
-                        <Clock className="w-3.5 h-3.5 text-blue-500/85 dark:text-blue-400/90 shrink-0" aria-hidden />
-                        <span className="truncate">{job.experience}</span>
-                      </span>
-                      {job.salary && job.salary !== 'Not Disclosed' && (
-                        <>
-                          <span className="text-gray-300 dark:text-gray-600 select-none shrink-0" aria-hidden>
-                            ·
-                          </span>
-                          <span className="inline-flex items-center gap-1.5 min-w-0">
-                            <IndianRupee className="w-3.5 h-3.5 text-blue-500/85 dark:text-blue-400/90 shrink-0" aria-hidden />
-                            <span className="truncate">{job.salary}</span>
-                          </span>
-                        </>
-                      )}
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                          <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <span>{job.experience}</span>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-2 min-w-0 flex-nowrap overflow-x-auto overscroll-x-contain pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium shrink-0 ${getCategoryColor(job.category)}`}
-                      >
-                        <Tag className="w-3 h-3 shrink-0" />
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(job.category)}`}>
+                        <Tag className="w-3 h-3" />
                         {job.category}
                       </span>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium shrink-0 ${
-                          job.status === 'Closed'
-                            ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300'
-                            : 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300'
-                        }`}
-                      >
-                        {job.status === 'Closed' ? 'Application Closed' : 'Application Open'}
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        job.status === 'Closed'
+                          ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300'
+                          : 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300'
+                      }`}>
+                        {job.status === 'Closed' ? 'Closed' : 'Open'}
                       </span>
-                      {freshness ? (
-                        <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap shrink-0">
-                          Posted {freshness}
-                        </span>
-                      ) : null}
                     </div>
-                  </Link>
+                  </div>
 
-                  <div className="px-5 py-3.5 bg-gray-50/90 dark:bg-dark-100 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-1 sm:gap-2 min-w-0">
-                      <button
-                        type="button"
-                        onClick={(e) => handleLike(job._id, e)}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                          likedJobs.has(job._id)
-                            ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400'
-                            : 'hover:bg-gray-200/90 dark:hover:bg-dark-200 text-gray-500 dark:text-gray-400'
-                        }`}
-                        aria-label={likedJobs.has(job._id) ? 'Unlike job' : 'Like job'}
-                      >
-                        <Heart className={`w-4 h-4 shrink-0 ${likedJobs.has(job._id) ? 'fill-current' : ''}`} />
-                        {likes > 0 ? <span className="tabular-nums">{likes}</span> : null}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={(e) => handleShare(job, e)}
-                        className="p-2 hover:bg-gray-200/90 dark:hover:bg-dark-200 rounded-lg text-gray-500 dark:text-gray-400 transition-colors shrink-0"
-                        aria-label="Share job"
-                      >
-                        <Share2 className="w-4 h-4" />
-                      </button>
-
-                      {views > 0 && (
-                        <span className="hidden sm:inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 tabular-nums shrink-0">
-                          <Eye className="w-3.5 h-3.5" aria-hidden />
-                          {views}
-                        </span>
-                      )}
-                    </div>
-
-                    {job.status === 'Closed' ? (
-                      <span className="inline-flex items-center gap-1 shrink-0 px-3.5 py-2 bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-sm font-medium rounded-xl cursor-not-allowed">
-                        Closed
+                  <div className="px-5 py-3 bg-gray-50 dark:bg-dark-100 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                    <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                      <span className="flex items-center gap-1">
+                        <Eye className="w-4 h-4" />
+                        {job.views || 0}
                       </span>
-                    ) : (
-                      <Link
-                        to={jobPath}
-                        className="inline-flex items-center gap-1 shrink-0 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm shadow-blue-600/25 whitespace-nowrap"
-                      >
-                        Apply Now
-                        <ChevronRight className="w-4 h-4" />
-                      </Link>
-                    )}
+                      <span className="flex items-center gap-1">
+                        <Heart className="w-4 h-4" />
+                        {job.likesCount || 0}
+                      </span>
+                    </div>
+                    <span className="text-blue-600 dark:text-blue-400 font-medium text-sm group-hover:translate-x-1 transition-transform">
+                      View Details →
+                    </span>
                   </div>
                 </div>
               );

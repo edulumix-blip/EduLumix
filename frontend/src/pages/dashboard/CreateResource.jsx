@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Save, FolderOpen, Link2, Image, Play, FileText, Loader2, Info, X, CheckCircle, AlertCircle, Mail } from 'lucide-react';
+import { ArrowLeft, Save, FolderOpen, Link2, Image, Play, FileText, Loader2, Info, X, CheckCircle, AlertCircle, Mail, Eye } from 'lucide-react';
 import { resourceService } from '../../services/dataService';
 import toast from 'react-hot-toast';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const CreateResource = () => {
   const navigate = useNavigate();
@@ -11,6 +13,7 @@ const CreateResource = () => {
   
   const [loading, setLoading] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [descPreview, setDescPreview] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     category: 'Software Notes',
@@ -319,17 +322,37 @@ const CreateResource = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Description
-              </label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows={4}
-                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none"
-                placeholder="Brief description of the resource..."
-              />
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Description <span className="text-xs text-gray-400 font-normal">(Markdown supported)</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setDescPreview((v) => !v)}
+                  className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  {descPreview ? 'Edit' : 'Preview'}
+                </button>
+              </div>
+              {descPreview ? (
+                <div className="article-body min-h-[110px] w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 overflow-auto">
+                  {formData.description ? (
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{formData.description}</ReactMarkdown>
+                  ) : (
+                    <span className="text-gray-400 text-sm">Nothing to preview…</span>
+                  )}
+                </div>
+              ) : (
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows={6}
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-y font-mono text-sm"
+                  placeholder={`Description supports Markdown:\n# Heading\n**bold**, *italic*, \`code\`\n- list item\n\`\`\`js\nconsole.log('hello')\n\`\`\``}
+                />
+              )}
             </div>
 
             <div className="pt-4">

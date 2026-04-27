@@ -11,6 +11,7 @@ import {
   likeBlog,
   getMyBlogs,
   fetchExternalBlogs,
+  getBlogFullContent,
 } from '../controllers/blogController.js';
 import { protect, canPostBlogs, superAdminOnly, optionalAuth } from '../middleware/authMiddleware.js';
 
@@ -31,6 +32,7 @@ router.get('/all', protect, superAdminOnly, getAllBlogs);
 // Public routes
 router.get('/', optionalAuth, getBlogs);
 router.get('/featured', optionalAuth, getFeaturedBlogs);
+router.get('/:id/full-content', optionalAuth, getBlogFullContent);
 router.get('/:slug', optionalAuth, getBlogBySlug);
 router.put('/:id/like', engagementLimiter, optionalAuth, likeBlog);
 router.post('/', protect, canPostBlogs, createBlog);

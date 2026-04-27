@@ -1,4 +1,5 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import {
   createClaim,
   getMyClaims,
@@ -11,8 +12,16 @@ import { protect, superAdminOnly } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+const claimLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 min
+  max: 5,
+  message: { success: false, message: 'Too many claim attempts. Try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Contributor routes
-router.post('/', protect, createClaim);
+router.post('/', claimLimiter, protect, createClaim);
 router.get('/my-claims', protect, getMyClaims);
 
 // Super Admin routes

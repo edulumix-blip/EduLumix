@@ -239,15 +239,14 @@ export const getJobsGrouped = async (req, res) => {
 export const getJob = async (req, res) => {
   try {
     const job = await Job.findById(req.params.id).populate('postedBy', 'name email avatar role');
-    if (job.isDeleted && (!req.user || req.user.role !== 'super_admin')) {
+    if (!job) {
       return res.status(404).json({
         success: false,
         message: 'Job not found',
       });
     }
 
-
-    if (!job) {
+    if (job.isDeleted && (!req.user || req.user.role !== 'super_admin')) {
       return res.status(404).json({
         success: false,
         message: 'Job not found',
@@ -490,15 +489,14 @@ export const likeJob = async (req, res) => {
 export const getJobBySlug = async (req, res) => {
   try {
     const job = await Job.findOne({ slug: req.params.slug }).populate('postedBy', 'name email avatar role');
-    if (job.isDeleted && (!req.user || req.user.role !== 'super_admin')) {
+    if (!job) {
       return res.status(404).json({
         success: false,
         message: 'Job not found',
       });
     }
 
-
-    if (!job) {
+    if (job.isDeleted && (!req.user || req.user.role !== 'super_admin')) {
       return res.status(404).json({
         success: false,
         message: 'Job not found',

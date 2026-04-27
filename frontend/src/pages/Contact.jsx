@@ -39,14 +39,14 @@ const Contact = () => {
     {
       icon: Phone,
       title: 'Phone',
-      value: '+91 98765 43210',
-      link: 'tel:+919876543210',
+      value: '+91 82729 46202',
+      link: 'tel:+918272946202',
     },
     {
       icon: MessageCircle,
       title: 'WhatsApp',
-      value: 'Chat with us',
-      link: 'https://wa.me/919876543210',
+      value: '+91 82729 46202',
+      link: 'https://wa.me/918272946202',
     },
     {
       icon: MapPin,
@@ -73,7 +73,7 @@ const Contact = () => {
         structuredData={structuredData}
       />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-8 lg:px-12">
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-display mb-4 text-gray-900 dark:text-white">

@@ -395,7 +395,6 @@ export async function fetchAllExternalCourses(limit = 15) {
   try {
     results.udemy = await fetchFromUdemy(limit);
   } catch (e) {
-    results.errors.push({ source: 'udemy', message: e.message });
     // Use fallback when API fails (user not subscribed or API down)
     results.udemy = FALLBACK_COURSES.slice(0, limit).map((c, i) => ({
       externalId: `fallback-${i}`,

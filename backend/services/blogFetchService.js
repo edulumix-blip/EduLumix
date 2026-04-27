@@ -39,6 +39,7 @@ export async function fetchFromDevToForBlog(perPage = 25) {
       description: truncate(a.description || a.title),
       link: a.url || a.canonical_url || '',
       coverImage,
+      tags: Array.isArray(a.tag_list) ? a.tag_list : [],
       subcategory: 'Dev.to',
     });
   }

@@ -45,7 +45,7 @@ const Footer = () => {
 
   return (
     <footer className="bg-white dark:bg-dark-300 border-t border-gray-200 dark:border-gray-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-8 lg:px-12">
         {/* Main Footer Content */}
         <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand Column */}
@@ -122,11 +122,11 @@ const Footer = () => {
               </li>
               <li>
                 <a 
-                  href="tel:+919876543210" 
+                  href="tel:+918272946202" 
                   className="text-gray-600 dark:text-gray-400 text-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-2"
                 >
                   <Phone className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                  +91 98765 43210
+                  +91 82729 46202
                 </a>
               </li>
               <li className="flex items-start gap-2 text-gray-600 dark:text-gray-400 text-sm">

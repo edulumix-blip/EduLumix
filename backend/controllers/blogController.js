@@ -21,12 +21,13 @@ export const fetchExternalBlogs = async (req, res) => {
 // @access  Private (super_admin only)
 export const getAllBlogs = async (req, res) => {
   try {
-    const { author, category, isPublished, search, page = 1, limit = 50 } = req.query;
+    const { author, category, isPublished, source, search, page = 1, limit = 50 } = req.query;
 
     const query = {};
     // Super admin sees ALL blogs including soft-deleted
     if (author) query.author = author;
     if (category) query.category = category;
+    if (source) query.source = source;
     if (isPublished !== undefined && isPublished !== '') query.isPublished = isPublished === 'true' || isPublished === true;
     if (search) query.$or = [{ title: { $regex: search, $options: 'i' } }, { excerpt: { $regex: search, $options: 'i' } }];
 
@@ -58,7 +59,7 @@ export const getAllBlogs = async (req, res) => {
 // @access  Public
 export const getBlogs = async (req, res) => {
   try {
-    const { category, tag, search, page = 1, limit = 10, sort } = req.query;
+    const { category, tag, search, source, page = 1, limit = 10, sort } = req.query;
 
     const query = { isPublished: true };
 
@@ -68,6 +69,7 @@ export const getBlogs = async (req, res) => {
     }
 
     if (category) query.category = category;
+    if (source) query.source = source;
     if (tag) query.tags = { $in: [tag] };
     if (search) {
       query.$text = { $search: search };
@@ -349,6 +351,103 @@ export const likeBlog = async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+};
+
+// Helper: fetch full HTML from Medium author's personal feed (same approach as resourceController)
+async function fetchMediumBlogHtmlLive(articleLink) {
+  try {
+    const url = new URL(articleLink);
+    let feedUrl;
+    if (url.hostname !== 'medium.com' && url.hostname.endsWith('.medium.com')) {
+      feedUrl = `https://${url.hostname}/feed`;
+    } else {
+      const parts = url.pathname.replace(/^\//, '').split('/');
+      if (!parts[0]) return null;
+      feedUrl = `https://medium.com/feed/${parts[0]}`;
+    }
+    const res = await fetch(feedUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; EduLumix/1.0 RSS reader)' },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return null;
+    const xml = await res.text();
+    const normalLink = articleLink.split('?')[0].replace(/\/$/, '');
+    const slug = normalLink.split('/').pop();
+    const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+    let match;
+    while ((match = itemRegex.exec(xml)) !== null) {
+      const item = match[1];
+      if (!item.includes(slug)) continue;
+      const contentMatch = item.match(/<content:encoded>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/content:encoded>/);
+      if (contentMatch) return contentMatch[1].trim();
+    }
+    return null;
+  } catch (_) {
+    return null;
+  }
+}
+
+// @desc    Get full article body for a blog post (Dev.to live / Medium RSS)
+// @route   GET /api/blogs/:id/full-content
+// @access  Public
+export const getBlogFullContent = async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id).lean();
+    if (!blog || blog.isDeleted) {
+      return res.status(404).json({ success: false, message: 'Blog not found' });
+    }
+
+    // Dev.to — fetch fresh body_html via externalId
+    if (blog.source === 'devto' && blog.externalId) {
+      const apiKey = process.env.DEVTO_API_KEY;
+      const headers = { 'Accept': 'application/vnd.forem.api-v1+json' };
+      if (apiKey) headers['api-key'] = apiKey;
+      const r = await fetch(`https://dev.to/api/articles/${blog.externalId}`, { headers });
+      if (!r.ok) throw new Error(`Dev.to API error: ${r.status}`);
+      const article = await r.json();
+      return res.json({
+        success: true,
+        data: {
+          bodyHtml: article.body_html || '',
+          readingTimeMinutes: article.reading_time_minutes || null,
+          tags: article.tag_list || [],
+          reactions: article.positive_reactions_count || 0,
+          commentsCount: article.comments_count || 0,
+          publishedAt: article.published_at || null,
+          author: {
+            name: article.user?.name || '',
+            username: article.user?.username || '',
+            avatar: article.user?.profile_image || '',
+          },
+        },
+      });
+    }
+
+    // Medium — live RSS fetch from author feed
+    if (blog.source === 'medium' && blog.externalLink) {
+      const liveHtml = await fetchMediumBlogHtmlLive(blog.externalLink);
+      if (liveHtml) {
+        return res.json({
+          success: true,
+          data: {
+            bodyHtml: liveHtml,
+            readingTimeMinutes: null,
+            tags: blog.tags || [],
+            reactions: 0,
+            commentsCount: 0,
+            publishedAt: blog.createdAt || null,
+            author: null,
+          },
+        });
+      }
+    }
+
+    // manual / fallback — no external content
+    return res.json({ success: true, data: null });
+  } catch (error) {
+    console.error('getBlogFullContent error:', error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

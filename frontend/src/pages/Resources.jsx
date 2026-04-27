@@ -295,7 +295,7 @@ const Resources = () => {
   };
 
   return (
-    <div className="min-h-screen py-8 lg:py-12">
+    <div className="min-h-screen">
       <SEO
         title="Free Resources - Notes, Projects, Tutorials & Study Materials | EduLumix"
         description="Access free learning resources including notes, video tutorials, software projects, PDF books, and study materials. Download free resources for programming, web development, and more."
@@ -304,8 +304,7 @@ const Resources = () => {
         structuredData={structuredData}
       />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ListingPageHero
+      <ListingPageHero
           imageUrl="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=2000&q=85"
           objectPositionClass="object-[center_35%] sm:object-center"
           eyebrow={
@@ -324,6 +323,7 @@ const Resources = () => {
           statLoading={loading && resources.length === 0}
         />
 
+      <div className="w-full px-8 lg:px-12 py-8 lg:py-12">
         <CategoryExplorer
           id="resource-categories-heading"
           title="Explore by type"

@@ -28,7 +28,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen py-8 lg:py-12">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-8 lg:px-12">
         <h1 className="text-2xl lg:text-3xl font-bold text-white mb-8">Profile Settings</h1>
 
         <div className="card p-6 lg:p-8">

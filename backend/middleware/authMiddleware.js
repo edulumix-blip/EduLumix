@@ -35,9 +35,12 @@ export const protect = async (req, res, next) => {
       next();
     } catch (error) {
       console.error('Auth Error:', error);
+      const msg = error.name === 'TokenExpiredError'
+        ? 'Not authorized, token expired'
+        : 'Not authorized, token invalid';
       return res.status(401).json({
         success: false,
-        message: 'Not authorized, token invalid',
+        message: msg,
       });
     }
   }
@@ -83,6 +86,9 @@ export const superAdminOnly = (req, res, next) => {
 // Check if user has specific role(s)
 export const authorize = (...roles) => {
   return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Not authenticated' });
+    }
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
@@ -95,6 +101,7 @@ export const authorize = (...roles) => {
 
 // Check if user can post jobs
 export const canPostJobs = (req, res, next) => {
+  if (!req.user) return res.status(401).json({ success: false, message: 'Not authenticated' });
   const allowedRoles = ['super_admin', 'job_poster'];
   if (allowedRoles.includes(req.user.role)) {
     next();
@@ -108,6 +115,7 @@ export const canPostJobs = (req, res, next) => {
 
 // Check if user can post resources
 export const canPostResources = (req, res, next) => {
+  if (!req.user) return res.status(401).json({ success: false, message: 'Not authenticated' });
   const allowedRoles = ['super_admin', 'resource_poster'];
   if (allowedRoles.includes(req.user.role)) {
     next();
@@ -121,6 +129,7 @@ export const canPostResources = (req, res, next) => {
 
 // Check if user can post blogs
 export const canPostBlogs = (req, res, next) => {
+  if (!req.user) return res.status(401).json({ success: false, message: 'Not authenticated' });
   const allowedRoles = ['super_admin', 'blog_poster', 'tech_blog_poster'];
   if (allowedRoles.includes(req.user.role)) {
     next();
@@ -134,6 +143,7 @@ export const canPostBlogs = (req, res, next) => {
 
 // Check if user can post digital products
 export const canPostProducts = (req, res, next) => {
+  if (!req.user) return res.status(401).json({ success: false, message: 'Not authenticated' });
   const allowedRoles = ['super_admin', 'digital_product_poster'];
   if (allowedRoles.includes(req.user.role)) {
     next();

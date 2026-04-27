@@ -16,6 +16,65 @@ const mapCategory = (label) => {
   return 'Non IT Job';
 };
 
+const JOB_SEARCH_QUERY = process.env.JOB_FETCH_QUERY || 'jobs in India';
+
+const bucketFromYears = (years) => {
+  if (!Number.isFinite(years) || years <= 0) return 'Fresher';
+  if (years <= 1) return '1 Year';
+  if (years <= 2) return '2 Years';
+  if (years <= 3) return '3 Years';
+  if (years <= 4) return '4 Years';
+  return '5+ Years';
+};
+
+const inferExperienceFromText = (...parts) => {
+  const text = parts
+    .filter(Boolean)
+    .map((p) => String(p).toLowerCase())
+    .join(' ')
+    .replace(/\s+/g, ' ');
+
+  if (!text) return 'Fresher';
+
+  if (/(freshers?|entry[ -]?level|no experience|0\s*(?:-|to)\s*1\s*(years?|yrs?))/i.test(text)) {
+    return 'Fresher';
+  }
+
+  const yearCandidates = [];
+
+  for (const m of text.matchAll(/(\d{1,2})\s*[-to]{1,3}\s*(\d{1,2})\s*\+?\s*(years?|yrs?|y)\b/g)) {
+    yearCandidates.push(Number.parseInt(m[2], 10));
+  }
+  for (const m of text.matchAll(/(\d{1,2})\s*\+\s*(years?|yrs?|y)\b/g)) {
+    yearCandidates.push(Number.parseInt(m[1], 10));
+  }
+  for (const m of text.matchAll(/(?:minimum|min)\s*(\d{1,2})\s*(years?|yrs?|y)\b/g)) {
+    yearCandidates.push(Number.parseInt(m[1], 10));
+  }
+  for (const m of text.matchAll(/(?:experience|exp)\s*(?:of|:)?\s*(\d{1,2})\s*(years?|yrs?|y)?\b/g)) {
+    yearCandidates.push(Number.parseInt(m[1], 10));
+  }
+
+  const maxYears = yearCandidates
+    .filter((n) => Number.isFinite(n) && n >= 0)
+    .reduce((max, n) => Math.max(max, n), -1);
+
+  return bucketFromYears(maxYears);
+};
+
+const inferJSearchExperience = (record) => {
+  const months = Number.parseFloat(record?.job_required_experience?.required_experience_in_months);
+  if (Number.isFinite(months) && months >= 0) {
+    return bucketFromYears(Math.ceil(months / 12));
+  }
+  return inferExperienceFromText(
+    record?.job_title,
+    record?.job_description,
+    record?.job_highlights?.Qualifications,
+    record?.job_employment_type
+  );
+};
+
 /**
  * Fetch jobs from Adzuna India API
  * @param {number} resultsPerPage
@@ -53,7 +112,7 @@ export async function fetchFromAdzuna(resultsPerPage = 20) {
         company: r.company?.display_name?.trim() || r.company?.trim() || 'Unknown Company',
         location: r.location?.display_name?.trim() || r.location?.area?.join(', ') || 'India',
         category: mapCategory(r.category?.label || r.category?.tag),
-        experience: 'Fresher',
+        experience: inferExperienceFromText(r.title, r.description, r.category?.label),
         salary: r.salary_min || r.salary_max ? `${r.salary_min || '?'} - ${r.salary_max || '?'}` : 'Not Disclosed',
         status: 'Open',
         companyLogo: r.company?.logo || '',
@@ -85,7 +144,7 @@ export async function fetchFromJSearch(numPages = 2) {
   }
 
   const jobs = [];
-  const query = 'fresher jobs in India';
+  const query = JOB_SEARCH_QUERY;
 
   for (let page = 1; page <= numPages; page++) {
     const url = `https://${host}/search?query=${encodeURIComponent(query)}&page=${page}&num_pages=1`;
@@ -118,7 +177,7 @@ export async function fetchFromJSearch(numPages = 2) {
           ? `${r.job_city}, ${r.job_country}`
           : r.job_country || 'India',
         category: mapCategory(r.job_title || r.job_employment_type),
-        experience: 'Fresher',
+        experience: inferJSearchExperience(r),
         salary: r.job_min_salary || r.job_max_salary
           ? `${r.job_min_salary || '?'} - ${r.job_max_salary || '?'} ${r.job_salary_currency || 'INR'}`
           : 'Not Disclosed',

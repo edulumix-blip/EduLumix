@@ -177,7 +177,7 @@ const TestimonialsCarousel = ({ testimonials }) => {
 
   return (
     <section className="py-16 lg:py-24 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-8 lg:px-12">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold font-display mb-4 text-gray-900 dark:text-white">
             What Our <span className="text-blue-600 dark:text-blue-400">Users Say</span>
@@ -247,6 +247,10 @@ const Home = () => {
   // State for dynamic contributors
   const [contributors, setContributors] = useState([]);
   const [loadingContributors, setLoadingContributors] = useState(true);
+  
+  // State for live stats
+  const [liveStats, setLiveStats] = useState(null);
+  const [loadingStats, setLoadingStats] = useState(true);
 
   // Fetch all users from database
   useEffect(() => {
@@ -264,6 +268,23 @@ const Home = () => {
       }
     };
     fetchContributors();
+  }, []);
+  
+  // Fetch live platform stats
+  useEffect(() => {
+    const fetchPlatformStats = async () => {
+      try {
+        const response = await api.get('/stats/platform');
+        if (response.data?.success && response.data?.data) {
+          setLiveStats(response.data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching platform stats:', error);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+    fetchPlatformStats();
   }, []);
 
   // 6 Main Services/Portals
@@ -364,10 +385,17 @@ const Home = () => {
     },
   ];
 
-  // Stats
-  const stats = [
-    { value: '150+', label: 'Happy Users', icon: Users },
-    { value: '15+', label: 'Contributors', icon: Award },
+  // Stats - target marketing numbers + live database counts
+  const stats = liveStats ? [
+    { value: '1000+', label: 'Happy Users', icon: Users },
+    { value: '20+', label: 'Contributors', icon: Award },
+    { value: `${liveStats.jobsPosted || 0}+`, label: 'Jobs Posted', icon: Briefcase },
+    { value: `${liveStats.techResources || 0}+`, label: 'Tech Resources', icon: FolderOpen },
+    { value: `${liveStats.courses || 0}+`, label: 'Courses', icon: GraduationCap },
+    { value: `${liveStats.techBlogs || 0}+`, label: 'Tech Blogs', icon: FileText },
+  ] : [
+    { value: '1000+', label: 'Happy Users', icon: Users },
+    { value: '20+', label: 'Contributors', icon: Award },
     { value: '200+', label: 'Jobs Posted', icon: Briefcase },
     { value: '250+', label: 'Tech Resources', icon: FolderOpen },
     { value: '50+', label: 'Courses', icon: GraduationCap },
@@ -483,7 +511,7 @@ const Home = () => {
           <div className="absolute inset-0 ring-1 ring-inset ring-white/10" aria-hidden />
         </div>
 
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative z-10 w-full w-full px-8 lg:px-12">
           <div className="text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/35 backdrop-blur-md border border-white/20 shadow-md mb-6">
               <Sparkles className="w-4 h-4 text-blue-400 shrink-0" />
@@ -520,7 +548,7 @@ const Home = () => {
       </section>
 
       {/* Homepage Ad */}
-      <AdSlot slotId={AD_SLOTS.BANNER} className="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" />
+      <AdSlot slotId={AD_SLOTS.BANNER} className="py-6 w-full px-8 lg:px-12" />
 
       {/* Earn With Us Section */}
       <section className="py-12 lg:py-16 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 relative overflow-hidden">
@@ -530,7 +558,7 @@ const Home = () => {
           <div className="absolute bottom-0 right-0 w-60 h-60 bg-white rounded-full translate-x-1/2 translate-y-1/2"></div>
         </div>
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="w-full px-8 lg:px-12 relative z-10">
           <div className="grid lg:grid-cols-2 gap-8 items-center">
             {/* Left Content */}
             <div className="text-white">
@@ -645,7 +673,7 @@ const Home = () => {
         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-72 h-72 bg-indigo-500/5 rounded-full blur-3xl"></div>
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="w-full px-8 lg:px-12 relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
             <div>
@@ -725,15 +753,15 @@ const Home = () => {
                   {/* Stats Row */}
                   <div className="grid grid-cols-3 gap-4 pt-6 border-t border-white/20">
                     <div>
-                      <p className="text-2xl font-bold">200+</p>
+                      <p className="text-2xl font-bold">{liveStats?.jobsPosted || 0}+</p>
                       <p className="text-xs opacity-70">Jobs</p>
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">250+</p>
+                      <p className="text-2xl font-bold">{liveStats?.techResources || 0}+</p>
                       <p className="text-xs opacity-70">Resources</p>
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">50+</p>
+                      <p className="text-2xl font-bold">{liveStats?.courses || 0}+</p>
                       <p className="text-xs opacity-70">Courses</p>
                     </div>
                   </div>
@@ -754,7 +782,7 @@ const Home = () => {
 
       {/* TechForDev Partner Section - Image as provided */}
       <section className="py-16 lg:py-20 bg-gray-100 dark:bg-dark-200 relative overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="w-full px-8 lg:px-12 relative z-10">
           <div className="relative rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-2xl group">
             {/* Your image - displayed as is */}
             <a
@@ -799,7 +827,7 @@ const Home = () => {
 
       {/* Explore Our Portals Section */}
       <section className="py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-8 lg:px-12">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold font-display mb-4 text-gray-900 dark:text-white">
               Explore Our <span className="text-blue-600 dark:text-blue-400">Portals</span>
@@ -854,7 +882,7 @@ const Home = () => {
 
       {/* Stats Section */}
       <section className="py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-8 lg:px-12">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold font-display mb-4 text-gray-900 dark:text-white">
               Our <span className="text-blue-600 dark:text-blue-400">Impact</span>
@@ -865,22 +893,33 @@ const Home = () => {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center bg-white dark:bg-dark-100 rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
-                <stat.icon className="w-8 h-8 mx-auto mb-3 text-blue-600 dark:text-blue-400" />
-                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
-                  {stat.value}
+            {loadingStats ? (
+              // Loading skeleton
+              [...Array(6)].map((_, i) => (
+                <div key={i} className="text-center bg-white dark:bg-dark-100 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 animate-pulse">
+                  <div className="w-8 h-8 mx-auto mb-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded mb-3 w-3/4 mx-auto"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mx-auto"></div>
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</div>
-              </div>
-            ))}
+              ))
+            ) : (
+              stats.map((stat, index) => (
+                <div key={index} className="text-center bg-white dark:bg-dark-100 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 hover:border-blue-400 dark:hover:border-blue-500 transition-all">
+                  <stat.icon className="w-8 h-8 mx-auto mb-3 text-blue-600 dark:text-blue-400" />
+                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                    {stat.value}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>
 
       {/* Top Contributors Section */}
       <section className="py-16 lg:py-20 bg-gradient-to-b from-gray-50 to-white dark:from-dark-200 dark:to-dark-300 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-8 lg:px-12">
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-500/20 mb-4">
               <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -911,7 +950,7 @@ const Home = () => {
 
       {/* CTA Section */}
       <section className="py-16 lg:py-24 bg-gray-50 dark:bg-dark-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-8 lg:px-12">
           <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl p-8 md:p-12 text-center text-white relative overflow-hidden">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-50"></div>
             

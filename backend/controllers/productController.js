@@ -338,10 +338,8 @@ export const updateProduct = async (req, res) => {
       if (req.body[field] !== undefined) updateData[field] = req.body[field];
     }
 
-    product = await DigitalProduct.findByIdAndUpdate(req.params.id, updateData, {
-      new: true,
-      runValidators: true,
-    });
+    Object.assign(product, updateData);
+    await product.save();
 
     res.status(200).json({
       success: true,

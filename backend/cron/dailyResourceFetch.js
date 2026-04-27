@@ -5,7 +5,8 @@
  */
 import { runExternalResourceFetch } from '../utils/runResourceFetch.js';
 
-const ENABLED = process.env.RESOURCE_FETCH_CRON_ENABLED !== 'false';
+const GLOBAL_CRON = process.env.ENABLE_CRON_JOBS !== 'false';
+const ENABLED = GLOBAL_CRON && process.env.RESOURCE_FETCH_CRON_ENABLED !== 'false';
 const HOURS_RAW = process.env.RESOURCE_FETCH_INTERVAL_HOURS;
 const PARSED = Number.parseFloat(HOURS_RAW || '40', 10);
 const INTERVAL_HOURS = Number.isFinite(PARSED) && PARSED > 0 ? PARSED : 40;

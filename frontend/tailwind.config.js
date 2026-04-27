@@ -92,7 +92,16 @@ export default {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'hero-pattern': "url('/images/hero-pattern.svg')",
       },
+      maxWidth: {
+        '3xl': '100%',
+        '4xl': '100%',
+        '5xl': '100%',
+        '6xl': '100%',
+        '7xl': '100%',
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 }

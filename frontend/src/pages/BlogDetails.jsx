@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Calendar, Clock, Eye, ThumbsUp, 
   User, Share2, Tag, Star, FileText, Loader2,
-  Facebook, Twitter, Linkedin, Copy, Check, TrendingUp
+  Facebook, Twitter, Linkedin, Copy, Check, TrendingUp, ExternalLink
 } from 'lucide-react';
 import { blogService } from '../services/dataService';
 import toast from 'react-hot-toast';
@@ -23,6 +23,8 @@ const BlogDetails = () => {
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [fullContent, setFullContent] = useState(null);
+  const [contentLoading, setContentLoading] = useState(false);
 
   useEffect(() => {
     if (slug) {
@@ -36,7 +38,12 @@ const BlogDetails = () => {
       setLoading(true);
       const response = await blogService.getBySlug(slug);
       if (response.data.success) {
-        setBlog(response.data.data);
+        const b = response.data.data;
+        setBlog(b);
+        // Auto-fetch full content for Dev.to and Medium blogs
+        if (b.source === 'devto' || b.source === 'medium') {
+          fetchFullContent(b._id);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch blog:', error);
@@ -44,6 +51,20 @@ const BlogDetails = () => {
       navigate('/blog');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchFullContent = async (blogId) => {
+    try {
+      setContentLoading(true);
+      const res = await blogService.getFullContent(blogId);
+      if (res.data.success && res.data.data) {
+        setFullContent(res.data.data);
+      }
+    } catch (_) {
+      // fail silently — fall back to stored content
+    } finally {
+      setContentLoading(false);
     }
   };
 
@@ -175,7 +196,7 @@ const BlogDetails = () => {
         image={blog.coverImage || blog.image}
         structuredData={structuredData}
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+      <div className="w-full px-8 lg:px-12 py-8 lg:py-12">
         {/* Back Button */}
         <Link to="/blog" className="inline-flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-6">
           <ArrowLeft className="w-5 h-5" />
@@ -187,11 +208,11 @@ const BlogDetails = () => {
           <article className="flex-1 bg-white dark:bg-dark-200 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
             {/* Cover Image or Title Card */}
             {blog.coverImage ? (
-              <div className="relative w-full h-[400px] bg-gray-100 dark:bg-dark-100 overflow-hidden">
+              <div className="w-full bg-gray-100 dark:bg-dark-100 py-6 px-4">
                 <img
                   src={blog.coverImage}
                   alt={blog.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-auto block rounded-xl"
                   onError={(e) => { e.target.parentElement.style.display = 'none'; }}
                 />
               </div>
@@ -248,18 +269,6 @@ const BlogDetails = () => {
               <p className="text-lg text-gray-600 dark:text-gray-400 mb-6 border-l-4 border-blue-500 pl-4 italic">
                 {blog.excerpt}
               </p>
-            )}
-
-            {/* External link - Read full article (Dev.to, Medium, HN etc) */}
-            {blog.externalLink && (
-              <a
-                href={blog.externalLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl mb-6 transition-colors"
-              >
-                Read full article ↗
-              </a>
             )}
 
             {/* Author & Meta Info */}
@@ -323,11 +332,46 @@ const BlogDetails = () => {
             <AdSlot slotId={AD_SLOTS.IN_ARTICLE} className="my-8" />
 
             {/* Content */}
-            <div className="prose dark:prose-invert prose-lg max-w-none mb-8">
-              <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                {blog.content}
+            {contentLoading ? (
+              <div className="flex flex-col items-center gap-4 py-14 text-gray-400">
+                <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm">Loading full article…</span>
               </div>
-            </div>
+            ) : fullContent?.bodyHtml ? (
+              <div
+                className="article-body mb-8"
+                dangerouslySetInnerHTML={{ __html: fullContent.bodyHtml }}
+              />
+            ) : (
+              <div className="prose dark:prose-invert prose-lg max-w-none mb-8">
+                <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                  {blog.content}
+                </div>
+              </div>
+            )}
+
+            {/* Read on source CTA for external blogs */}
+            {blog.externalLink && (
+              <div className="mb-8">
+                <a
+                  href={blog.externalLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`inline-flex items-center gap-2 px-5 py-3 text-white font-medium rounded-xl transition-colors ${
+                    blog.source === 'medium'
+                      ? 'bg-green-600 hover:bg-green-700'
+                      : 'bg-gray-900 hover:bg-gray-800'
+                  }`}
+                >
+                  {blog.source === 'medium' ? (
+                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" xmlns="http://www.w3.org/2000/svg"><path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/></svg>
+                  ) : (
+                    <ExternalLink className="w-4 h-4" />
+                  )}
+                  Read full article on {blog.source === 'medium' ? 'Medium' : blog.source === 'devto' ? 'Dev.to' : 'source'} ↗
+                </a>
+              </div>
+            )}
 
             {/* Tags */}
             {blog.tags && blog.tags.length > 0 && (

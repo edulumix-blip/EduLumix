@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   Search, Filter, GraduationCap, Clock, Users, Star,
   Play, ChevronRight,
-  Award, Video, Loader2, Zap,
+  Video, Loader2, Zap,
 } from 'lucide-react';
 import { courseService } from '../services/dataService';
 import { CourseCardSkeleton } from '../components/skeleton';
@@ -98,12 +98,13 @@ const Courses = () => {
     return n;
   }, [selectedCategory, selectedLevel, filterLanguage, filterFree, filterFeatured]);
 
-  const resetListingFilters = () => {
+  const resetListingFilters = (andSearch = false) => {
     setSelectedCategory('All');
     setSelectedLevel('All');
     setFilterLanguage('All');
     setFilterFree('All');
     setFilterFeatured('All');
+    if (andSearch) setSearchTerm('');
   };
 
   useEffect(() => {
@@ -209,7 +210,7 @@ const Courses = () => {
         </span>
       );
     }
-    if (course.isFree) return 'Free';
+    if (course.isFree || !course.actualPrice || course.actualPrice === 0) return 'Free';
     if (course.offerPrice !== undefined && course.offerPrice < course.actualPrice) {
       return (
         <span className="flex items-center gap-2">
@@ -218,7 +219,7 @@ const Courses = () => {
         </span>
       );
     }
-    return `₹${course.actualPrice}`;
+    return `₹${course.actualPrice.toLocaleString('en-IN')}`;
   };
 
   const getLevelColor = (level) => {
@@ -361,7 +362,7 @@ const Courses = () => {
   };
 
   return (
-    <div className="min-h-screen py-8 lg:py-12">
+    <div className="min-h-screen">
       <SEO
         title="Online Courses - Learn Programming, Web Development & More | EduLumix"
         description="Explore top online courses in programming, web development, data science, AI/ML, and more. Learn from industry experts with hands-on projects. Start your learning journey today!"
@@ -370,8 +371,7 @@ const Courses = () => {
         structuredData={structuredData}
       />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ListingPageHero
+      <ListingPageHero
           imageUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=2000&q=85"
           objectPositionClass="object-[center_40%] sm:object-center"
           eyebrow={
@@ -390,6 +390,7 @@ const Courses = () => {
           statLoading={loading && courses.length === 0}
         />
 
+      <div className="w-full px-8 lg:px-12 py-8 lg:py-12">
         <CategoryExplorer
           id="course-categories-heading"
           title="Explore by category"
@@ -501,8 +502,9 @@ const Courses = () => {
             {(searchTerm || activeFilterCount > 0) && (
               <button
                 onClick={() => {
-                  setSearchTerm('');
-                  resetListingFilters();
+                  resetListingFilters(true);
+                  // force refetch since searchTermRef won't trigger useEffect
+                  setTimeout(() => fetchCourses(1), 0);
                 }}
                 className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors"
               >
@@ -598,7 +600,7 @@ const Courses = () => {
                     </span>
                     <span className="flex items-center gap-1">
                       <Users className="w-4 h-4" />
-                      {course.enrollments || 0}
+                      {(course.enrollments || 0).toLocaleString('en-IN')}
                     </span>
                     {course.rating > 0 && (
                       <span className="flex items-center gap-1 text-yellow-500">
@@ -637,58 +639,7 @@ const Courses = () => {
           <p className="text-center text-gray-500 dark:text-gray-400 mt-8">You've seen all courses</p>
         )}
 
-        {/* Featured Section - if we have featured courses */}
-        {!loading && courses.length > 0 && courses.some(c => c.isFeatured) && (
-          <div className="mt-16">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-              <Award className="w-6 h-6 text-yellow-500" />
-              Featured Courses
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {courses.filter(c => c.isFeatured).slice(0, 2).map((course) => (
-                <div
-                  key={`featured-${course._id}`}
-                  onClick={() => handleViewCourse(course)}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-6 text-white cursor-pointer hover:shadow-xl transition-shadow"
-                >
-                  <div className="flex gap-4">
-                    <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 relative">
-                      {/* Fallback with title */}
-                      <div className="absolute inset-0 bg-white/20 flex items-center justify-center p-2">
-                        <span className="text-white text-xs font-bold text-center line-clamp-3">{course.title}</span>
-                      </div>
-                      {/* Try to load thumbnail */}
-                      {course.thumbnail && course.thumbnail.startsWith('http') && (
-                        <img 
-                          src={course.thumbnail} 
-                          alt={course.title}
-                          loading="lazy"
-                          decoding="async"
-                          className="absolute inset-0 w-full h-full object-cover z-10" 
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-lg mb-2">{course.title}</h3>
-                      <p className="text-white/80 text-sm mb-3 line-clamp-2">{course.shortDescription || course.description}</p>
-                      <div className="flex items-center gap-3 text-sm text-white/90">
-                        <span className="flex items-center gap-1">
-                          <Video className="w-4 h-4" /> {course.lessons?.length || 0} lessons
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Users className="w-4 h-4" /> {course.enrollments || 0} enrolled
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+
       </div>
     </div>
   );

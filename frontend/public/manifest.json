@@ -1,14 +1,27 @@
 {
-  "name": "EduLumix - Complete Career Platform",
+  "name": "EduLumix - Fresher Jobs, Resources, Courses & Mock Tests",
   "short_name": "EduLumix",
-  "description": "Your ultimate destination for fresher jobs, free resources, courses, mock tests, and career guidance",
+  "description": "India's career platform for freshers — jobs, free resources, courses, mock tests, tech blog & digital products.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#3b82f6",
   "orientation": "portrait-primary",
-  "icons": [],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
   "categories": ["education", "productivity", "business"],
-  "lang": "en-US",
+  "lang": "en-IN",
   "dir": "ltr"
 }

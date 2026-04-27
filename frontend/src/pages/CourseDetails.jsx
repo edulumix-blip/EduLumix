@@ -114,7 +114,7 @@ const CourseDetails = () => {
   if (loading) {
     return (
       <div className="min-h-screen py-8">
-        <div className="max-w-6xl mx-auto px-4">
+        <div className="w-full px-8 lg:px-12">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 dark:bg-dark-100 rounded w-1/4 mb-4" />
             <div className="h-64 bg-gray-200 dark:bg-dark-100 rounded-2xl mb-8" />
@@ -172,7 +172,7 @@ const CourseDetails = () => {
         image={course.thumbnail}
         structuredData={structuredData}
       />
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="w-full px-8 lg:px-12">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-6">
           <Link to="/" className="hover:text-blue-500">Home</Link>

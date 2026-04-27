@@ -13,7 +13,7 @@ export default function ListingPageHero({
   const StatIcon = stat?.Icon;
 
   return (
-    <section className="relative min-h-[300px] sm:min-h-[360px] overflow-hidden rounded-3xl border border-gray-200/80 dark:border-gray-800 mb-10 shadow-xl shadow-blue-900/5">
+    <section className="relative min-h-[300px] sm:min-h-[360px] overflow-hidden mb-10">
       <div className="absolute inset-0">
         <img
           src={imageUrl}

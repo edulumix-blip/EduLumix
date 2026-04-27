@@ -62,7 +62,7 @@ const DigitalProductDetails = () => {
   if (loading) {
     return (
       <div className="min-h-screen py-8 lg:py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-8 lg:px-12">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-6"></div>
             <div className="grid lg:grid-cols-2 gap-8 mb-12">
@@ -100,7 +100,7 @@ const DigitalProductDetails = () => {
         url={`/digital-products/${id}`}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-8 lg:px-12">
         {/* Back Button */}
         <Link
           to="/digital-products"

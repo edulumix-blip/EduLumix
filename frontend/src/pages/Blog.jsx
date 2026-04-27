@@ -24,6 +24,7 @@ const Blog = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedSource, setSelectedSource] = useState('All');
   const [likedPosts, setLikedPosts] = useState({});
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -54,7 +55,7 @@ const Blog = () => {
 
   useEffect(() => {
     fetchBlogs(1);
-  }, [selectedCategory]);
+  }, [selectedCategory, selectedSource]);
 
   const fetchBlogs = async (pageNum = 1, append = false, opts = {}) => {
     try {
@@ -66,6 +67,9 @@ const Blog = () => {
       const params = { limit: PAGE_SIZE, page: pageNum };
       if (selectedCategory !== 'All') {
         params.category = selectedCategory;
+      }
+      if (selectedSource !== 'All') {
+        params.source = selectedSource;
       }
       if (effectiveSearch) {
         params.search = effectiveSearch;
@@ -228,7 +232,7 @@ const Blog = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-dark-300 py-8 lg:py-12">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-300">
       <SEO
         title="Tech Blog - Programming Tutorials, Career Tips & Technology Guides | EduLumix"
         description="Read latest tech blogs, programming tutorials, interview tips, career guidance, web development guides, and technology trends. Learn from industry experts and enhance your technical skills."
@@ -237,8 +241,7 @@ const Blog = () => {
         structuredData={structuredData}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ListingPageHero
+      <ListingPageHero
           imageUrl="https://images.unsplash.com/photo-1456324504439-367cee3b3c32?auto=format&fit=crop&w=2000&q=85"
           objectPositionClass="object-[center_40%] sm:object-center"
           eyebrow={
@@ -257,32 +260,33 @@ const Blog = () => {
           statLoading={loading && displayedBlogs.length === 0}
         />
 
+      <div className="w-full px-8 lg:px-12 py-8 lg:py-12">
         <div className="mb-8" ref={listingsRef}>
-          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 mb-5">
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2 mb-5">
+            <div className="relative sm:w-72 lg:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search posts by title or keywords..."
+                placeholder="Search posts..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white dark:bg-dark-200 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-colors shadow-sm"
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white dark:bg-dark-200 border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-colors shadow-sm"
               />
             </div>
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="flex-1 sm:flex-none px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold transition-colors shadow-lg shadow-blue-600/25"
+                className="flex-1 sm:flex-none px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors shadow-md shadow-blue-600/25"
               >
                 Search
               </button>
               <button
                 type="button"
                 onClick={() => setShowFilters(!showFilters)}
-                className="lg:hidden px-4 py-3.5 bg-gray-100 dark:bg-dark-200 border border-gray-200 dark:border-gray-700 rounded-2xl"
+                className="lg:hidden px-3 py-2.5 bg-gray-100 dark:bg-dark-200 border border-gray-200 dark:border-gray-700 rounded-xl"
                 aria-expanded={showFilters}
               >
-                <Filter className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <Filter className="w-4 h-4 text-gray-600 dark:text-gray-400" />
               </button>
             </div>
           </form>
@@ -312,6 +316,12 @@ const Blog = () => {
                       · <span className="text-blue-600 dark:text-blue-400">{selectedCategory}</span>
                     </span>
                   )}
+                  {selectedSource !== 'All' && (
+                    <span className="text-gray-400 dark:text-gray-500">
+                      {' '}
+                      · <span className="text-purple-600 dark:text-purple-400">{selectedSource}</span>
+                    </span>
+                  )}
                   {searchTerm && (
                     <span className="text-gray-400 dark:text-gray-500">
                       {' '}
@@ -324,7 +334,7 @@ const Blog = () => {
           </div>
 
           <div
-            className={`flex flex-wrap gap-2 ${showFilters ? 'flex' : 'hidden lg:flex'}`}
+            className={`flex flex-wrap items-center gap-2 ${showFilters ? 'flex' : 'hidden lg:flex'}`}
             role="tablist"
             aria-label="Blog category"
           >
@@ -345,6 +355,23 @@ const Blog = () => {
                 {category}
               </button>
             ))}
+
+            {/* Platform filter */}
+            <div className="ml-auto">
+              <select
+                value={selectedSource}
+                onChange={(e) => {
+                  setSelectedSource(e.target.value);
+                  setTimeout(scrollToListings, 120);
+                }}
+                className="pl-3 pr-8 py-2 rounded-full text-sm font-medium bg-white dark:bg-dark-200 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-colors cursor-pointer"
+              >
+                <option value="All">All Platforms</option>
+                <option value="devto">Dev.to</option>
+                <option value="medium">Medium</option>
+                <option value="manual">EduLumix</option>
+              </select>
+            </div>
           </div>
         </div>
 

@@ -150,10 +150,10 @@ const CreateJob = () => {
                       <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
                         <h3 className="font-semibold text-green-900 dark:text-green-100 mb-2 flex items-center gap-2">
                           <CheckCircle className="w-5 h-5" />
-                          ✅ Reward Eligibility
+                          ✅ Job Quality Guidelines
                         </h3>
                         <p className="text-green-800 dark:text-green-200 text-sm">
-                          To be eligible for rewards, only post <strong>verified fresher jobs</strong>. Currently, experience-required jobs will not be accepted for rewards.
+                          You can post <strong>all experience levels</strong> (fresher to senior), but details must match the original source exactly.
                         </p>
                       </div>
 

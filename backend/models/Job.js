@@ -6,7 +6,6 @@ const jobSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Job title is required'],
       trim: true,
-      maxlength: [100, 'Title cannot exceed 100 characters'],
     },
     company: {
       type: String,
@@ -108,6 +107,10 @@ const jobSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    lastSeenAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -149,6 +152,7 @@ jobSchema.index({ title: 'text', company: 'text', description: 'text' });
 jobSchema.index({ postedBy: 1, createdAt: -1 });
 jobSchema.index({ category: 1, status: 1, isDeleted: 1 });
 jobSchema.index({ source: 1, externalId: 1 }, { sparse: true });
+jobSchema.index({ source: 1, status: 1, lastSeenAt: 1, isDeleted: 1 });
 
 const Job = mongoose.model('Job', jobSchema);
 

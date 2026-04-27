@@ -33,7 +33,6 @@ const resourceSchema = new mongoose.Schema(
     description: {
       type: String,
       default: '',
-      maxlength: [1000, 'Description cannot exceed 1000 characters'],
     },
     thumbnail: {
       type: String,
@@ -66,10 +65,14 @@ const resourceSchema = new mongoose.Schema(
     },
     source: {
       type: String,
-      enum: ['devto', 'freecodecamp', 'hashnode', 'youtube', 'medium', 'hackernews', 'manual'],
+      enum: ['devto', 'medium', 'manual'],
       default: 'manual',
     },
     externalId: {
+      type: String,
+      default: '',
+    },
+    bodyHtml: {
       type: String,
       default: '',
     },

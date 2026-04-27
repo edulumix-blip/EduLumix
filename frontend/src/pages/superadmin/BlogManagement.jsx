@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FileText, Plus, Search, Filter, Edit2, Trash2, ExternalLink, Eye, Loader2, ChevronDown, X, Save, AlertCircle, Star, Globe, Clock, ThumbsUp, User, Calendar, Image } from 'lucide-react';
+import { FileText, Plus, Search, Filter, Edit2, Trash2, ExternalLink, Eye, Loader2, ChevronDown, X, Save, AlertCircle, Star, Globe, Clock, ThumbsUp, User, Calendar, Image, RefreshCw } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import VerifiedBadge from '../../components/common/VerifiedBadge';
@@ -18,11 +18,13 @@ const BlogManagement = () => {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [authorFilter, setAuthorFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [platformFilter, setPlatformFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingBlog, setEditingBlog] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(null);
   const [showViewModal, setShowViewModal] = useState(null);
+  const [fetchLoading, setFetchLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     excerpt: '',
@@ -45,11 +47,11 @@ const BlogManagement = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, categoryFilter, authorFilter, statusFilter]);
+  }, [searchTerm, categoryFilter, authorFilter, statusFilter, platformFilter]);
 
   useEffect(() => {
     fetchBlogs();
-  }, [page, searchTerm, categoryFilter, authorFilter, statusFilter]);
+  }, [page, searchTerm, categoryFilter, authorFilter, statusFilter, platformFilter]);
 
   const fetchBlogs = async () => {
     try {
@@ -59,6 +61,7 @@ const BlogManagement = () => {
       if (categoryFilter) params.category = categoryFilter;
       if (statusFilter === 'published') params.isPublished = true;
       if (statusFilter === 'draft') params.isPublished = false;
+      if (platformFilter) params.source = platformFilter;
       if (searchTerm) params.search = searchTerm;
       const res = await api.get('/blogs/all', { params });
       setBlogs(res.data.data || []);
@@ -69,6 +72,24 @@ const BlogManagement = () => {
       toast.error('Failed to load blogs');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFetchFromSources = async () => {
+    try {
+      setFetchLoading(true);
+      const res = await api.post('/blogs/fetch-external', {});
+      const { created = 0, skipped = 0 } = res.data.data || {};
+      if (created === 0 && skipped > 0) {
+        toast.success(`Already up-to-date — ${skipped} blogs already in DB`);
+      } else {
+        toast.success(`Fetched: ${created} new blogs added, ${skipped} already existed`);
+      }
+      fetchBlogs();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to fetch blogs');
+    } finally {
+      setFetchLoading(false);
     }
   };
 
@@ -215,10 +236,20 @@ const BlogManagement = () => {
           <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">Tech Blog Management</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Manage all blog posts and articles on the platform</p>
         </div>
-        <button onClick={openCreateModal} className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/25">
-          <Plus className="w-5 h-5" />
-          Create Blog
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleFetchFromSources}
+            disabled={fetchLoading}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white rounded-xl font-medium transition-colors"
+          >
+            {fetchLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
+            {fetchLoading ? 'Fetching...' : 'Fetch from Sources'}
+          </button>
+          <button onClick={openCreateModal} className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/25">
+            <Plus className="w-5 h-5" />
+            Create Blog
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
@@ -320,6 +351,16 @@ const BlogManagement = () => {
                   <option value="">All Status</option>
                   <option value="published">Published</option>
                   <option value="draft">Drafts</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              </div>
+              <div className="relative">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <select value={platformFilter} onChange={(e) => setPlatformFilter(e.target.value)} className="pl-9 pr-8 py-2.5 rounded-xl bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 appearance-none cursor-pointer min-w-[140px]">
+                  <option value="">All Platforms</option>
+                  <option value="devto">Dev.to</option>
+                  <option value="medium">Medium</option>
+                  <option value="manual">EduLumix</option>
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               </div>

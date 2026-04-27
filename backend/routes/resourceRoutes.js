@@ -12,6 +12,7 @@ import {
   getMyResources,
   fetchExternalResources,
   getResourceFilterOptions,
+  getFullContent,
 } from '../controllers/resourceController.js';
 import { protect, canPostResources, optionalAuth, superAdminOnly } from '../middleware/authMiddleware.js';
 
@@ -34,6 +35,7 @@ router.get('/my/resources', protect, getMyResources);
 router.get('/', optionalAuth, getResources);
 router.get('/filter-options', optionalAuth, getResourceFilterOptions);
 router.get('/grouped', getResourcesGrouped);
+router.get('/:id/full-content', getFullContent);
 router.get('/:id', optionalAuth, getResource);
 router.put('/:id/like', engagementLimiter, likeResource);
 router.put('/:id/download', engagementLimiter, incrementDownload);

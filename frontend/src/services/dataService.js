@@ -22,6 +22,7 @@ export const resourceService = {
   getFilterOptions: () => api.get('/resources/filter-options'),
   getGrouped: () => api.get('/resources/grouped'),
   getById: (id) => api.get(`/resources/${id}`),
+  getFullContent: (id) => api.get(`/resources/${id}/full-content`),
   create: (data) => api.post('/resources', data),
   update: (id, data) => api.put(`/resources/${id}`, data),
   delete: (id) => api.delete(`/resources/${id}`),
@@ -41,6 +42,7 @@ export const blogService = {
   delete: (id) => api.delete(`/blogs/${id}`),
   like: (id) => api.put(`/blogs/${id}/like`),
   getMyBlogs: () => api.get('/blogs/my/blogs'),
+  getFullContent: (id) => api.get(`/blogs/${id}/full-content`),
 };
 
 // Products

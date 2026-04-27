@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { 
   FolderOpen, 
   Plus, 
@@ -20,8 +22,11 @@ import {
   Link as LinkIcon,
   User,
   Image,
-  Eye
+  Eye,
+  RefreshCw,
+  Globe
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import VerifiedBadge from '../../components/common/VerifiedBadge';
@@ -35,10 +40,15 @@ const ResourceManagement = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const [contributors, setContributors] = useState([]);
+  const [descPreview, setDescPreview] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [tableLoading, setTableLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [sourceFilter, setSourceFilter] = useState('');
   const [contributorFilter, setContributorFilter] = useState('');
+  const [fetchLoading, setFetchLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingResource, setEditingResource] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
@@ -66,20 +76,29 @@ const ResourceManagement = () => {
     fetchContributors();
   }, []);
 
+  // Debounce search input
+  useEffect(() => {
+    const trimmed = searchTerm.trim();
+    const delay = trimmed === '' ? 0 : 350;
+    const id = setTimeout(() => {
+      setDebouncedSearch(trimmed);
+      setPage(1);
+    }, delay);
+    return () => clearTimeout(id);
+  }, [searchTerm]);
+
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, categoryFilter]);
+  }, [categoryFilter, sourceFilter, contributorFilter]);
 
-  useEffect(() => {
-    fetchResources();
-  }, [page, searchTerm, categoryFilter]);
-
-  const fetchResources = async () => {
+  const fetchResources = useCallback(async () => {
     try {
-      setLoading(true);
+      setTableLoading(true);
       const params = { limit: LIMIT, page };
-      if (searchTerm) params.search = searchTerm;
+      if (debouncedSearch) params.search = debouncedSearch;
       if (categoryFilter) params.category = categoryFilter;
+      if (sourceFilter) params.source = sourceFilter;
+      if (contributorFilter) params.postedBy = contributorFilter;
       const res = await api.get('/resources', { params });
       setResources(res.data.data || []);
       setTotalResources(res.data.total || 0);
@@ -88,7 +107,32 @@ const ResourceManagement = () => {
       console.error('Error fetching resources:', error);
       toast.error('Failed to fetch resources');
     } finally {
+      setTableLoading(false);
       setLoading(false);
+    }
+  }, [page, debouncedSearch, categoryFilter, sourceFilter, contributorFilter]);
+
+  useEffect(() => {
+    fetchResources();
+  }, [fetchResources]);
+
+  const handleFetchExternal = async () => {
+    try {
+      setFetchLoading(true);
+      const res = await api.post('/resources/fetch-external', {});
+      const d = res.data?.data || {};
+      const created = d.created ?? 0;
+      const skipped = d.skipped ?? 0;
+      if (created === 0 && skipped > 0) {
+        toast.success(`✅ Already up-to-date — ${skipped} articles already in DB.`);
+      } else {
+        toast.success(`✅ Fetched: ${created} new article${created !== 1 ? 's' : ''} added${skipped > 0 ? `, ${skipped} already existed` : ''}`);
+      }
+      await fetchResources();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to fetch external resources');
+    } finally {
+      setFetchLoading(false);
     }
   };
 
@@ -222,9 +266,7 @@ const ResourceManagement = () => {
     return `${day}/${month}/${year}`;
   };
 
-  const filteredResources = resources.filter(resource =>
-    !contributorFilter || resource.postedBy?._id === contributorFilter
-  );
+  const filteredResources = resources;
 
   const stats = {
     total: totalResources,
@@ -234,7 +276,7 @@ const ResourceManagement = () => {
     likes: resources.reduce((acc, r) => acc + (r.likes || 0), 0),
   };
 
-  if (loading) {
+  if (loading && resources.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
@@ -254,13 +296,23 @@ const ResourceManagement = () => {
             Manage all learning resources on the platform
           </p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/25"
-        >
-          <Plus className="w-5 h-5" />
-          Add Resource
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleFetchExternal}
+            disabled={fetchLoading}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white rounded-xl font-medium transition-colors shadow-lg shadow-green-500/25"
+          >
+            {fetchLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
+            {fetchLoading ? 'Fetching...' : 'Fetch from Sources'}
+          </button>
+          <button
+            onClick={openCreateModal}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/25"
+          >
+            <Plus className="w-5 h-5" />
+            Add Resource
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -326,7 +378,7 @@ const ResourceManagement = () => {
       <div className="bg-white dark:bg-dark-200 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
         {/* Search & Filter */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row gap-3">
-          <div className="relative w-full sm:w-64">
+          <div className="relative flex-1 min-w-[200px] sm:max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
@@ -361,6 +413,20 @@ const ResourceManagement = () => {
               {categories.map(cat => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          </div>
+          <div className="relative">
+            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <select
+              value={sourceFilter}
+              onChange={(e) => setSourceFilter(e.target.value)}
+              className="pl-9 pr-8 py-2.5 rounded-xl bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 appearance-none cursor-pointer"
+            >
+              <option value="">All Platforms</option>
+              <option value="manual">Manual / Curated</option>
+              <option value="devto">Dev.to</option>
+              <option value="medium">Medium</option>
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
@@ -508,17 +574,13 @@ const ResourceManagement = () => {
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center justify-end gap-1">
-                          {resource.link && (
-                            <a
-                              href={resource.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors"
-                              title="Open Resource"
-                            >
-                              <ExternalLink className="w-4 h-4" />
-                            </a>
-                          )}
+                          <Link
+                            to={`/resources/${resource._id}`}
+                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors"
+                            title="View on Platform"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </Link>
                           <button
                             onClick={() => openEditModal(resource)}
                             className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors"
@@ -657,17 +719,37 @@ const ResourceManagement = () => {
                 </div>
                 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                    Description
-                  </label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    rows={4}
-                    className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 resize-none"
-                    placeholder="Brief description of the resource content..."
-                  />
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Description <span className="text-xs text-gray-400 font-normal">(Markdown supported)</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setDescPreview((v) => !v)}
+                      className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      {descPreview ? 'Edit' : 'Preview'}
+                    </button>
+                  </div>
+                  {descPreview ? (
+                    <div className="article-body min-h-[110px] w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 overflow-auto">
+                      {formData.description ? (
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{formData.description}</ReactMarkdown>
+                      ) : (
+                        <span className="text-gray-400 text-sm">Nothing to preview…</span>
+                      )}
+                    </div>
+                  ) : (
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      rows={6}
+                      className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-dark-100 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 resize-y font-mono text-sm"
+                      placeholder={`Description supports Markdown:\n# Heading\n**bold**, *italic*, \`code\`\n- list item\n\`\`\`js\nconsole.log('hello')\n\`\`\``}
+                    />
+                  )}
                 </div>
               </div>
               

@@ -71,7 +71,7 @@ const About = () => {
         structuredData={structuredData}
       />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-8 lg:px-12">
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-display mb-4 text-gray-900 dark:text-white">
@@ -162,7 +162,7 @@ const About = () => {
           <p className="text-gray-600 dark:text-gray-400 text-center mb-10 max-w-2xl mx-auto">
             Driven by passion to empower freshers and students with the right resources and opportunities
           </p>
-          <div className="max-w-4xl mx-auto">
+          <div className="w-full">
             <div className="bg-white dark:bg-dark-100 rounded-2xl p-8 md:p-12 border border-gray-200 dark:border-gray-800">
               <div className="flex flex-col md:flex-row items-center gap-8">
                 <div className="flex-shrink-0">

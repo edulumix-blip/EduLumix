@@ -184,7 +184,7 @@ const JobDetails = () => {
       
       {/* Back Button */}
       <div className="bg-white dark:bg-dark-200 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="w-full px-8 lg:px-12 py-4">
           <Link
             to="/jobs"
             className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors"
@@ -195,7 +195,7 @@ const JobDetails = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full px-8 lg:px-12 py-8">
         {/* Main Card */}
         <div className="bg-white dark:bg-dark-200 border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
           {/* Header — category hero image + dark scrim (readable content) */}

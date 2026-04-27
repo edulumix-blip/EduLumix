@@ -31,6 +31,8 @@ import courseRoutes from './routes/courseRoutes.js';
 import mockTestRoutes from './routes/mockTestRoutes.js';
 import claimRoutes from './routes/claimRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
+import statsRoutes from './routes/statsRoutes.js';
+import sitemapRoutes from './routes/sitemapRoutes.js';
 
 // Load env vars (from backend/.env even when run from project root)
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -120,15 +122,21 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
-// Middleware - Helmet: allow cross-origin for API (frontend on different port)
+// Middleware - CORS must be FIRST (before helmet) so preflight OPTIONS works
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Explicit preflight handler
+
+// Helmet: allow cross-origin for API (frontend on different port)
 app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
-app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(mongoSanitize()); // Prevent NoSQL injection ($ and . in keys)
+
+// Dynamic sitemap MUST be registered before express.static (which would serve the old static sitemap.xml)
+app.use('/', sitemapRoutes); // /sitemap.xml
 
 // Serve static files FIRST (before API) - so /assets/*, *.js, *.css work correctly
 const frontendDist = path.resolve(__dirname, '../frontend/dist');
@@ -171,6 +179,7 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/mocktests', mockTestRoutes);
 app.use('/api/claims', claimRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/stats', statsRoutes);
 
 // Health check route — includes DB connectivity
 app.get('/api/health', (req, res) => {
